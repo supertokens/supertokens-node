@@ -140,6 +140,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         }
     });
 
+    // can't start/stop multiple cores
     it.skip("three cores and round robin", async function () {
         const connectionURI = await createCoreApplication();
         await createCoreApplication({ host: "localhost", port: 8081 });
@@ -169,6 +170,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
 
+    // can't start/stop multiple cores
     it.skip("three cores, one dead and round robin", async function () {
         const connectionURI = await createCoreApplication();
         await createCoreApplication({ host: "localhost", port: 8082 });
@@ -247,6 +249,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert((await Session.getSessionInformation("someHandle")) === "someHandle");
     });
 
+    // can't set base_path when creating a new app
     it.skip("test with core base path", async function () {
         // first we need to know if the core used supports base_path config
         const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/test" } });
@@ -277,6 +280,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert(res.length === 0);
     });
 
+    // can't set base_path when creating a new app
     it.skip("test with incorrect core base path should fail", async function () {
         // first we need to know if the core used supports base_path config
         const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/some/path" } });
@@ -317,6 +321,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         }
     });
 
+    // can't set base_path when creating a new app
     it.skip("test with multiple core base path", async function () {
         // first we need to know if the core used supports base_path config
         const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/some/path" } });
