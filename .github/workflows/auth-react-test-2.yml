@@ -1,0 +1,75 @@
+name: Auth-React Tests - L2
+on:
+    workflow_call:
+        inputs:
+            artifact-id:
+                description: "Matrix artifact ID"
+                required: true
+                type: string
+
+            AUTH_REACT__LOG_DIR:
+                description: AUTH_REACT__LOG_DIR
+                required: true
+                type: string
+
+            AUTH_REACT__SCREENSHOT_DIR:
+                description: AUTH_REACT__SCREENSHOT_DIR
+                required: true
+                type: string
+
+            AUTH_REACT__APP_SERVER:
+                description: AUTH_REACT__APP_SERVER
+                required: true
+                type: string
+
+            AUTH_REACT__NODE_PORT:
+                description: AUTH_REACT__NODE_PORT
+                required: true
+                type: string
+
+            AUTH_REACT__TEST_MODE:
+                description: AUTH_REACT__TEST_MODE
+                required: true
+                type: string
+
+            AUTH_REACT__PORT:
+                description: AUTH_REACT__PORT
+                required: true
+                type: string
+
+jobs:
+    retrieve-matrix:
+        runs-on: ubuntu-latest
+
+        outputs:
+            matrix: ${{ steps.get-matrix.outputs.matrix }}
+
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  name: matrix-${{ inputs.artifact-id }}
+            - id: get-matrix
+              run: |
+                  matrix=$(<matrix-${{ inputs.artifact-id }}.json)
+                  echo "matrix=$matrix" | tee -a "$GITHUB_OUTPUT"
+
+    launch-test-workflows:
+        needs:
+            - retrieve-matrix
+
+        strategy:
+            max-parallel: 1 # This is important to avoid ddos GHA API
+            fail-fast: false # Don't fail fast to avoid locking TF State
+            matrix: ${{ fromJson(needs.retrieve-matrix.outputs.matrix) }}
+
+        uses: ./.github/workflows/auth-react-test-3.yml
+        name: Group ${{ matrix.name }}
+        with:
+            matrix: ${{ matrix.items }}
+            fdi-version: ${{ inputs.artifact-id }}
+            AUTH_REACT__LOG_DIR: ${{ inputs.AUTH_REACT__LOG_DIR }}
+            AUTH_REACT__SCREENSHOT_DIR: ${{ inputs.AUTH_REACT__SCREENSHOT_DIR }}
+            AUTH_REACT__APP_SERVER: ${{ inputs.AUTH_REACT__APP_SERVER }}
+            AUTH_REACT__NODE_PORT: ${{ inputs.AUTH_REACT__NODE_PORT }}
+            AUTH_REACT__TEST_MODE: ${{ inputs.AUTH_REACT__TEST_MODE }}
+            AUTH_REACT__PORT: ${{ inputs.AUTH_REACT__PORT }}
