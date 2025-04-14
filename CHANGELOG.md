@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## Unreleased
+
+-   Migrates backend-sdk-testing test to use a containerized core
+    -   Migrates from CircleCI to Github Actions
+
 ## [22.0.1] - 2025-03-26
 
 -   Added Dashboard support for WebAuthn
@@ -51,11 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Return type of `authorization` in `RecipeInterface` in `oauth2provider` recipe
     -   Return type of `authGET` in `APIInterface` in `oauth2provider` recipe
     -   Return type of `loginGET` in `APIInterface` in `oauth2provider` recipe
-
-## [22.0.0] - 2025-02-24
-
--   Migrates backend-sdk-testing test to use a containerized core
-    -   Migrates from CircleCI to Github Actions
 
 ## [21.1.0] - 2024-11-19
 
