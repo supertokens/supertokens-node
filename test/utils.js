@@ -53,18 +53,6 @@ module.exports.printPath = function (path) {
     ])}`;
 };
 
-module.exports.executeCommand = async function (cmd) {
-    return new Promise((resolve, reject) => {
-        exec(cmd, (err, stdout, stderr) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve({ stdout, stderr });
-        });
-    });
-};
-
 module.exports.extractInfoFromResponse = function (res) {
     let headers;
     let accessToken = undefined;
@@ -193,24 +181,6 @@ module.exports.resetAll = function (disableLogging = true) {
     WebAuthnRecipe.reset();
     if (disableLogging) {
         debug.disable();
-    }
-};
-
-// todo remove this
-module.exports.killAllST = async function () {
-    let pids = await getListOfPids();
-    for (let i = 0; i < pids.length; i++) {
-        await module.exports.stopST(pids[i]);
-    }
-    module.exports.resetAll();
-    nock.cleanAll();
-};
-
-// todo remove this
-module.exports.killAllSTCoresOnly = async function () {
-    let pids = await getListOfPids();
-    for (let i = 0; i < pids.length; i++) {
-        await module.exports.stopST(pids[i]);
     }
 };
 
@@ -372,31 +342,6 @@ module.exports.removeAppAndTenants = async function (appId) {
         assert.strictEqual(removeRespBody.status, "OK");
     }
 };
-
-async function getListOfPids() {
-    let installationPath = process.env.INSTALL_PATH;
-    let currList;
-    try {
-        currList = (await module.exports.executeCommand("cd " + installationPath + " && ls .started/")).stdout;
-    } catch (err) {
-        return [];
-    }
-    currList = currList.split("\n");
-    let result = [];
-    for (let i = 0; i < currList.length; i++) {
-        let item = currList[i];
-        if (item === "") {
-            continue;
-        }
-        try {
-            let pid = (await module.exports.executeCommand("cd " + installationPath + " && cat .started/" + item))
-                .stdout;
-            pid = pid.split("\n")[0];
-            result.push(pid);
-        } catch (err) {}
-    }
-    return result;
-}
 
 function createFormat(options) {
     if (options.length === 0) {

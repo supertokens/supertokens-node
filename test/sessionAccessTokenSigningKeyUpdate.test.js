@@ -12,14 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-
-    createCoreApplication,
-
-    killAllSTCoresOnly,
-    mockRequest,
-} = require("./utils");
+const { printPath, createCoreApplication } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
