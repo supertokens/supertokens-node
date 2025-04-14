@@ -59,79 +59,10 @@ const Webauthn = require("../../recipe/webauthn");
 
 require("./webauthn/wasm_exec");
 
-let {
-    startST,
-    killAllST,
-    setupST,
-    cleanST,
-    setKeyValueInConfig,
-    customAuth0Provider,
-    stopST,
-    mockThirdPartyProvider,
-} = require("./utils");
+let { customAuth0Provider, mockThirdPartyProvider, setupCoreApplication, addLicense, getCoreUrl } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
-
-let app = express();
-// const originalSend = app.response.send;
-// app.response.send = function sendOverWrite(body) {
-//     originalSend.call(this, body);
-//     this.__custombody__ = body;
-// };
-
-// morgan.token("body", function (req, res) {
-//     return JSON.stringify(req.body);
-// });
-
-// morgan.token("res-body", function (req, res) {
-//     return typeof res.__custombody__ ? res.__custombody__ : JSON.stringify(res.__custombody__);
-// });
-app.use(urlencodedParser);
-app.use(jsonParser);
-app.use(cookieParser());
-
-// app.use(morgan("[:date[iso]] :url :method :body", { immediate: true }));
-// app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] :res-body"));
-
-const WEB_PORT = process.env.WEB_PORT || 3031;
-const websiteDomain = `http://localhost:${WEB_PORT}`;
-let latestURLWithToken = "";
-
-let deviceStore = new Map();
-function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userInputCode }) {
-    console.log(arguments[0]);
-    const device = deviceStore.get(preAuthSessionId) || {
-        preAuthSessionId,
-        codes: [],
-    };
-    device.codes.push({
-        // We add an extra item to the start of the querystring, because there was a bug in older auth-react tests
-        // that only worked because we used to have an `rid` query param before the preAuthSessionId.
-        // This is strictly a test fix, the extra queryparam makes no difference to the actual SDK code.
-        urlWithLinkCode: urlWithLinkCode?.replace("?preAuthSessionId", "?test=fix&preAuthSessionId"),
-        userInputCode,
-    });
-    deviceStore.set(preAuthSessionId, device);
-}
-
-let webauthnStore = new Map();
-const saveWebauthnToken = async ({ user, recoverAccountLink }) => {
-    console.log("saveWebauthnToken: ", user, recoverAccountLink);
-    const webauthn = webauthnStore.get(user.email) || {
-        email: user.email,
-        recoverAccountLink: "",
-        token: "",
-    };
-    webauthn.recoverAccountLink = recoverAccountLink;
-
-    // Parse the token from the recoverAccountLink using URL and URLSearchParams
-    const url = new URL(recoverAccountLink);
-    const token = url.searchParams.get("token");
-    webauthn.token = token;
-
-    webauthnStore.set(user.email, webauthn);
-};
 
 const formFields = (process.env.MIN_FIELDS && []) || [
     {
@@ -198,8 +129,73 @@ let accountLinkingConfig = {};
 let enabledProviders = undefined;
 let enabledRecipes = undefined;
 let mfaInfo = {};
+let latestURLWithToken = "";
+let deviceStore = new Map();
+let webauthnStore = new Map();
+
+const WEB_PORT = process.env.WEB_PORT || 3031;
+const websiteDomain = `http://localhost:${WEB_PORT}`;
 
 initST();
+
+// Add license before the server starts
+(async function () {
+    await addLicense();
+})();
+
+let app = express();
+// const originalSend = app.response.send;
+// app.response.send = function sendOverWrite(body) {
+//     originalSend.call(this, body);
+//     this.__custombody__ = body;
+// };
+
+// morgan.token("body", function (req, res) {
+//     return JSON.stringify(req.body);
+// });
+
+// morgan.token("res-body", function (req, res) {
+//     return typeof res.__custombody__ ? res.__custombody__ : JSON.stringify(res.__custombody__);
+// });
+app.use(urlencodedParser);
+app.use(jsonParser);
+app.use(cookieParser());
+
+// app.use(morgan("[:date[iso]] :url :method :body", { immediate: true }));
+// app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] :res-body"));
+
+function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userInputCode }) {
+    console.log(arguments[0]);
+    const device = deviceStore.get(preAuthSessionId) || {
+        preAuthSessionId,
+        codes: [],
+    };
+    device.codes.push({
+        // We add an extra item to the start of the querystring, because there was a bug in older auth-react tests
+        // that only worked because we used to have an `rid` query param before the preAuthSessionId.
+        // This is strictly a test fix, the extra queryparam makes no difference to the actual SDK code.
+        urlWithLinkCode: urlWithLinkCode?.replace("?preAuthSessionId", "?test=fix&preAuthSessionId"),
+        userInputCode,
+    });
+    deviceStore.set(preAuthSessionId, device);
+}
+
+const saveWebauthnToken = async ({ user, recoverAccountLink }) => {
+    console.log("saveWebauthnToken: ", user, recoverAccountLink);
+    const webauthn = webauthnStore.get(user.email) || {
+        email: user.email,
+        recoverAccountLink: "",
+        token: "",
+    };
+    webauthn.recoverAccountLink = recoverAccountLink;
+
+    // Parse the token from the recoverAccountLink using URL and URLSearchParams
+    const url = new URL(recoverAccountLink);
+    const token = url.searchParams.get("token");
+    webauthn.token = token;
+
+    webauthnStore.set(user.email, webauthn);
+};
 
 app.use(
     cors({
@@ -216,60 +212,38 @@ app.get("/ping", async (req, res) => {
     res.send("success");
 });
 
-app.post("/startst", async (req, res) => {
+app.post("/test/before", (_, res) => {
+    res.send();
+});
+app.post("/test/beforeEach", (_, res) => {
+    deviceStore = new Map();
+    res.send();
+});
+
+app.post("/test/afterEach", (_, res) => {
+    res.send();
+});
+
+app.post("/test/after", (_, res) => {
+    res.send();
+});
+
+app.post("/test/setup/app", async (req, res) => {
     try {
-        connectionURI = await startST(req.body);
-        console.log("Connection URI: " + connectionURI);
-
-        const OPAQUE_KEY_WITH_ALL_FEATURES_ENABLED =
-            "N2yITHflaFS4BPm7n0bnfFCjP4sJoTERmP0J=kXQ5YONtALeGnfOOe2rf2QZ0mfOh0aO3pBqfF-S0jb0ABpat6pySluTpJO6jieD6tzUOR1HrGjJO=50Ob3mHi21tQHJ";
-
-        await fetch(`${connectionURI}/ee/license`, {
-            method: "PUT",
-            headers: {
-                "content-type": "application/json; charset=utf-8",
-            },
-            body: JSON.stringify({
-                licenseKey: OPAQUE_KEY_WITH_ALL_FEATURES_ENABLED,
-            }),
-        });
-
-        initST();
-        res.send(connectionURI + "");
+        res.send(await setupApp(req.body));
     } catch (err) {
         console.log(err);
         res.status(500).send(err.toString());
     }
 });
 
-app.post("/beforeeach", async (req, res) => {
-    deviceStore = new Map();
-
-    mfaInfo = {};
-    accountLinkingConfig = {};
-    passwordlessConfig = {};
-    enabledProviders = undefined;
-    enabledRecipes = undefined;
-
-    if (process.env.INSTALL_PATH !== undefined) {
-        await killAllST();
-        await setupST();
+app.post("/test/setup/st", async (req, res) => {
+    try {
+        res.send(await initST(req.body));
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err.toString());
     }
-    initST();
-    res.send();
-});
-
-app.post("/after", async (req, res) => {
-    if (process.env.INSTALL_PATH !== undefined) {
-        await killAllST();
-        await cleanST();
-    }
-    res.send();
-});
-
-app.post("/stopst", async (req, res) => {
-    await stopST(req.body.pid);
-    res.send("");
 });
 
 // custom API that requires session verification
@@ -641,31 +615,48 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
     }
 })(process.env.START === "true");
 
-function initST({ passwordlessConfig } = {}) {
-    mfaInfo = {};
+/**
+ * Create a core application and initialize ST with the required config
+ * @returns URL for the new core application
+ */
+async function setupApp({ appId, coreConfig } = {}) {
+    const coreAppUrl = await setupCoreApplication({ appId, coreConfig });
+    console.log("Connection URI: " + coreAppUrl);
 
-    UserRolesRaw.reset();
-    PasswordlessRaw.reset();
-    WebauthnRaw.reset();
-    EmailVerificationRaw.reset();
-    EmailPasswordRaw.reset();
-    ThirdPartyRaw.reset();
-    SessionRaw.reset();
-    MultitenancyRaw.reset();
-    AccountLinkingRaw.reset();
-    UserMetadataRaw.reset();
-    MultiFactorAuthRaw.reset();
-    TOTPRaw.reset();
-    OAuth2ProviderRaw.reset();
-    SuperTokensRaw.reset();
+    return coreAppUrl;
+}
 
-    passwordlessConfig = {
-        contactMethod: "EMAIL_OR_PHONE",
-        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-        createAndSendCustomTextMessage: saveCode,
-        createAndSendCustomEmail: saveCode,
-        ...passwordlessConfig,
-    };
+function initST({
+    coreUrl = getCoreUrl(),
+    accountLinkingConfig = {},
+    enabledRecipes,
+    enabledProviders,
+    passwordlessFlowType,
+    passwordlessContactMethod,
+    mfaInfo = {},
+} = {}) {
+    if (process.env.TEST_MODE) {
+        UserRolesRaw.reset();
+        PasswordlessRaw.reset();
+        if (WebauthnRaw) {
+            WebauthnRaw.reset();
+        }
+        MultitenancyRaw.reset();
+        AccountLinkingRaw.reset();
+        UserMetadataRaw.reset();
+        MultiFactorAuthRaw.reset();
+        TOTPRaw.reset();
+        if (OAuth2ProviderRaw) {
+            OAuth2ProviderRaw.reset();
+        }
+
+        EmailVerificationRaw.reset();
+        EmailPasswordRaw.reset();
+        ThirdPartyRaw.reset();
+        SessionRaw.reset();
+
+        SuperTokensRaw.reset();
+    }
 
     const recipeList = [
         [
@@ -794,21 +785,6 @@ function initST({ passwordlessConfig } = {}) {
             }),
         ],
         [
-            "webauthn",
-            Webauthn.init({
-                emailDelivery: {
-                    override: (oI) => {
-                        return {
-                            ...oI,
-                            sendEmail: async (input) => {
-                                await saveWebauthnToken(input);
-                            },
-                        };
-                    },
-                },
-            }),
-        ],
-        [
             "thirdparty",
             ThirdParty.init({
                 signInAndUpFeature: {
@@ -851,6 +827,7 @@ function initST({ passwordlessConfig } = {}) {
         [
             "session",
             Session.init({
+                overwriteSessionDuringSignIn: true,
                 override: {
                     apis: function (originalImplementation) {
                         return {
@@ -871,10 +848,30 @@ function initST({ passwordlessConfig } = {}) {
             }),
         ],
     ];
+    if (OAuth2Provider) {
+        recipeList.push(["oauth2provider", OAuth2Provider.init()]);
+    }
+    if (Webauthn) {
+        recipeList.push([
+            "webauthn",
+            Webauthn.init({
+                emailDelivery: {
+                    override: (oI) => {
+                        return {
+                            ...oI,
+                            sendEmail: async (input) => {
+                                await saveWebauthnToken(input);
+                            },
+                        };
+                    },
+                },
+            }),
+        ]);
+    }
 
-    passwordlessConfig = {
-        contactMethod: "EMAIL_OR_PHONE",
-        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+    const passwordlessConfig = {
+        contactMethod: passwordlessContactMethod ?? "EMAIL_OR_PHONE",
+        flowType: passwordlessFlowType ?? "USER_INPUT_CODE_AND_MAGIC_LINK",
         emailDelivery: {
             override: (oI) => {
                 return {
@@ -891,7 +888,6 @@ function initST({ passwordlessConfig } = {}) {
                 };
             },
         },
-        ...passwordlessConfig,
     };
 
     recipeList.push([
@@ -930,7 +926,10 @@ function initST({ passwordlessConfig } = {}) {
                                     message: "general error from API consume code",
                                 };
                             }
-                            return originalImplementation.consumeCodePOST(input);
+
+                            const resp = await originalImplementation.consumeCodePOST(input);
+
+                            return resp;
                         },
                     };
                 },
@@ -953,9 +952,9 @@ function initST({ passwordlessConfig } = {}) {
     accountLinkingConfig = {
         enabled: false,
         shouldAutoLink: {
-            ...accountLinkingConfig?.shouldAutoLink,
             shouldAutomaticallyLink: true,
             shouldRequireVerification: true,
+            ...accountLinkingConfig?.shouldAutoLink,
         },
         ...accountLinkingConfig,
     };
@@ -970,7 +969,6 @@ function initST({ passwordlessConfig } = {}) {
             }),
         ]);
     }
-
     recipeList.push([
         "multifactorauth",
         MultiFactorAuth.init({
@@ -1040,16 +1038,14 @@ function initST({ passwordlessConfig } = {}) {
         }),
     ]);
 
-    recipeList.push(["oauth2provider", OAuth2Provider.init()]);
-
     SuperTokens.init({
         appInfo: {
             appName: "SuperTokens",
-            apiDomain: "localhost:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
+            apiDomain: "localhost:" + (process.env?.NODE_PORT ?? 8080),
             websiteDomain,
         },
         supertokens: {
-            connectionURI,
+            connectionURI: coreUrl,
         },
         debug: process.env.DEBUG === "true",
         recipeList:
@@ -1126,3 +1122,10 @@ const getWebauthnLib = async () => {
 
     return { createCredential, createAndAssertCredential };
 };
+
+app.use(async (err, req, res, next) => {
+    try {
+        console.error(err);
+        res.status(500).send(err);
+    } catch (ignored) {}
+});
