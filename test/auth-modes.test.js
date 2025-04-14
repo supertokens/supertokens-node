@@ -43,8 +43,6 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
         sinon.restore();
     });
 
-    after(async function () {});
-
     describe("with default getTokenTransferMethod", () => {
         describe("createNewSession", () => {
             describe("with default getTokenTransferMethod", () => {
