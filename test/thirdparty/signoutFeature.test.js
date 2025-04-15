@@ -14,12 +14,10 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
-    setKeyValueInConfig,
 } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
@@ -57,18 +55,11 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         };
     });
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test the default route and it should revoke the session", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -149,7 +140,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
     });
 
     it("test that disabling default route and calling the API returns 404", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -202,7 +193,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
     });
 
     it("test that calling the API without a session should return 401", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -246,7 +237,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
     });
 
     it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
 
         STExpress.init({
             supertokens: {

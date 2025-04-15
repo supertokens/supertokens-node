@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
@@ -10,19 +10,12 @@ const { default: SessionRecipe } = require("../../lib/build/recipe/session/recip
 
 describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("getRolesForUser", () => {
         it("create roles, add them to a user check that the user has the roles", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {

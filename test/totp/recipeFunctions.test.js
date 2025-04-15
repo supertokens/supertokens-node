@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let MultiFactorAuth = require("../../recipe/multifactorauth");
@@ -27,18 +27,11 @@ const OTPAuth = require("otpauth");
 
 describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test create device", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -62,7 +55,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
     });
 
     it("test update device", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -94,7 +87,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
     });
 
     it("test remove device", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -125,7 +118,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
     });
 
     it("test verify device", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -163,7 +156,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
     });
 
     it("test verify totp", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -213,7 +206,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
     });
 
     it("test invalid totp", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {

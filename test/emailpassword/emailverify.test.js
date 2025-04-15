@@ -15,15 +15,13 @@
 
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
-    setKeyValueInConfig,
+
     emailVerifyTokenRequest,
 } = require("../utils");
 let STExpress = require("../..");
@@ -40,14 +38,7 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     /*
@@ -61,7 +52,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with valid input, email not verified
     it("test the generate token api with valid input, email not verified", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -99,7 +90,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     //Call the API with valid input, email verified and test error
     it("test the generate token api with valid input, email verified and test error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -146,7 +137,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with no session and see the output
     it("test the generate token api with valid input, no session and check output", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -188,7 +179,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with an expired access token and see that try refresh token is returned
     it("test the generate token api with an expired access token and see that try refresh token is returned", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
 
         STExpress.init({
             supertokens: {
@@ -264,7 +255,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Provide your own email callback and make sure that is called
     it("test that providing your own email callback and make sure it is called", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInfo = null;
         let emailToken = null;
@@ -338,7 +329,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
           - Call the API with an expired access token and see that try refresh token is returned
     */
     it("test the email verify API with valid input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let token = null;
         STExpress.init({
@@ -407,7 +398,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with an invalid token and see the error
     it("test the email verify API with invalid token and check error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -455,7 +446,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // token is not of type string from input
     it("test the email verify API with token of not type string", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -503,7 +494,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // provide a handlePostEmailVerification callback and make sure it's called on success verification
     it("test that the handlePostEmailVerification callback is called on successfull verification, if given", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInfoFromCallback = null;
         let token = null;
@@ -593,7 +584,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with valid input
     it("test the email verify with valid input, using the get method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let token = null;
         let rid = undefined;
@@ -682,7 +673,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with no session and see the error
     it("test the email verify with no session, using the get method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -727,7 +718,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with an expired access token and see that try refresh token is returned
     it("test the email verify with an expired access token, using the get method", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
 
         let token = null;
 
@@ -849,7 +840,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the email verify API with valid input, overriding apis", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let user = undefined;
         let token = null;
@@ -932,7 +923,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the email verify API with valid input, overriding functions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let user = undefined;
         let token = null;
@@ -1015,7 +1006,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the email verify API with valid input, overriding apis throws error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let user = undefined;
         let token = null;
@@ -1106,7 +1097,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the email verify API with valid input, overriding functions throws error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let user = undefined;
         let token = null;
@@ -1197,7 +1188,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the generate token api with valid input, and then remove token", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1243,7 +1234,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the generate token api with valid input, verify and then unverify email", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1291,7 +1282,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the email verify API with deleted user", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let token = null;
         STExpress.init({
@@ -1347,7 +1338,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test that generate email verification token API updates session claims", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1431,7 +1422,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test that generate email verification token API updates session claims", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let emailVerifyLink = "";
 
         STExpress.init({

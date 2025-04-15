@@ -1,13 +1,11 @@
 const assert = require("assert");
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     mockResponse,
     mockRequest,
-    setKeyValueInConfig,
 } = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
@@ -18,19 +16,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("recipe init", () => {
         it("should add claims to session without config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -61,7 +52,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         });
 
         it("should not add claims if disabled in config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -98,7 +89,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         });
 
         it("should add claims to session with values", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -133,7 +124,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
     describe("validation", () => {
         it("should validate roles", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -181,7 +172,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             });
         });
         it("should validate roles after refetching", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -218,7 +209,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("test")]);
         });
         it("should validate permissions", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -266,7 +257,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             });
         });
         it("should validate permissions after refetching", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,

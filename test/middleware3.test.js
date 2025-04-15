@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
-    setKeyValueInConfig,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
 } = require("./utils");
 let assert = require("assert");
@@ -36,18 +34,11 @@ let { verifySession } = require("../recipe/session/framework/express");
 
 describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test APIs work with tenantId in the request", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -94,7 +85,7 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
     });
 
     it("test Dashboard APIs match with tenantId", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

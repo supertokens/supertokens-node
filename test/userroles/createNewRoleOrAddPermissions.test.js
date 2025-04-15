@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
@@ -12,19 +12,12 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
     "[test/userroles/createNewRoleOrAddPermissions.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("createNewRoleOrAddPermissions", () => {
         it("create a new role", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -51,7 +44,7 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("create the same role twice", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const role = "role";
 
@@ -88,7 +81,7 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("create a role with permissions", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const role = "role";
             const permissions = ["permission1"];
@@ -127,7 +120,7 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("add new permissions to a role", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const role = "role";
             const permissions = ["permission1"];
@@ -179,7 +172,7 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("add duplicate permission", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const role = "role";
             const permissions = ["permission1"];

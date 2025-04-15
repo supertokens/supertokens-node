@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../../utils");
 const assert = require("assert");
 const { ProcessState } = require("../../../lib/build/processState");
 const SuperTokens = require("../../../");
@@ -30,8 +30,6 @@ const { default: RecipeUserId } = require("../../../lib/build/recipeUserId");
 
 describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifySession.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
@@ -39,15 +37,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
         sinon.restore();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     describe("verifySession", () => {
         describe("with getGlobalClaimValidators override", () => {
             it("should allow without claims required or present", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -67,7 +60,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should allow with claim valid after refetching", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -101,7 +94,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with claim required but not added", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -145,7 +138,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should allow with custom validator returning true", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 const customValidator = {
                     id: "testid",
                     validate: () => ({ isValid: true }),
@@ -183,7 +176,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with custom validator returning false", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 const customValidator = {
                     id: "testid",
                     validate: () => ({ isValid: false }),
@@ -223,7 +216,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with validator returning false with reason", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 const customValidator = {
                     id: "testid",
                     validate: () => ({ isValid: false, reason: "testReason" }),
@@ -288,7 +281,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                             },
                         ],
                     });
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -343,7 +336,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .resolves({
                         invalidClaims: [],
                     });
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -379,7 +372,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
 
         describe("with overrideGlobalClaimValidators", () => {
             it("should allow with empty list as override", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -418,7 +411,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should allow with refetched claim", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -457,7 +450,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with invalid refetched claim", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -504,7 +497,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
 
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -553,7 +546,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     validate: () => ({ isValid: true }),
                 };
 
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -601,7 +594,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
 
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -677,6 +670,7 @@ function testGet(app, info, url, expectedStatus) {
             .get(url)
             .set("Cookie", ["sAccessToken=" + info.accessToken])
             .set("anti-csrf", info.antiCsrf)
+            .timeout(10000)
             .expect(expectedStatus)
             .end((err, res) => {
                 if (err) {

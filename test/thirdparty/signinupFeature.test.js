@@ -14,10 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
     signUPRequest,
     isCDIVersionCompatible,
@@ -150,18 +149,11 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
     });
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test with rid thirdpartypasswordless still works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -270,7 +262,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test with rid thirdpartyemailpassword still works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -376,7 +368,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -445,7 +437,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config without code for thirdparty module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -548,7 +540,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test missing redirectURIInfo and oAuthTokens", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -592,7 +584,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config for thirdparty module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -713,7 +705,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config for thirdparty module, email unverified", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -792,7 +784,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test thirdparty provider doesn't exist", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -843,7 +835,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test email not returned in getProfileInfo function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -896,7 +888,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test error thrown from getProfileInfo function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -955,7 +947,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test invalid POST params for thirdparty module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1076,7 +1068,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test handlePostSignUpIn gets set correctly", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         process.env.userId = "";
         process.env.loginType = "";
@@ -1124,7 +1116,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
+        nock("https://test.com").post("/oauth/token").times(1).reply(200, {});
 
         let response1 = await request(app)
             .post("/auth/signinup")
@@ -1143,7 +1135,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config with one provider", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1209,7 +1201,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test getUserCount and pagination works fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1283,7 +1275,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("getUserById when user does not exist", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1349,7 +1341,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test getUserByThirdPartyInfo when user does not exist", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {

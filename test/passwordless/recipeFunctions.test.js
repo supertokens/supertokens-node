@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
@@ -25,18 +25,11 @@ const { default: RecipeUserId } = require("../../lib/build/recipeUserId");
 
 describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("getUser test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -151,7 +144,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("createCode test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -218,7 +211,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("createNewCodeForDevice test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -327,7 +320,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("consumeCode test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -428,7 +421,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("consumeCode test with EXPIRED_USER_INPUT_CODE_ERROR", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: {
                 passwordless_code_lifetime: 1000, // one second lifetime
             },
@@ -486,7 +479,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // updateUser
     it("updateUser contactMethod email test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -558,7 +551,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("updateUser contactMethod phone test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -627,7 +620,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // revokeAllCodes
     it("revokeAllCodes test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -698,7 +691,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("revokeCode test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -770,7 +763,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // listCodesByEmail
     it("listCodesByEmail test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -826,7 +819,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     //listCodesByPhoneNumber
     it("listCodesByPhoneNumber test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -882,7 +875,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // listCodesByDeviceId and listCodesByPreAuthSessionId
     it("listCodesByDeviceId and listCodesByPreAuthSessionId test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -940,7 +933,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     */
 
     it("createMagicLink test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -986,7 +979,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // signInUp test
     it("signInUp test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1032,7 +1025,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("Passwordless user that isEmailVerified returns true for both email and phone", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {

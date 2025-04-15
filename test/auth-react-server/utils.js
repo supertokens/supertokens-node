@@ -28,6 +28,29 @@ module.exports.executeCommand = async function (cmd) {
     });
 };
 
+module.exports.getCoreUrl = () => {
+    const host = process.env?.SUPERTOKENS_CORE_HOST ?? "localhost";
+    const port = process.env?.SUPERTOKENS_CORE_PORT ?? "3567";
+
+    const coreUrl = `http://${host}:${port}`;
+
+    return coreUrl;
+};
+
+module.exports.getCoreUrlFromConnectionURI = (connectionURI) => {
+    let coreUrl = connectionURI;
+
+    if (coreUrl.includes("appid-")) {
+        coreUrl = connectionURI.split("appid-")[0];
+    }
+
+    if (coreUrl.endsWith("/")) {
+        coreUrl = coreUrl.slice(0, -1);
+    }
+
+    return coreUrl;
+};
+
 module.exports.setupST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     try {
@@ -94,7 +117,7 @@ module.exports.killAllST = async function () {
     }
 };
 
-module.exports.startST = async function (config = {}) {
+module.exports.createCoreApplication = async function (config = {}) {
     const host = config.host ?? "localhost";
     const port = config.port ?? 9000;
 

@@ -14,12 +14,11 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
-    setKeyValueInConfig,
+
     delay,
 } = require("./utils");
 let assert = require("assert");
@@ -36,19 +35,12 @@ let { middleware, errorHandler } = require("../framework/express");
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -115,7 +107,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -181,7 +173,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //- check for token theft detection
     it("express token theft detection", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -296,7 +288,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //- check for token theft detection
     it("express token theft detection with auto refresh middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -391,7 +383,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -540,7 +532,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test basic usage of express sessions with headers", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -698,7 +690,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that if accessTokenPath is set to custom /access, then path of accessToken from session is equal to this", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -746,7 +738,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that if default accessTokenPath is used, then path of accessToken from session is equal to slash", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -793,7 +785,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test signout API works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -850,7 +842,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test signout API works if even session is deleted on the backend after creation", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -920,7 +912,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //check basic usage of session
     it("test basic usage of express sessions with auto refresh", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -1072,7 +1064,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1149,7 +1141,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1231,7 +1223,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //check revoking session(s)**
     it("test revoking express sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1369,7 +1361,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //check manipulating session data
     it("test manipulating session data with express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1515,7 +1507,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //check manipulating jwt payload
     it("test manipulating jwt payload with express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1729,7 +1721,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     // test with existing header params being there and that the lib appends to those and not overrides those
     it("test that express appends to existing header params and does not override", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1775,7 +1767,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
     it("test that when anti-csrf is disabled from from ST core, not having to input in verify session is fine in express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1848,7 +1840,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that getSession does not clear cookies if a session does not exist in the first place", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1898,7 +1890,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that refreshSession does not clear cookies if a session does not exist in the first place", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1948,7 +1940,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that when anti-csrf is enabled with custom header, and we don't provide that in verifySession, we get try refresh token", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -2092,7 +2084,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test resfresh API when using CUSTOM HEADER anti-csrf", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -2167,7 +2159,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test that init can be called post route and middleware declaration", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         const app = express();
 
@@ -2250,7 +2242,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test overriding of sessions functions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let createNewSessionCalled = false;
         let getSessionCalled = false;
@@ -2446,7 +2438,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test overriding of sessions apis", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let signoutCalled = false;
         SuperTokens.init({
@@ -2536,7 +2528,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test overriding of sessions functions, error thrown", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let createNewSessionCalled = false;
         let session = undefined;
@@ -2614,7 +2606,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test overriding of sessions apis, error thrown", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let signoutCalled = false;
         SuperTokens.init({
@@ -2709,7 +2701,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("check that refresh doesn't clear cookies if missing anti csrf via custom header", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -2767,7 +2759,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("check that refresh doesn't clear cookies if missing anti csrf via token", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -2824,7 +2816,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test session error handler overriding", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let testpass = false;
         SuperTokens.init({
             supertokens: {
@@ -2891,7 +2883,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test revoking a session during refresh with revokeSession function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -2981,7 +2973,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test revoking a session during refresh with revokeSession function and sending 401", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -3073,7 +3065,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test revoking a session during refresh with throwing unauthorised error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -3167,7 +3159,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("test revoking a session during refresh fails if just sending 401", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -3253,7 +3245,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     it("Test that token transfer method works correctly when using origin function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {

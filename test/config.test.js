@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     extractInfoFromResponse,
     mockResponse,
@@ -48,20 +46,13 @@ const { logDebugMessage } = require("../lib/build/logger");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     // test various inputs for appInfo
     // Failure condition: passing data of invalid type/ syntax to appInfo
     it("test values for optional inputs for appInfo", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             STExpress.init({
@@ -118,7 +109,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("test values for compulsory inputs for appInfo", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             try {
@@ -199,7 +190,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     // test using zero, one and two recipe modules
     // Failure condition: initial supertokens with the incorrect number of modules as specified in the checks
     it("test using zero, one and two recipe modules", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             try {
@@ -262,7 +253,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     // test config for session module
     // Failure condition: passing data of invalid type/ syntax to the modules config
     it("test config for session module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -287,7 +278,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("various sameSite values", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             STExpress.init({
@@ -463,7 +454,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("sameSite none invalid domain values", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         const domainCombinations = [
             ["http://localhost:3000", "http://supertokensapi.io"],
             ["http://127.0.0.1:3000", "http://supertokensapi.io"],
@@ -700,7 +691,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("various config values", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             STExpress.init({
@@ -842,7 +833,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             let hosts = Querier.hosts;
             assert(hosts.length === 4);
 
-            assert(hosts[0].domain.getAsStringDangerous() === "http://localhost:8080");
+            assert(
+                hosts[0].domain.getAsStringDangerous() === new NormalisedURLDomain(connectionURI).getAsStringDangerous()
+            );
             assert(hosts[1].domain.getAsStringDangerous() === "https://try.supertokens.io");
             assert(hosts[2].domain.getAsStringDangerous() === "https://try.supertokens.io:8080");
             assert(hosts[3].domain.getAsStringDangerous() === "http://localhost:90");
@@ -1209,7 +1202,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("testing that the debug mode is set", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let logs = []; // Used to capture the log strings
         debug.log = function (...args) {
             logs.push(args);
@@ -1275,7 +1268,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
     it("testing that the debug mode is set via env var", async function () {
         let oldEnv = process.env;
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let logs = []; // Used to capture the log strings
         debug.log = function (...args) {
             logs.push(args);
@@ -1327,7 +1320,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("checking for default cookie config", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1350,7 +1343,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that the JWKS and OpenId endpoints are exposed by default", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1393,7 +1386,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("should work well with ec2 public urls", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             STExpress.init({
@@ -1460,7 +1453,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("apiGatewayPath test", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         {
             STExpress.init({
                 supertokens: {
@@ -1641,7 +1634,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("checking for empty item in recipeList config", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let errorCaught = true;
         try {
             STExpress.init({
@@ -1663,7 +1656,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Check that telemetry is set to true properly", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1681,7 +1674,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Check that telemetry is set to false by default", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1698,7 +1691,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Check that telemetry is set to false properly", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1716,7 +1709,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that init throws if both website domain and origin is undefined", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         try {
             STExpress.init({
                 supertokens: {
@@ -1741,7 +1734,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that init works fine when using origin", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1760,7 +1753,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that init works fine when using a function for origin", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1779,7 +1772,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that origin function returns correctly", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1803,7 +1796,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that if both website domain and origin are provided, origin is used", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

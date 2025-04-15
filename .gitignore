@@ -15,3 +15,4 @@ releasePassword
 /temp_*
 /.nyc_output
 .circleci/.pat
+test-results*

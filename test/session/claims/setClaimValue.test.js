@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
+const { printPath, createCoreApplication, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
@@ -23,14 +23,7 @@ const { ProcessState } = require("../../../lib/build/processState");
 
 describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClaimValue.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("SessionClass.setClaimValue", () => {
@@ -56,7 +49,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
         });
 
         it("should overwrite claim value", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             SuperTokens.init({
                 supertokens: {
@@ -110,7 +103,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
         });
 
         it("should overwrite claim value using session handle", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             SuperTokens.init({
                 supertokens: {
@@ -165,7 +158,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
         });
 
         it("should work ok for not existing handle", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             SuperTokens.init({
                 supertokens: {

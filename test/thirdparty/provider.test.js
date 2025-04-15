@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -50,18 +50,11 @@ const privateKey =
  */
 describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test minimum config for third party provider google", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -154,7 +147,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing additional params, check they are present in authorisation url for thirdparty provider google", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -227,7 +220,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for thirdparty provider google", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -295,7 +288,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider facebook", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let clientSecret = "test-secret";
@@ -390,7 +383,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for third party provider facebook", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let clientSecret = "test-secret";
@@ -460,7 +453,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider github", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let clientSecret = "test-secret";
@@ -555,7 +548,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test additional params, check they are present in authorisation url for third party provider github", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let clientSecret = "test-secret";
@@ -630,7 +623,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for third party provider github", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let clientSecret = "test-secret";
@@ -700,7 +693,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider apple", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let additionalConfig = {
@@ -802,7 +795,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing additional params, check they are present in authorisation url for third party provider apple", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let additionalConfig = {
@@ -882,7 +875,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for third party provider apple", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let additionalConfig = {
@@ -957,7 +950,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it.skip("test passing invalid privateKey in config for third party provider apple", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let clientId = "test";
         let additionalConfig = {
@@ -1005,7 +998,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test duplicate provider", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         try {
             STExpress.init({
                 supertokens: {
@@ -1057,7 +1050,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("Test that sign in up fails if validateAccessToken throws", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1135,7 +1128,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("Test that sign in up works if validateAccessToken does not throw", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let overridenValidateCalled = false;
         STExpress.init({
             supertokens: {

@@ -1,5 +1,5 @@
 const { ProcessState } = require("../../lib/build/processState");
-const { printPath, killAllST, setupST, cleanST, startST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Dashboard = require("../../recipe/dashboard");
 let EmailVerification = require("../../recipe/emailverification");
@@ -12,18 +12,11 @@ let Session = require("../../recipe/session");
 
 describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEmailVerifyGet.test.js]")}`, () => {
     beforeEach(async () => {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("Test that api returns correct value for email verification", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

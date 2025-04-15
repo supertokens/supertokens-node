@@ -28,6 +28,9 @@ describe(`importTests: ${printPath("[test/import.test.js]")}`, function () {
      * (Refer to: https://github.com/supertokens/supertokens-node/issues/513)
      */
     it("Test that importing all build files independently does not cause errors", function () {
+        // This test is known to take a long time to run
+        this.timeout(80000);
+
         const fileNames = getAllFilesInDirectory(resolve(process.cwd(), "./lib/build")).filter(
             (i) => !i.endsWith(".d.ts") && !i.endsWith(".map")
         );

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, createCoreApplication, resetAll } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -29,20 +29,13 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -83,7 +76,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
     // Failure condition: passing data of invalid type/ syntax to the module
     it("test config for emailpassword module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -128,7 +121,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
      *         - Check that the default password and email validators work fine
      */
     it("test that no email/password validators given should add them", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -160,7 +153,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
     });
 
     it("test that giving optional true in email / password field should be ignored", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -195,7 +188,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
     //Check that the default password and email validators work fine
     it("test that default password and email validators work fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

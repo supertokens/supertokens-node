@@ -2,7 +2,7 @@ let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
@@ -12,18 +12,11 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("Test overriding functions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let jwtCreated = undefined;
         let jwksKeys = undefined;
@@ -120,7 +113,7 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
     });
 
     it("Test overriding APIs", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let jwksKeys = undefined;
 

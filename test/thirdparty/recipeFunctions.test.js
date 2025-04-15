@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -24,19 +24,12 @@ let ThirdParty = require("../../recipe/thirdparty");
 
 describe(`recipeFunctions: ${printPath("[test/thirdparty/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     // test that creating a user with ThirdParty, and they have a verified email that, isEmailVerified returns true and the opposite case
     it("for ThirdParty user that isEmailVerified returns the correct email verification status", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {

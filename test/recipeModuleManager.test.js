@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("./utils");
+const { printPath, createCoreApplication, resetAll } = require("./utils");
 let { ProcessState } = require("../lib/build/processState");
 let ST = require("../");
 let Session = require("../recipe/session");
@@ -38,19 +38,12 @@ let { middleware, errorHandler } = require("../framework/express");
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         resetTestRecipies();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("calling init multiple times", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -86,7 +79,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Check that querier has been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         try {
             await Querier.getNewInstanceOrThrowError(undefined);
@@ -115,7 +108,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Check that modules have been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that modules have been initiated when we call supertokens.init", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         try {
             SessionRecipe.getInstanceOrThrowError();
@@ -165,7 +158,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail is using the incorrect base path
     it("test various inputs to routing with default base path", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         ST.init({
             supertokens: {
                 connectionURI,
@@ -246,7 +239,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail is using the wrong base path
     it("test various inputs to routing when base path is /", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         {
             ST.init({
                 supertokens: {
@@ -333,7 +326,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail if the incorrect rid header value is set when sending a request the path
     it("test routing with multiple recipes", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -398,7 +391,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Test various inputs to errorHandler (if it accepts or not)
     it("test various inputs to errorHandler", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -456,7 +449,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Error thrown from APIs implemented by recipes must not go unhandled
     it("test that error thrown from APIs implemented by recipes must not go unhandled", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -514,7 +507,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Disable a default route, and then implement your own API and check that that gets called
     // Failure condition: in testRecipe1 if the disabled value for the /default-route-disabled is set to false, the test will fail
     it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -555,7 +548,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // If an error handler in a recipe throws an error, that error next to go to the user's error handler
     it("test if the error handler in a recipe throws an error, it goes to the user's error handler", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -598,7 +591,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Test getAllCORSHeaders
     it("test the getAllCORSHeaders function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {

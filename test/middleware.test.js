@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
-    setKeyValueInConfig,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
     delay,
 } = require("./utils");
@@ -39,19 +37,12 @@ let { verifySession } = require("../recipe/session/framework/express");
 
 describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     // check that disabling default API actually disables it (for session)
     it("test disabling default API actually disables it", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -97,7 +88,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -381,7 +372,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with auto refresh", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -670,7 +661,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -964,7 +955,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config with auto refresh", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -1264,7 +1255,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // An expired access token is used and we see that try refresh token error is thrown
     it("test session verify middleware with expired access token and session required false", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
 
         SuperTokens.init({
             supertokens: {
@@ -1404,7 +1395,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // A session exists, is refreshed, then is revoked, and then we try and use the access token (after first refresh), and we see that unauthorised error is called.
     it("test session verify middleware with old access token and session required false", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -1625,7 +1616,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // A session doesn't exist, and we call verifySession, and it let's go through
     it("test session verify middleware with no session and session required false", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -1688,7 +1679,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware without error handler added", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 5 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 5 } });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
