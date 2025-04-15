@@ -13,8 +13,6 @@ describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, func
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("deleteRole", () => {
         it("create roles, add them to a user and delete one of the roles", async function () {
             const connectionURI = await createCoreApplication();

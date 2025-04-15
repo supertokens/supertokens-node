@@ -39,8 +39,6 @@ describe(`apiInterface: ${printPath("[test/emailverification/apiInterface.js]")}
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("[verifyEmailPOST]", function () {
         it("should verify the user when user signed up with emailpassword recipe", async function () {
             const connectionURI = await createCoreApplication();

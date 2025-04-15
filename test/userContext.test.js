@@ -41,8 +41,6 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("testing context across interface and recipe function", async function () {
         const connectionURI = await createCoreApplication();
         let works = false;

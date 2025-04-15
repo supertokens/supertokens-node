@@ -40,8 +40,6 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     //check basic usage of session
     it("test basic usage of sessions for lambda proxy event v1", async function () {
         const connectionURI = await createCoreApplication();

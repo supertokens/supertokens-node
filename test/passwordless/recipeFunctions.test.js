@@ -28,8 +28,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("getUser test", async function () {
         const connectionURI = await createCoreApplication();
 

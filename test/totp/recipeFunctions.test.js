@@ -30,8 +30,6 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test create device", async function () {
         const connectionURI = await createCoreApplication();
 

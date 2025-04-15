@@ -15,8 +15,6 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("deleteUser", () => {
         it("create an emailPassword user and map their userId, then delete user with the externalId", async function () {
             const connectionURI = await createCoreApplication();

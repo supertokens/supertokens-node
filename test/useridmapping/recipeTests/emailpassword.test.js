@@ -14,8 +14,6 @@ describe(`userIdMapping with emailpassword: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("getUserById", () => {
         it("create an emailPassword user and map their userId, retrieve the user info using getUserById and check that the externalId is returned", async function () {
             const connectionURI = await createCoreApplication();

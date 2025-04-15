@@ -23,10 +23,6 @@ let { Querier } = require("../../lib/build/querier");
 describe(`Session handling functions without modifying response: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
 )}`, function () {
-    beforeEach(async function () {});
-
-    after(async function () {});
-
     describe("createNewSessionWithoutRequestResponse", () => {
         it("should create a new session", async () => {
             const connectionURI = await createCoreApplication();

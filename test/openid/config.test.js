@@ -12,8 +12,6 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that the default config sets values correctly for OpenID recipe", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

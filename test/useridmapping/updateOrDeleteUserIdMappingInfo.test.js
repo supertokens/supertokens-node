@@ -15,8 +15,6 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("updateOrDeleteUserIdMappingInfoTest", () => {
         it("update externalUserId mapping info with unknown userId", async function () {
             const connectionURI = await createCoreApplication();

@@ -19,8 +19,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("recipe init", () => {
         it("should add claims to session without config", async function () {
             const connectionURI = await createCoreApplication();

@@ -30,8 +30,6 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test that different roles can be assigned for the same user for each tenant", async function () {
         const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({

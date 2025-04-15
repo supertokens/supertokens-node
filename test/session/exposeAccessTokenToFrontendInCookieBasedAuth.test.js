@@ -31,8 +31,6 @@ describe(`exposeAccessTokenToFrontendInCookieBasedAuth: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("should default to false", () => {
         SuperTokens.init({
             supertokens: {

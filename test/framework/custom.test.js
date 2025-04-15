@@ -32,7 +32,6 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
             await this.server.close();
         } catch (err) {}
     });
-    after(async function () {});
 
     // - check if session verify middleware responds with a nice error even without the global error handler
     it("test session verify middleware without error handler added", async function () {

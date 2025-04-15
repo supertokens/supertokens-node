@@ -14,8 +14,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("createUserIdMappingTest", () => {
         it("create a userId mapping", async function () {
             const connectionURI = await createCoreApplication();

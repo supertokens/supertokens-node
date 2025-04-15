@@ -41,8 +41,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     /*
     generate token API:
         - Call the API with valid input, email not verified

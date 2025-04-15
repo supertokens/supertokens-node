@@ -32,8 +32,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {

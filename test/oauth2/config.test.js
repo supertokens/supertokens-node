@@ -12,8 +12,6 @@ describe(`configTest: ${printPath("[test/oauth2/config.test.js]")}`, function ()
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that the recipe initializes without a config obj", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

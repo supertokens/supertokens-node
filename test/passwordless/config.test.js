@@ -30,8 +30,6 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     /*
         contactMethod: EMAIL_OR_PHONE
             - minimal config

@@ -72,8 +72,6 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("overriding functions tests", async function () {
         const connectionURI = await createCoreApplication();
         let user = undefined;

@@ -51,8 +51,6 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test getUsersOldestFirst", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

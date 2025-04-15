@@ -12,8 +12,6 @@ describe(`clearUserMetadataTest: ${printPath("[test/usermetadata/clearUserMetada
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("clearUserMetadata", () => {
         it("should return OK for unknown user id", async function () {
             const connectionURI = await createCoreApplication();

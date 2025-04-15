@@ -152,8 +152,6 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test with rid thirdpartypasswordless still works", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

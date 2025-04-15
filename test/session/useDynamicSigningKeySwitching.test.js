@@ -24,10 +24,6 @@ const { parseJWTWithoutSignatureVerification } = require("../../lib/build/recipe
 describe(`Switching useDynamicAccessTokenSigningKey after session creation: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
 )}`, function () {
-    beforeEach(async function () {});
-
-    after(async function () {});
-
     describe("true to false", () => {
         it("should throw when verifying", async () => {
             const connectionURI = await createCoreApplication();

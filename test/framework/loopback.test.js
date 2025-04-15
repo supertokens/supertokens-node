@@ -42,8 +42,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         }
     });
 
-    after(async function () {});
-
     //check basic usage of session
     it("test basic usage of sessions", async function () {
         const connectionURI = await createCoreApplication();

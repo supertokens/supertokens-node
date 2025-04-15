@@ -53,8 +53,6 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test minimum config for third party provider google", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

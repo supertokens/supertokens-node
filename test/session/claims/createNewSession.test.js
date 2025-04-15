@@ -24,8 +24,6 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("createNewSession", () => {
         it("should create access token payload w/ session claims", async function () {
             const connectionURI = await createCoreApplication();

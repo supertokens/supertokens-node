@@ -15,8 +15,6 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("createNewRoleOrAddPermissions", () => {
         it("create a new role", async function () {
             const connectionURI = await createCoreApplication();

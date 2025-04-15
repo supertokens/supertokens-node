@@ -14,8 +14,6 @@ describe(`userIdMapping with passwordless: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("consumeCode", () => {
         it("create a passwordless user and map their userId, signIn again and check that the externalId is returned", async function () {
             const connectionURI = await createCoreApplication();

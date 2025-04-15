@@ -32,8 +32,6 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("test built-in provider computed config from static config with overrides", async function () {
         const overrides = [
             {

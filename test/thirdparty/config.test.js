@@ -29,8 +29,6 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test config for thirdparty module, no provider passed", async function () {
         const connectionURI = await createCoreApplication();
         try {

@@ -10,8 +10,6 @@ describe(`configTest: ${printPath("[test/usermetadata/config.test.js]")}`, funct
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("recipe init", () => {
         it("should work fine without config", async function () {
             const connectionURI = await createCoreApplication();

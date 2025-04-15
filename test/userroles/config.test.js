@@ -11,8 +11,6 @@ describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("recipe init", () => {
         it("should work fine without config", async function () {
             const connectionURI = await createCoreApplication();

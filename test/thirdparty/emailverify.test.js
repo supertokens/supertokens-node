@@ -66,8 +66,6 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test default backward compatibility api being called: email verify", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

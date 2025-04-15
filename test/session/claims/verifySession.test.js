@@ -37,8 +37,6 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
         sinon.restore();
     });
 
-    after(async function () {});
-
     describe("verifySession", () => {
         describe("with getGlobalClaimValidators override", () => {
             it("should allow without claims required or present", async function () {

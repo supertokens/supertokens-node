@@ -44,8 +44,6 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // Test the default route and it should revoke the session (with clearing the cookies)
     it("test the default route and it should revoke the session", async function () {
         const connectionURI = await createCoreApplication();

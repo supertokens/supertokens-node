@@ -27,8 +27,6 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("Session.validateClaimsForSessionHandle", () => {
         afterEach(() => {
             sinon.restore();

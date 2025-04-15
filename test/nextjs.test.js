@@ -147,8 +147,6 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {});
-
             it("Sign Up", async function () {
                 await testApiHandler({
                     pagesHandler: nextApiHandlerWithMiddleware,
@@ -526,8 +524,6 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {});
-
             it("testing JSON body", async function () {
                 await createUser();
 
@@ -634,8 +630,6 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {});
-
             it("Sign Up", async function () {
                 await testApiHandler({
                     pagesHandler: nextApiHandlerWithMiddleware,
@@ -706,8 +700,6 @@ if (major >= 18) {
                 ],
             });
         });
-
-        after(async function () {});
 
         it("Sign Up", async function () {
             const handleCall = getAppDirRequestHandler(NextResponse);
@@ -1002,6 +994,7 @@ if (major >= 18) {
             }
         });
 
+        // skipping this test because it requires killing the core and starting it again, which is not supported anymore
         it.skip("should go to next error handler when withSession is called without core", async function () {
             const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
@@ -1062,8 +1055,6 @@ if (major >= 18) {
             });
         });
 
-        after(async function () {});
-
         it("should successfully refresh session", async () => {
             const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
 
@@ -1113,8 +1104,6 @@ if (major >= 18) {
                     ],
                 });
             });
-
-            after(async function () {});
 
             it("should return hasToken value correctly", async function () {
                 const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
@@ -1171,8 +1160,6 @@ if (major >= 18) {
                     ],
                 });
             });
-
-            after(async function () {});
 
             it("should return hasToken value correctly", async function () {
                 const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
@@ -1243,8 +1230,6 @@ if (major >= 18) {
                 ],
             });
         });
-
-        after(async function () {});
 
         it("should throw st-ev claim has expired for unverified email", async () => {
             const tokens = await getValidTokensAfterSignup();

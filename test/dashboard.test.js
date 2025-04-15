@@ -28,8 +28,6 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that normalised config is generated correctly", async function () {
         const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
 

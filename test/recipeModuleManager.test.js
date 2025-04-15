@@ -42,8 +42,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         resetTestRecipies();
     });
 
-    after(async function () {});
-
     it("calling init multiple times", async function () {
         const connectionURI = await createCoreApplication();
 

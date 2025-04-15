@@ -15,8 +15,6 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test overriding functions", async function () {
         const connectionURI = await createCoreApplication();
 

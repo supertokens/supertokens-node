@@ -13,8 +13,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that sending 0 validity throws an error", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

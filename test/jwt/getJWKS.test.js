@@ -15,8 +15,6 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that default getJWKS api does not work when disabled", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

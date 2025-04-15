@@ -27,8 +27,6 @@ describe(`errorHandlers: ${printPath("[test/errorHandlers.test.js]")}`, function
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("should override session errorHandlers", async function () {
         const connectionURI = await createCoreApplication();
         SuperTokens.init({

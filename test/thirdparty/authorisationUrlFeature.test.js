@@ -63,8 +63,6 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test that using development OAuth keys will use the development authorisation url", async function () {
         const connectionURI = await createCoreApplication();
 

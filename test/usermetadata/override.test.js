@@ -12,8 +12,6 @@ describe(`overrideTest: ${printPath("[test/usermetadata/override.test.js]")}`, f
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("recipe functions", () => {
         it("should work without an override config", async function () {
             const connectionURI = await createCoreApplication();

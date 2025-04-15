@@ -47,7 +47,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
             await this.server.close();
         } catch (err) {}
     });
-    after(async function () {});
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {

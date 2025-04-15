@@ -24,8 +24,6 @@ describe(`configTest: ${printPath("[test/webauthn/config.test.js]")}`, function 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for webauthn module", async function () {

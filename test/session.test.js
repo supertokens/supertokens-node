@@ -51,8 +51,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // check if output headers and set cookies for create session is fine
     it("test that output headers and set cookie for create session is fine", async function () {
         const connectionURI = await createCoreApplication();

@@ -32,8 +32,6 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test the provider override is not increasing call stack", async function () {
         const connectionURI = await createCoreApplicationWithMultitenancy();
 

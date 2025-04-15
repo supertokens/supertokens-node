@@ -26,8 +26,6 @@ describe(`interceptor: ${printPath("[test/interceptor.test.js]")}`, function () 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("network interceptor sanity", async function () {
         let isNetworkIntercepted = false;
         const connectionURI = await createCoreApplication();

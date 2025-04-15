@@ -16,8 +16,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that with default config calling discovery configuration endpoint works as expected", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

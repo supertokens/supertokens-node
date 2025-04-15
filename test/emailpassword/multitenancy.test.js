@@ -32,8 +32,6 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test recipe functions", async function () {

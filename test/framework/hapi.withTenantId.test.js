@@ -42,7 +42,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
             await this.sever.stop();
         } catch (err) {}
     });
-    after(async function () {});
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {

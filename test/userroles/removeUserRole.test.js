@@ -13,8 +13,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("removeUserRole", () => {
         it("remove role from user", async function () {
             const connectionURI = await createCoreApplication();

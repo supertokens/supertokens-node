@@ -109,8 +109,6 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
         jwks = jwksGenerated;
     });
 
-    after(async function () {});
-
     const CustomResponse = class extends Response {};
 
     it("should sign-up successfully", async () => {

@@ -40,8 +40,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // check that disabling default API actually disables it (for session)
     it("test disabling default API actually disables it", async function () {
         const connectionURI = await createCoreApplication();

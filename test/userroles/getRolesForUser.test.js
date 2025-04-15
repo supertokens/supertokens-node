@@ -13,8 +13,6 @@ describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("getRolesForUser", () => {
         it("create roles, add them to a user check that the user has the roles", async function () {
             const connectionURI = await createCoreApplication();

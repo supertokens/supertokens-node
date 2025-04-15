@@ -12,8 +12,6 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("updateUserMetadata", () => {
         it("should create metadata for unknown user id", async function () {
             const connectionURI = await createCoreApplication();

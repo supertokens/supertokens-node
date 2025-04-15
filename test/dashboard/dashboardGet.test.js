@@ -13,8 +13,6 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     const dashboardURL = "/auth/dashboard/";
 
     describe("Test connectionURI", function () {

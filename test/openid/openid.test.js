@@ -13,8 +13,6 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that with default config discovery configuration is as expected", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

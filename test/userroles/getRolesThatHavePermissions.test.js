@@ -15,8 +15,6 @@ describe(`getRolesThatHavePermissions: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("getRolesThatHavePermissions", () => {
         it("get roles that have permissions", async function () {
             const connectionURI = await createCoreApplication();

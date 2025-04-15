@@ -26,8 +26,6 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("SessionClass.removeClaim", () => {
         afterEach(() => {
             sinon.restore();

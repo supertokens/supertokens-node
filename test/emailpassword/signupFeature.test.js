@@ -78,8 +78,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // * check if disable api, the default signup API does not work - you get a 404
     it("test that if disable api, the default signup API does not work", async function () {
         const connectionURI = await createCoreApplication();

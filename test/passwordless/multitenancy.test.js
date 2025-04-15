@@ -32,8 +32,6 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test recipe functions", async function () {
         const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({

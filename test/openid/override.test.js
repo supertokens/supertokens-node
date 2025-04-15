@@ -16,8 +16,6 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test overriding open id functions", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

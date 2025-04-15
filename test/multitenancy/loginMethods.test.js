@@ -32,8 +32,6 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("with mfa not enabled", function () {
         it("should return firstFactors based on enabled recipes if no other configuration is available", async function () {
             const connectionURI = await createCoreApplicationWithMultitenancy();

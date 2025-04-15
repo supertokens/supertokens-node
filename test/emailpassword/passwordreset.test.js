@@ -53,8 +53,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     /*
      * generate token API:
      *      - email validation checks

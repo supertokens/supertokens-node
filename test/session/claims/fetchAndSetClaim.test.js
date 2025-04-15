@@ -26,8 +26,6 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("SessionClass.fetchAndSetClaim", () => {
         afterEach(() => {
             sinon.restore();

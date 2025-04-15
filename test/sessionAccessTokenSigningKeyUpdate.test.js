@@ -470,6 +470,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         assert.strictEqual(requestMock.callCount, 1);
     });
 
+    // skipping this test because it requires killing the core and starting it again, which is not supported anymore
     it.skip("test reducing access token signing key update interval time", async function () {
         const connectionURI = await createCoreApplication({
             coreConfig: {

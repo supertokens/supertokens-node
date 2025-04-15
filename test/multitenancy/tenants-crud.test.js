@@ -28,8 +28,6 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test creation of tenants", async function () {
         const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({

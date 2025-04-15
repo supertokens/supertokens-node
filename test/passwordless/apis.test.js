@@ -63,8 +63,6 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test emailExistsAPI on old path with email password conflicting path, but different rid", async function () {
         const connectionURI = await createCoreApplication();
 

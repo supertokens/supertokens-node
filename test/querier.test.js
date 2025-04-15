@@ -31,8 +31,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // Check that once the API version is there, it doesn't need to query again
     it("test that if that once API version is there, it doesn't need to query again", async function () {
         const connectionURI = await createCoreApplication();

@@ -29,8 +29,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test updateEmailPass", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

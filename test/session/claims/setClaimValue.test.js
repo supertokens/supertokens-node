@@ -26,8 +26,6 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("SessionClass.setClaimValue", () => {
         afterEach(() => {
             sinon.restore();

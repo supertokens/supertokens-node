@@ -29,8 +29,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         resetAll();
     });
 
-    after(async function () {});
-
     it("test getUsersOldestFirst", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({
@@ -137,7 +135,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         ];
         for await (const [i, email] of emails.entries()) {
             await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         await signUPRequest(app, "john@gmail.com", `testPass-${randomValue}-4`);
 

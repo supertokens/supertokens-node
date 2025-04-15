@@ -70,8 +70,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 app = undefined;
             });
 
-            after(async function () {});
-
             getTestCases(
                 async ({ stConfig, routes }) => {
                     const connectionURI = await createCoreApplication();
@@ -150,8 +148,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 } catch (err) {}
             });
 
-            after(async function () {});
-
             getTestCases(
                 async ({ stConfig, routes }) => {
                     const connectionURI = await createCoreApplication();
@@ -225,8 +221,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 } catch (err) {}
             });
 
-            after(async function () {});
-
             getTestCases(
                 async ({ stConfig, routes }) => {
                     const connectionURI = await createCoreApplication();
@@ -297,8 +291,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                     await server.close();
                 } catch (err) {}
             });
-
-            after(async function () {});
 
             getTestCases(
                 async ({ stConfig, routes }) => {
@@ -379,8 +371,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                     await app.stop();
                 } catch (err) {}
             });
-
-            after(async function () {});
 
             getTestCases(
                 async ({ stConfig, routes }) => {

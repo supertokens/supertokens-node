@@ -44,8 +44,6 @@ describe(`deleteUser: ${printPath("[test/emailpassword/deleteUser.test.js]")}`, 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test deleteUser", async function () {
         const connectionURI = await createCoreApplication();
 

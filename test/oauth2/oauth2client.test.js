@@ -10,8 +10,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("should create an OAuth2Client instance with empty input", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

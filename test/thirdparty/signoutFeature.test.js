@@ -58,8 +58,6 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test the default route and it should revoke the session", async function () {
         const connectionURI = await createCoreApplication();
 

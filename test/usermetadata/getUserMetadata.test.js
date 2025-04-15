@@ -12,8 +12,6 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("getUserMetadata", () => {
         it("should return an empty object for unknown userIds", async function () {
             const connectionURI = await createCoreApplication();

@@ -43,8 +43,6 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("overriding functions tests", async () => {
         const connectionURI = await createCoreApplication();
         let user = undefined;

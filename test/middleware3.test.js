@@ -37,8 +37,6 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test APIs work with tenantId in the request", async function () {
         const connectionURI = await createCoreApplication();
         SuperTokens.init({

@@ -48,8 +48,6 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test good input, email exists with new path", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

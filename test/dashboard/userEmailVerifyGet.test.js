@@ -15,8 +15,6 @@ describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEm
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("Test that api returns correct value for email verification", async () => {
         const connectionURI = await createCoreApplication();
         STExpress.init({

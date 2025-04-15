@@ -49,8 +49,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // test various inputs for appInfo
     // Failure condition: passing data of invalid type/ syntax to appInfo
     it("test values for optional inputs for appInfo", async function () {

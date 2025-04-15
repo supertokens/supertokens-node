@@ -14,8 +14,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("signInUp", () => {
         it("create a thirdParty user and map their userId, signIn and check that the externalId is returned", async function () {
             const connectionURI = await createCoreApplication();

@@ -33,8 +33,6 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("createNewSession", () => {
         it("should create a V5 token", async function () {
             const connectionURI = await createCoreApplication();

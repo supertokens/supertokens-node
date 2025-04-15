@@ -27,8 +27,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdparty/recipeFunctions.test.js
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // test that creating a user with ThirdParty, and they have a verified email that, isEmailVerified returns true and the opposite case
     it("for ThirdParty user that isEmailVerified returns the correct email verification status", async function () {
         const connectionURI = await createCoreApplication();

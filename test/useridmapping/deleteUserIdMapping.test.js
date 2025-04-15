@@ -14,8 +14,6 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     describe("deleteUserIdMapping:", () => {
         it("delete an unknown userId mapping", async function () {
             const connectionURI = await createCoreApplication();

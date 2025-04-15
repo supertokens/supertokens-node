@@ -37,8 +37,6 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test rid with session and non existant API in session recipe still works if the other recipe is initialized", async function () {
         const connectionURI = await createCoreApplication();
         SuperTokens.init({

@@ -73,8 +73,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     it("test singinAPI works when rid is thirdpartyemailpassword", async function () {
         const connectionURI = await createCoreApplication();
         STExpress.init({

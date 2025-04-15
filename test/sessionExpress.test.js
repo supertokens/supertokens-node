@@ -38,8 +38,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {});
-
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
         const connectionURI = await createCoreApplication();
