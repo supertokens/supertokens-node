@@ -103,7 +103,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             redirectURIOnProviderDashboard: "redirect",
             userContext: {},
         });
-        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+        assert.notStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
 
         const authUrl = new URL(authUrlResult.urlWithQueryParams);
         assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
@@ -117,6 +117,12 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             return result;
         }
         const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+
+        // Drop code_challenge since we cannot determine the value of it
+        // but validate that it is present in the url.
+        assert.notStrictEqual(authParams.code_challenge, undefined);
+        delete authParams.code_challenge;
+
         assert.deepEqual(authParams, {
             access_type: "offline",
             client_id: "test",
@@ -124,6 +130,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             redirect_uri: "redirect",
             response_type: "code",
             scope: "openid email",
+            code_challenge_method: "S256",
         });
 
         let tokenBody = {};
@@ -200,7 +207,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             redirectURIOnProviderDashboard: "redirect",
             userContext: {},
         });
-        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+        assert.notStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
 
         const authUrl = new URL(authUrlResult.urlWithQueryParams);
         assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
@@ -214,6 +221,12 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             return result;
         }
         const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+
+        // Drop code_challenge since we cannot determine the value of it
+        // but validate that it is present in the url.
+        assert.notStrictEqual(authParams.code_challenge, undefined);
+        delete authParams.code_challenge;
+
         assert.deepEqual(authParams, {
             access_type: "offline",
             client_id: "test",
@@ -223,6 +236,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             scope: "openid email",
             key1: "value1",
             key2: "value2",
+            code_challenge_method: "S256",
         });
     });
 
@@ -270,7 +284,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             redirectURIOnProviderDashboard: "redirect",
             userContext: {},
         });
-        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+        assert.notStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
 
         const authUrl = new URL(authUrlResult.urlWithQueryParams);
         assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
@@ -284,6 +298,12 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             return result;
         }
         const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+
+        // Drop code_challenge since we cannot determine the value of it
+        // but validate that it is present in the url.
+        assert.notStrictEqual(authParams.code_challenge, undefined);
+        delete authParams.code_challenge;
+
         assert.deepEqual(authParams, {
             access_type: "offline",
             client_id: "test",
@@ -291,6 +311,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             redirect_uri: "redirect",
             response_type: "code",
             scope: "test-scope-1 test-scope-2",
+            code_challenge_method: "S256",
         });
     });
 
