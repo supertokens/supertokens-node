@@ -242,7 +242,7 @@ module.exports.getAppIdFromConnectionURI = function (connectionURI) {
 };
 
 module.exports.removeCoreApplication = async function ({ connectionURI } = {}) {
-    const coreUrl = module.exports.getCoreUrl();
+    const coreUrl = module.exports.getCoreUrlFromConnectionURI(connectionURI);
 
     const appId = module.exports.getAppIdFromConnectionURI(connectionURI);
 
