@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [22.1.0] - 2025-04-04
 
 -   Adds support for using `code_challenge_method` from OIDC provider response to determine whether to use PKCE or not.
+-   Fixes issue with ThirdParty provider info on dashboard
 
 ## [22.0.1] - 2025-03-26
 
