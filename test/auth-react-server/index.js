@@ -57,6 +57,8 @@ const { readFile } = require("fs/promises");
 const WebauthnRaw = require("../../lib/build/recipe/webauthn/recipe").default;
 const Webauthn = require("../../recipe/webauthn");
 
+const morgan = require("morgan");
+
 require("./webauthn/wasm_exec");
 
 let { customAuth0Provider, mockThirdPartyProvider, setupCoreApplication, addLicense, getCoreUrl } = require("./utils");
@@ -150,19 +152,20 @@ let app = express();
 //     this.__custombody__ = body;
 // };
 
-// morgan.token("body", function (req, res) {
-//     return JSON.stringify(req.body);
-// });
+morgan.token("body", function (req, res) {
+    return JSON.stringify(req.body);
+});
 
-// morgan.token("res-body", function (req, res) {
-//     return typeof res.__custombody__ ? res.__custombody__ : JSON.stringify(res.__custombody__);
-// });
+morgan.token("res-body", function (req, res) {
+    return typeof res.__custombody__ ? res.__custombody__ : JSON.stringify(res.__custombody__);
+});
+
 app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-// app.use(morgan("[:date[iso]] :url :method :body", { immediate: true }));
-// app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] :res-body"));
+app.use(morgan("[:date[iso]] :url :method :body", { immediate: true }));
+app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] :res-body"));
 
 function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userInputCode }) {
     console.log(arguments[0]);

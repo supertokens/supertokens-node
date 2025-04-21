@@ -92,6 +92,6 @@ jobs:
             - uses: supertokens/auth-react-testing-action@main
               with:
                   fdi-version: ${{ inputs.fdi-version }}
-                  check-name-suffix: "[FDI=${{ inputs.fdi-version }}][Py=${{ matrix.py-version }}][Framework=${{ matrix.framework }}][Spec=${{ matrix.spec }}]"
+                  check-name-suffix: "[FDI=${{ inputs.fdi-version }}][Node=${{ matrix.node-version }}][Spec=${{ matrix.spec }}]"
                   path: supertokens-auth-react
                   spec: ${{ matrix.spec }}
