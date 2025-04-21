@@ -1,0 +1,23 @@
+services:
+    core:
+        # Uses `$SUPERTOKENS_CORE_VERSION` when available, else latest
+        image: supertokens/supertokens-core:dev-branch-${SUPERTOKENS_CORE_VERSION:-master}
+        ports:
+            # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3567 for local port
+            - ${SUPERTOKENS_CORE_PORT:-3567}:3567
+        platform: linux/amd64
+        depends_on: [oauth]
+        environment:
+            OAUTH_PROVIDER_PUBLIC_SERVICE_URL: http://oauth:4444
+            OAUTH_PROVIDER_ADMIN_SERVICE_URL: http://oauth:4445
+            OAUTH_PROVIDER_CONSENT_LOGIN_BASE_URL: http://localhost:3001/auth
+            OAUTH_CLIENT_SECRET_ENCRYPTION_KEY: asdfasdfasdfasdfasdf
+        healthcheck:
+            test: bash -c 'curl -s "http://127.0.0.1:3567/hello" | grep "Hello"'
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    oauth:
+        image: supertokens/oauth2-test:latest
+        platform: linux/amd64

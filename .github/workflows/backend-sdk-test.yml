@@ -1,0 +1,83 @@
+name: "Backend SDK Tests"
+
+on:
+    pull_request:
+        types:
+            - synchronize
+    push:
+        tags:
+            - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+    define-versions:
+        runs-on: ubuntu-latest
+        outputs:
+            fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+            cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+            nodeVersions: '["20"]'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: supertokens/get-supported-versions-action@main
+              id: versions
+              with:
+                  has-fdi: true
+                  has-cdi: true
+
+    test:
+        runs-on: ubuntu-latest
+        needs: define-versions
+
+        strategy:
+            fail-fast: false
+            matrix:
+                cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions) }}
+                fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
+                node-version: ${{ fromJson(needs.define-versions.outputs.nodeVersions) }}
+
+        env:
+            API_PORT: 3030
+            SUPERTOKENS_CORE_PORT: 3567
+            SUPERTOKENS_CORE_HOST: localhost
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # Checking out to a custom path since the test repo will also be cloned
+                  path: supertokens-node
+
+            - uses: supertokens/get-versions-action@main
+              id: versions
+              with:
+                  driver-name: node
+                  cdi-version: ${{ matrix.cdi-version }}
+                  fdi-version: ${{ matrix.fdi-version }}
+              env:
+                  SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Start core
+              working-directory: supertokens-node
+              run: docker compose up --build --wait
+              env:
+                  SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersionXy }}
+
+            - name: Install SDK dependencies
+              working-directory: supertokens-node
+              run: npm install
+
+            - name: Start test server
+              working-directory: supertokens-node/test/test-server
+              env:
+                  SUPERTOKENS_ENV: testing
+              run: |
+                  npm install
+                  npm start &
+
+            - uses: supertokens/backend-sdk-testing-action@main
+              with:
+                  version: ${{ matrix.fdi-version }}
+                  check-name-suffix: "[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Node=${{ matrix.node-version }}]"
+                  path: backend-sdk-testing
