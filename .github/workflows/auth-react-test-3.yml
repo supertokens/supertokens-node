@@ -87,7 +87,7 @@ jobs:
               run: |
                   npm i
                   mkdir -p $AUTH_REACT__LOG_DIR
-                  node . >> $AUTH_REACT__LOG_DIR/backend.log 2>&1 &
+                  node . &> $AUTH_REACT__LOG_DIR/node.log &
 
             - uses: supertokens/auth-react-testing-action@main
               with:
