@@ -1,0 +1,97 @@
+name: Auth-React Tests - L3
+on:
+    workflow_call:
+        inputs:
+            fdi-version:
+                description: "FDI Version for this set of tests"
+                required: true
+                type: string
+
+            matrix:
+                description: "Matrix"
+                required: true
+                type: string
+
+            AUTH_REACT__LOG_DIR:
+                description: AUTH_REACT__LOG_DIR
+                required: true
+                type: string
+
+            AUTH_REACT__SCREENSHOT_DIR:
+                description: AUTH_REACT__SCREENSHOT_DIR
+                required: true
+                type: string
+
+            AUTH_REACT__APP_SERVER:
+                description: AUTH_REACT__APP_SERVER
+                required: true
+                type: string
+
+            AUTH_REACT__NODE_PORT:
+                description: AUTH_REACT__NODE_PORT
+                required: true
+                type: string
+
+            AUTH_REACT__TEST_MODE:
+                description: AUTH_REACT__TEST_MODE
+                required: true
+                type: string
+
+            AUTH_REACT__PORT:
+                description: AUTH_REACT__PORT
+                required: true
+                type: string
+
+jobs:
+    test:
+        if: ${{ inputs.matrix != '{"include":[]}' }}
+        runs-on: ubuntu-latest
+        strategy:
+            max-parallel: 10
+            fail-fast: false # Don't fail fast to avoid locking TF State
+            matrix: ${{ fromJson(inputs.matrix) }}
+
+        env:
+            SUPERTOKENS_CORE_PORT: 3567
+            SUPERTOKENS_CORE_HOST: localhost
+            TEST_MODE: testing
+            # Auth react setup envs
+            AUTH_REACT__LOG_DIR: ${{ inputs.AUTH_REACT__LOG_DIR }}
+            AUTH_REACT__SCREENSHOT_DIR: ${{ inputs.AUTH_REACT__SCREENSHOT_DIR }}
+            AUTH_REACT__APP_SERVER: ${{ inputs.AUTH_REACT__APP_SERVER }}
+            AUTH_REACT__NODE_PORT: ${{ inputs.AUTH_REACT__NODE_PORT }}
+            AUTH_REACT__TEST_MODE: ${{ inputs.AUTH_REACT__TEST_MODE }}
+            AUTH_REACT__PORT: ${{ inputs.AUTH_REACT__PORT }}
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  path: supertokens-node
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Install dependencies
+              working-directory: supertokens-node
+              run: npm i
+
+            - name: Start core
+              working-directory: supertokens-node
+              run: docker compose up --wait
+
+            - name: Setup and start server
+              working-directory: supertokens-node/test/auth-react-server
+              env:
+                  NODE_PORT: 8083
+              run: |
+                  npm i
+                  mkdir -p $AUTH_REACT__LOG_DIR
+                  node . &> $AUTH_REACT__LOG_DIR/node.log &
+
+            - uses: supertokens/auth-react-testing-action@main
+              with:
+                  fdi-version: ${{ inputs.fdi-version }}
+                  check-name-suffix: "[FDI=${{ inputs.fdi-version }}][Node=${{ matrix.node-version }}][Spec=${{ matrix.spec }}]"
+                  path: supertokens-auth-react
+                  spec: ${{ matrix.spec }}
