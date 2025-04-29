@@ -58,7 +58,7 @@ jobs:
             - uses: supertokens/auth-react-testing-action/setup@main
               id: envs
               with:
-                  auth-react-version: ci/github-actions/auth-react/v${{ steps.versions.outputs.authReactVersionXy }}.0
+                  auth-react-version: ${{ steps.versions.outputs.authReactVersionXy }}
                   node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
                   fdi-version: ${{ matrix.fdi-version }}
 
