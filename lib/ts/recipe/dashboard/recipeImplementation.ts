@@ -35,7 +35,7 @@ export default function getRecipeImplementation(): RecipeInterface {
                 let querier = Querier.getNewInstanceOrThrowError(undefined);
                 const authHeaderValue = input.req.getHeaderValue("authorization")?.split(" ")[1];
                 const sessionVerificationResponse = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/dashboard/session/verify"),
+                    "/recipe/dashboard/session/verify",
                     {
                         sessionId: authHeaderValue,
                     },

@@ -345,7 +345,7 @@ export default function getRecipeInterface(
                     : input.newAccessTokenPayload;
 
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/session/regenerate"),
+                "/recipe/session/regenerate",
                 {
                     accessToken: input.accessToken,
                     userDataInJWT: newAccessTokenPayload,

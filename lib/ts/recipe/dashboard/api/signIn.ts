@@ -43,8 +43,8 @@ export default async function signIn(_: APIInterface, options: APIOptions, userC
     }
 
     let querier = Querier.getNewInstanceOrThrowError(undefined);
-    const signInResponse = await querier.sendPostRequest<SignInResponse>(
-        new NormalisedURLPath("/recipe/dashboard/signin"),
+    const signInResponse = await querier.sendPostRequest(
+        "/recipe/dashboard/signin",
         {
             email,
             password,

@@ -14,7 +14,6 @@
  */
 
 import * as jose from "jose";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { JSONObject, NormalisedAppinfo } from "../../types";
 import {
@@ -61,7 +60,7 @@ export default function getRecipeInterface(
     return {
         getLoginRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth/auth/requests/login"),
+                "/recipe/oauth/auth/requests/login",
                 { loginChallenge: input.challenge },
                 input.userContext
             );
@@ -88,7 +87,7 @@ export default function getRecipeInterface(
         },
         acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth/requests/login/accept`),
+                "/recipe/oauth/auth/requests/login/accept",
                 {
                     acr: input.acr,
                     amr: input.amr,
@@ -109,7 +108,7 @@ export default function getRecipeInterface(
         },
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth/requests/login/reject`),
+                "/recipe/oauth/auth/requests/login/reject",
                 {
                     error: input.error.error,
                     errorDescription: input.error.errorDescription,
@@ -127,7 +126,7 @@ export default function getRecipeInterface(
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
+                "/recipe/oauth/auth/requests/consent",
                 { consentChallenge: input.challenge },
                 input.userContext
             );
@@ -149,7 +148,7 @@ export default function getRecipeInterface(
         },
         acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth/requests/consent/accept`),
+                "/recipe/oauth/auth/requests/consent/accept",
                 {
                     context: input.context,
                     grantAccessTokenAudience: input.grantAccessTokenAudience,
@@ -175,7 +174,7 @@ export default function getRecipeInterface(
 
         rejectConsentRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth/requests/consent/reject`),
+                "/recipe/oauth/auth/requests/consent/reject",
                 {
                     error: input.error.error,
                     errorDescription: input.error.errorDescription,
@@ -274,7 +273,7 @@ export default function getRecipeInterface(
             }
 
             const resp = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth`),
+                "/recipe/oauth/auth",
                 {
                     params: {
                         ...input.params,
@@ -455,7 +454,7 @@ export default function getRecipeInterface(
             }
 
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/token`),
+                "/recipe/oauth/token",
                 body,
                 input.userContext
             );
@@ -482,7 +481,7 @@ export default function getRecipeInterface(
 
         getOAuth2Clients: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth/clients/list`),
+                "/recipe/oauth/clients/list",
                 {
                     pageSize: input.pageSize,
                     clientName: input.clientName,
@@ -508,7 +507,7 @@ export default function getRecipeInterface(
         },
         getOAuth2Client: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth/clients`),
+                "/recipe/oauth/clients",
                 { clientId: input.clientId },
                 {},
                 input.userContext
@@ -535,7 +534,7 @@ export default function getRecipeInterface(
         },
         createOAuth2Client: async function (input) {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/clients`),
+                "/recipe/oauth/clients",
                 copyAndCleanRequestBodyInput(input),
                 input.userContext
             );
@@ -555,7 +554,7 @@ export default function getRecipeInterface(
         },
         updateOAuth2Client: async function (input) {
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/clients`),
+                "/recipe/oauth/clients",
                 copyAndCleanRequestBodyInput(input),
                 { clientId: input.clientId },
                 input.userContext
@@ -576,7 +575,7 @@ export default function getRecipeInterface(
         },
         deleteOAuth2Client: async function (input) {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/clients/remove`),
+                "/recipe/oauth/clients/remove",
                 { clientId: input.clientId },
                 input.userContext
             );
@@ -669,7 +668,7 @@ export default function getRecipeInterface(
 
             if (input.checkDatabase) {
                 let response = await querier.sendPostRequest(
-                    new NormalisedURLPath(`/recipe/oauth/introspect`),
+                    "/recipe/oauth/introspect",
                     {
                         token: input.token,
                     },
@@ -699,7 +698,7 @@ export default function getRecipeInterface(
             }
 
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/token/revoke`),
+                "/recipe/oauth/token/revoke",
                 requestBody,
                 input.userContext
             );
@@ -717,7 +716,7 @@ export default function getRecipeInterface(
         },
         revokeTokensBySessionHandle: async function (this: RecipeInterface, input) {
             await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/session/revoke`),
+                "/recipe/oauth/session/revoke",
                 { sessionHandle: input.sessionHandle },
                 input.userContext
             );
@@ -726,7 +725,7 @@ export default function getRecipeInterface(
         },
         revokeTokensByClientId: async function (this: RecipeInterface, input) {
             await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/tokens/revoke`),
+                "/recipe/oauth/tokens/revoke",
                 { clientId: input.clientId },
                 input.userContext
             );
@@ -756,7 +755,7 @@ export default function getRecipeInterface(
             // For tokens that passed local validation or if it's a refresh token,
             // validate the token with the database by calling the core introspection endpoint
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth/introspect`),
+                "/recipe/oauth/introspect",
                 {
                     token,
                     scope: scopes ? scopes.join(" ") : undefined,
@@ -782,7 +781,7 @@ export default function getRecipeInterface(
              */
 
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath(`/recipe/oauth/sessions/logout`),
+                "/recipe/oauth/sessions/logout",
                 {
                     clientId: input.params.client_id,
                     idTokenHint: input.params.id_token_hint,
@@ -847,7 +846,7 @@ export default function getRecipeInterface(
         },
         acceptLogoutRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth/requests/logout/accept`),
+                "/recipe/oauth/auth/requests/logout/accept",
                 { challenge: input.challenge },
                 {},
                 input.userContext
@@ -877,7 +876,7 @@ export default function getRecipeInterface(
         },
         rejectLogoutRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth/auth/requests/logout/reject`),
+                "/recipe/oauth/auth/requests/logout/reject",
                 {},
                 { challenge: input.challenge },
                 input.userContext

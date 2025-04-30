@@ -20,12 +20,12 @@ import { Querier } from "../../querier";
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
         getUserMetadata: function ({ userId, userContext }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId }, userContext);
+            return querier.sendGetRequest("/recipe/user/metadata", { userId }, userContext);
         },
 
         updateUserMetadata: function ({ userId, metadataUpdate, userContext }) {
             return querier.sendPutRequest(
-                new NormalisedURLPath("/recipe/user/metadata"),
+                "/recipe/user/metadata",
                 {
                     userId,
                     metadataUpdate,
@@ -37,7 +37,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         clearUserMetadata: function ({ userId, userContext }) {
             return querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/user/metadata/remove"),
+                "/recipe/user/metadata/remove",
                 {
                     userId,
                 },

@@ -54,7 +54,12 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 }
             }
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
+                {
+                    path: "/<tenantId>/recipe/signinup",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     thirdPartyId,
                     thirdPartyUserId,

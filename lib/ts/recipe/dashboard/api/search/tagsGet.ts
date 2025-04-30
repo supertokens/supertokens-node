@@ -15,7 +15,6 @@
 
 import { APIInterface, APIOptions } from "../../types";
 import { Querier } from "../../../../querier";
-import NormalisedURLPath from "../../../../normalisedURLPath";
 import { UserContext } from "../../../../types";
 
 type TagsResponse = { status: "OK"; tags: string[] };
@@ -27,6 +26,6 @@ export const getSearchTags = async (
     userContext: UserContext
 ): Promise<TagsResponse> => {
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {}, userContext);
+    let tagsResponse = await querier.sendGetRequest("/user/search/tags", {}, userContext);
     return tagsResponse;
 };
