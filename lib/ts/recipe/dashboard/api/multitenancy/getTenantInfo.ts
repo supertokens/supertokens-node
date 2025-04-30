@@ -82,7 +82,12 @@ export default async function getTenantInfo(
 
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
     let coreConfig = await querier.sendGetRequest(
-        new NormalisedURLPath(`/${tenantId}/recipe/dashboard/tenant/core-config`),
+        {
+            path: "/<tenantId>/recipe/dashboard/tenant/core-config",
+            params: {
+                tenantId,
+            },
+        },
         {},
         userContext
     );

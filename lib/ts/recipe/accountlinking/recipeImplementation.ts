@@ -55,7 +55,12 @@ export default function getRecipeImplementation(
                 includeRecipeIdsStr = includeRecipeIds.join(",");
             }
             let response = await querier.sendGetRequest(
-                new NormalisedURLPath(`${tenantId ?? "public"}/users`),
+                {
+                    path: "/<tenantId>/users",
+                    params: {
+                        tenantId: tenantId ?? "public",
+                    },
+                },
                 {
                     includeRecipeIds: includeRecipeIdsStr,
                     timeJoinedOrder: timeJoinedOrder,
@@ -81,19 +86,19 @@ export default function getRecipeImplementation(
             }
         ): Promise<
             | {
-                  status: "OK";
-                  wasAlreadyAPrimaryUser: boolean;
-              }
+                status: "OK";
+                wasAlreadyAPrimaryUser: boolean;
+            }
             | {
-                  status:
-                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
+                status:
+                | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+                | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                primaryUserId: string;
+                description: string;
+            }
         > {
             return await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
+                "/recipe/accountlinking/user/primary/check",
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
@@ -112,22 +117,22 @@ export default function getRecipeImplementation(
             }
         ): Promise<
             | {
-                  status: "OK";
-                  user: User;
-                  wasAlreadyAPrimaryUser: boolean;
-              }
+                status: "OK";
+                user: User;
+                wasAlreadyAPrimaryUser: boolean;
+            }
             | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-              }
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+                primaryUserId: string;
+            }
             | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
+                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                primaryUserId: string;
+                description: string;
+            }
         > {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/primary"),
+                "/recipe/accountlinking/user/primary",
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
@@ -152,25 +157,25 @@ export default function getRecipeImplementation(
             }
         ): Promise<
             | {
-                  status: "OK";
-                  accountsAlreadyLinked: boolean;
-              }
+                status: "OK";
+                accountsAlreadyLinked: boolean;
+            }
             | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  description: string;
-                  primaryUserId: string;
-              }
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                description: string;
+                primaryUserId: string;
+            }
             | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
+                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                primaryUserId: string;
+                description: string;
+            }
             | {
-                  status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-              }
+                status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+            }
         > {
             let result = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/link/check"),
+                ("/recipe/accountlinking/user/link/check"),
                 {
                     recipeUserId: recipeUserId.getAsString(),
                     primaryUserId,
@@ -194,32 +199,36 @@ export default function getRecipeImplementation(
             }
         ): Promise<
             | {
-                  status: "OK";
-                  accountsAlreadyLinked: boolean;
-                  user: User;
-              }
+                status: "OK";
+                accountsAlreadyLinked: boolean;
+                user: User;
+            }
             | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  user: User;
-                  primaryUserId: string;
-              }
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                user: User;
+                primaryUserId: string;
+            }
             | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
+                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                primaryUserId: string;
+                description: string;
+            }
             | {
-                  status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-              }
+                status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+            }
         > {
             const accountsLinkingResult = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/link"),
+                "/recipe/accountlinking/user/link",
                 {
                     recipeUserId: recipeUserId.getAsString(),
                     primaryUserId,
                 },
                 userContext
             );
+
+            if (accountsLinkingResult.status === "OK") {
+                accountsLinkingResult.user = new User(accountsLinkingResult.user);
+            }
 
             if (
                 ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
@@ -276,7 +285,7 @@ export default function getRecipeImplementation(
             wasLinked: boolean;
         }> {
             let accountsUnlinkingResult = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
+                "/recipe/accountlinking/user/unlink",
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
@@ -287,7 +296,7 @@ export default function getRecipeImplementation(
 
         getUser: async function (this: RecipeInterface, { userId, userContext }): Promise<User | undefined> {
             let result = await querier.sendGetRequest(
-                new NormalisedURLPath("/user/id"),
+                "/user/id",
                 {
                     userId,
                 },
@@ -314,7 +323,12 @@ export default function getRecipeImplementation(
             }
         ): Promise<UserType[]> {
             let result = await querier.sendGetRequest(
-                new NormalisedURLPath(`${tenantId ?? "public"}/users/by-accountinfo`),
+                {
+                    path: "/<tenantId>/users/by-accountinfo",
+                    params: {
+                        tenantId: tenantId ?? "public",
+                    },
+                },
                 {
                     email: accountInfo.email,
                     phoneNumber: accountInfo.phoneNumber,
@@ -343,7 +357,7 @@ export default function getRecipeImplementation(
             status: "OK";
         }> {
             return await querier.sendPostRequest(
-                new NormalisedURLPath("/user/remove"),
+                ("/user/remove"),
                 {
                     userId,
                     removeAllLinkedAccounts,

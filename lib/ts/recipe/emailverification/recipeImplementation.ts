@@ -30,7 +30,12 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
+                {
+                    path: "/<tenantId>/recipe/user/email/verify/token",
+                    params: {
+                        tenantId,
+                    },
+                },
                 {
                     userId: recipeUserId.getAsString(),
                     email,
@@ -56,7 +61,12 @@ export default function getRecipeInterface(
             userContext,
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
+                {
+                    path: "/<tenantId>/recipe/user/email/verify",
+                    params: {
+                        tenantId,
+                    },
+                },
                 {
                     method: "token",
                     token,
@@ -113,7 +123,7 @@ export default function getRecipeInterface(
             userContext: UserContext;
         }): Promise<boolean> {
             let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/user/email/verify"),
+                "/recipe/user/email/verify",
                 {
                     userId: recipeUserId.getAsString(),
                     email,
@@ -130,7 +140,12 @@ export default function getRecipeInterface(
             userContext: UserContext;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
-                new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
+                {
+                    path: "/<tenantId>/recipe/user/email/verify/token/remove",
+                    params: {
+                        tenantId: input.tenantId,
+                    },
+                },
                 {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,
@@ -146,7 +161,7 @@ export default function getRecipeInterface(
             userContext: UserContext;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/user/email/verify/remove"),
+                "/recipe/user/email/verify/remove",
                 {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,

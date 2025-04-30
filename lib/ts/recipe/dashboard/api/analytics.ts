@@ -59,7 +59,7 @@ export default async function analyticsPost(
     let numberOfUsers: number;
     try {
         let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {}, userContext);
+        let response = await querier.sendGetRequest("/telemetry", {}, userContext);
         if (response.exists) {
             telemetryId = response.telemetryId;
         }
