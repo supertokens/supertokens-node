@@ -546,6 +546,9 @@ export class Querier {
             }
             return { body: await response.clone().json(), headers: response.headers };
         } catch (err) {
+            console.warn(err);
+            console.warn(err.message);
+            console.warn(err.cause);
             if (
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") ||
