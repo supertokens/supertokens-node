@@ -120,6 +120,13 @@ export class User implements UserType {
         this.loginMethods = user.loginMethods.map((m) => new LoginMethod(m));
     }
 
+    static fromApi(apiUser: Omit<UserWithoutHelperFunctions, "id"> & { id: string }): User {
+        return new User({
+            ...apiUser,
+            id: new RecipeUserId(apiUser.id).getAsString(),
+        });
+    }
+
     toJson(): JSONObject {
         return {
             id: this.id,
