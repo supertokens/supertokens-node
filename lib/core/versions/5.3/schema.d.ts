@@ -3686,20 +3686,19 @@ export interface operations {
                     "application/json": {
                         status: components["schemas"]["statusOK"];
                         /** @example true */
-                        wasAlreadyAPrimaryUser?: boolean;
-                        user?: components["schemas"]["authRecipeUser"];
+                        wasAlreadyAPrimaryUser: boolean;
+                        user: components["schemas"]["authRecipeUser"];
                     } | {
                         /** @enum {string} */
                         status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                         /** @example fa7a0841-b533-4478-9253-0fde890c576 */
-                        primaryUserId?: string;
-                        description?: string;
+                        primaryUserId: string;
+                        description: string;
                     } | {
                         /** @enum {string} */
                         status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
                         /** @example fa7a0841-b533-4478-9253-0fde890c576 */
-                        primaryUserId?: string;
-                        description?: string;
+                        primaryUserId: string;
                     };
                 };
             };

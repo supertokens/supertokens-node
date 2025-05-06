@@ -15,7 +15,6 @@
 
 import { AccountInfoInput, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import type AccountLinkingRecipe from "./recipe";
 import { User } from "../../user";
@@ -139,7 +138,10 @@ export default function getRecipeImplementation(
                 userContext
             );
             if (response.status === "OK") {
-                response.user = new User(response.user);
+                return {
+                    ...response,
+                    user: User.fromApi(response.user),
+                };
             }
             return response;
         },
@@ -226,20 +228,15 @@ export default function getRecipeImplementation(
                 userContext
             );
 
-            if (accountsLinkingResult.status === "OK") {
-                accountsLinkingResult.user = new User(accountsLinkingResult.user);
-            }
-
-            if (
-                ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
-                    accountsLinkingResult.status
-                )
-            ) {
-                accountsLinkingResult.user = new User(accountsLinkingResult.user);
+            if (accountsLinkingResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                return {
+                    ...accountsLinkingResult,
+                    user: User.fromApi(accountsLinkingResult.user),
+                };
             }
 
             if (accountsLinkingResult.status === "OK") {
-                let user: UserType = accountsLinkingResult.user;
+                let user: UserType = User.fromApi(accountsLinkingResult.user);
                 if (!accountsLinkingResult.accountsAlreadyLinked) {
                     await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                         user: user,
@@ -264,7 +261,10 @@ export default function getRecipeImplementation(
 
                     await config.onAccountLinked(user, loginMethodInfo, userContext);
                 }
-                accountsLinkingResult.user = user;
+                return {
+                    ...accountsLinkingResult,
+                    user,
+                };
             }
 
             return accountsLinkingResult;
