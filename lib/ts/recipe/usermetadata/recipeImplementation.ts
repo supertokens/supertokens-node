@@ -14,7 +14,6 @@
  */
 
 import { RecipeInterface } from ".";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {

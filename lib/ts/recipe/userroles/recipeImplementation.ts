@@ -14,9 +14,7 @@
  */
 
 import { RecipeInterface } from "./types";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {

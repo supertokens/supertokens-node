@@ -3168,16 +3168,16 @@ export interface components {
         /** @example Error Message */
         message: string;
         session: {
-            handle?: components["schemas"]["handle"];
-            userId?: components["schemas"]["userId"];
+            handle: components["schemas"]["handle"];
+            userId: components["schemas"]["userId"];
             userDataInJWT?: components["schemas"]["userDataInJWT"];
-            tenantId?: components["schemas"]["tenantId"];
-            recipeUserId?: components["schemas"]["userId"];
+            tenantId: components["schemas"]["tenantId"];
+            recipeUserId: components["schemas"]["userId"];
         };
         cookieInfo: {
-            token?: components["schemas"]["token"];
-            expiry?: components["schemas"]["expiry"];
-            createdTime?: components["schemas"]["timeCreated"];
+            token: components["schemas"]["token"];
+            expiry: components["schemas"]["expiry"];
+            createdTime: components["schemas"]["timeCreated"];
         };
         /** @example 1637262633029 */
         expiry: number;
@@ -3969,10 +3969,10 @@ export interface operations {
                     "application/json": {
                         status: components["schemas"]["statusOK"];
                         devices?: {
-                            name?: string;
-                            period?: number;
-                            skew?: number;
-                            verified?: boolean;
+                            name: string;
+                            period: number;
+                            skew: number;
+                            verified: boolean;
                         }[];
                     };
                 };
@@ -4108,7 +4108,7 @@ export interface operations {
                     /** @example 123456 */
                     totp: string;
                     /** @example false */
-                    allowUnverifiedDevices: boolean;
+                    allowUnverifiedDevices?: boolean;
                 };
             };
         };
