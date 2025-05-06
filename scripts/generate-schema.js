@@ -13,6 +13,36 @@ const libDir = path.join(__dirname, "..", "lib", "core", "versions");
 const BASE_URL = "https://raw.githubusercontent.com/supertokens/core-driver-interface/refs/heads";
 
 async function run() {
+    const localFilePath = process.argv[2];
+    const localVersion = process.argv[3];
+
+    if (localFilePath && localVersion) {
+        await processLocalSpec(localFilePath, localVersion);
+    } else {
+        await processRemoteSpecs();
+    }
+}
+
+async function processLocalSpec(filePath, version) {
+    const outputDir = path.join(libDir, version);
+    const outputPath = path.join(outputDir, "schema.d.ts");
+
+    await fs.mkdir(outputDir, { recursive: true });
+
+    console.log(`📄 Using local spec file: ${filePath}`);
+    await execPromise(`npx openapi-typescript ${filePath} -o ${outputPath}`);
+
+    let schemaContent = await fs.readFile(outputPath, "utf-8");
+    schemaContent = schemaContent
+        .replace(/\/appid-[^/]+/g, "")
+        .replace(/Record<string, never>/g, "Record<string, unknown>")
+        .replace(/\bstatus\?\s*:/g, "status:");
+    await fs.writeFile(outputPath, schemaContent, "utf-8");
+
+    console.log(`✅ Generated and cleaned schema for local version ${version}`);
+}
+
+async function processRemoteSpecs() {
     const file = await fs.readFile(coreJsonPath, "utf-8");
     const json = JSON.parse(file);
     const versions = json.versions;
@@ -47,11 +77,14 @@ async function run() {
             console.log(`🔧 Generating schema for version ${version}...`);
             await execPromise(`npx openapi-typescript ${inputPath} -o ${outputPath}`);
 
-            // Post-process: remove `/appid-<something>/`
-            console.log(`🧹 Cleaning appid from ${outputPath}`);
+            console.log(`🧹 Post-processing ${outputPath}...`);
             let schemaContent = await fs.readFile(outputPath, "utf-8");
-            schemaContent = schemaContent.replace(/\/appid-[^/]+/g, "");
+            schemaContent = schemaContent
+                .replace(/\/appid-[^/]+/g, "")
+                .replace(/Record<string, never>/g, "Record<string, unknown>")
+                .replace(/\bstatus\?\s*:/g, "status:");
             await fs.writeFile(outputPath, schemaContent, "utf-8");
+
             console.log(`✅ Cleaned ${outputPath}`);
         }
     } finally {

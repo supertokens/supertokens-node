@@ -340,7 +340,7 @@ export default function getRecipeInterface(
         removeCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
             return await querier.sendDeleteRequest(
                 "/recipe/webauthn/user/credential/remove",
-                {},
+                undefined,
                 { recipeUserId, webauthnCredentialId },
                 userContext
             );
