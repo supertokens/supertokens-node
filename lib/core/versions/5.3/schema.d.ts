@@ -2948,35 +2948,35 @@ export type webhooks = Record<string, unknown>;
 export interface components {
     schemas: {
         authRecipeUser: {
-            id?: components["schemas"]["userId"];
+            id: components["schemas"]["userId"];
             /** @example true */
-            isPrimaryUser?: boolean;
-            tenantIds?: components["schemas"]["tenantId"][];
-            timeJoined?: components["schemas"]["timeJoined"];
-            emails?: components["schemas"]["email"][];
-            phoneNumbers?: components["schemas"]["phoneNumber"][];
-            webauthn?: {
-                credentialIds?: string[];
+            isPrimaryUser: boolean;
+            tenantIds: components["schemas"]["tenantId"][];
+            timeJoined: components["schemas"]["timeJoined"];
+            emails: components["schemas"]["email"][];
+            phoneNumbers: components["schemas"]["phoneNumber"][];
+            webauthn: {
+                credentialIds: string[];
             };
-            thirdParty?: {
-                id?: components["schemas"]["thirdPartyId"];
-                userId?: components["schemas"]["thirdPartyUserId"];
+            thirdParty: {
+                id: components["schemas"]["thirdPartyId"];
+                userId: components["schemas"]["thirdPartyUserId"];
             }[];
-            loginMethods?: {
-                tenantIds?: components["schemas"]["tenantId"][];
-                recipeUserId?: components["schemas"]["userId"];
+            loginMethods: {
+                tenantIds: components["schemas"]["tenantId"][];
+                recipeUserId: components["schemas"]["userId"];
                 /** @example true */
-                verified?: boolean;
-                timeJoined?: components["schemas"]["timeJoined"];
-                recipeId?: components["schemas"]["recipeId"];
+                verified: boolean;
+                timeJoined: components["schemas"]["timeJoined"];
+                recipeId: components["schemas"]["recipeId"];
                 email?: components["schemas"]["email"];
                 phoneNumber?: components["schemas"]["phoneNumber"];
                 thirdParty?: {
-                    id?: components["schemas"]["thirdPartyId"];
-                    userId?: components["schemas"]["thirdPartyUserId"];
+                    id: components["schemas"]["thirdPartyId"];
+                    userId: components["schemas"]["thirdPartyUserId"];
                 };
                 webauthn?: {
-                    credentialIds?: string[];
+                    credentialIds: string[];
                 };
             }[];
         };
