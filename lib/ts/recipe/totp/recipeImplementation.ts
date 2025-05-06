@@ -15,7 +15,6 @@
 
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { TypeNormalisedInput } from "./types";
 import { UserContext } from "../../types";
 import { getUser } from "../..";
@@ -97,6 +96,10 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 },
                 input.userContext
             );
+
+            if (response.status !== "OK") {
+                return response;
+            }
 
             return {
                 ...response,

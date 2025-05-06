@@ -1,6 +1,5 @@
 import { RecipeInterface, ProviderInput } from "./types";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
 import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
