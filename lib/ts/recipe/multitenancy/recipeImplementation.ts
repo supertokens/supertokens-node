@@ -13,7 +13,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 "/recipe/multitenancy/tenant/v2",
                 {
                     tenantId,
-                    ...config,
+                    ...{
+                        config: {
+                            ...config,
+                            firstFactors: config?.firstFactors === null ? undefined : config?.firstFactors,
+                        },
+                    },
                 },
                 {},
                 userContext

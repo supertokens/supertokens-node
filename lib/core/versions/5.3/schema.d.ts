@@ -1173,7 +1173,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            keys?: components["schemas"]["jwk"][];
+                            keys: components["schemas"]["jwk"][];
                         };
                     };
                 };
@@ -3208,13 +3208,17 @@ export interface components {
         jwtValidity: number;
         /** @description A JWK that can be used to verify a JWT */
         jwk: {
-            alg?: components["schemas"]["createJWTAlgorithm"];
+            alg: components["schemas"]["createJWTAlgorithm"];
             /** @example RSA */
-            kty?: string;
+            kty: string;
             /** @example sig */
-            use?: string;
+            use: string;
             /** @description Unique identifier for the JWK */
-            kid?: string;
+            kid: string;
+            /** @description Modulus */
+            n: string;
+            /** @description Exponent */
+            e: string;
             /** @description X.509 Certificate Chain */
             x5c?: string[];
         };
@@ -3264,23 +3268,30 @@ export interface components {
             name?: string;
             clients?: {
                 clientType?: string;
-                clientId?: string;
+                clientId: string;
                 clientSecret?: string;
                 scope?: string[];
                 forcePKCE?: boolean;
                 additionalConfig?: Record<string, unknown>;
             }[];
             authorizationEndpoint?: string;
-            authorizationEndpointQueryParams?: Record<string, unknown>;
+            authorizationEndpointQueryParams?: {
+                [key: string]: string | null;
+            };
             tokenEndpoint?: string;
-            tokenEndpointBodyParams?: Record<string, unknown>;
+            tokenEndpointBodyParams?: {
+                [key: string]: string;
+            };
             userInfoEndpoint?: string;
-            userInfoEndpointQueryParams?: Record<string, unknown>;
-            userInfoEndpointHeaders?: Record<string, unknown>;
+            userInfoEndpointQueryParams?: {
+                [key: string]: string | null;
+            };
+            userInfoEndpointHeaders?: {
+                [key: string]: string | null;
+            };
             jwksURI?: string;
             oidcDiscoveryEndpoint?: string;
-            /** @default true */
-            requireEmail: boolean;
+            requireEmail?: boolean;
             userInfoMap?: {
                 fromIdTokenPayload?: {
                     userId?: string;
@@ -3406,7 +3417,7 @@ export interface components {
         tenantConfigV2: {
             tenantId: components["schemas"]["tenantId"];
             thirdParty: {
-                providers?: components["schemas"]["thirdPartyProviderConfig"][];
+                providers: components["schemas"]["thirdPartyProviderConfig"][];
             };
             firstFactors?: components["schemas"]["firstFactors"];
             requiredSecondaryFactors?: components["schemas"]["requiredSecondaryFactors"];
