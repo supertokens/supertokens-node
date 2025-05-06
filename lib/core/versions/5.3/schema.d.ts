@@ -434,7 +434,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/<tenantId>/recipe/user": {
+    "/recipe/user": {
         parameters: {
             query?: never;
             header?: never;
