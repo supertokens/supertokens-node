@@ -15,6 +15,7 @@
 
 import { RecipeInterface } from ".";
 import { Querier } from "../../querier";
+import { JSONObject } from "../../types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -22,8 +23,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return querier.sendGetRequest("/recipe/user/metadata", { userId }, userContext);
         },
 
-        updateUserMetadata: function ({ userId, metadataUpdate, userContext }) {
-            return querier.sendPutRequest(
+        updateUserMetadata: async function ({ userId, metadataUpdate, userContext }) {
+            const response = await querier.sendPutRequest(
                 "/recipe/user/metadata",
                 {
                     userId,
@@ -32,6 +33,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {},
                 userContext
             );
+
+            return {
+                ...response,
+                metadata: response.metadata as JSONObject,
+            };
         },
 
         clearUserMetadata: function ({ userId, userContext }) {
