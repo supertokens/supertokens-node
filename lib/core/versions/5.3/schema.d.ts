@@ -8894,7 +8894,10 @@ export interface operations {
                 content: {
                     "application/json": ({
                         status: components["schemas"]["statusOK"];
-                    } & components["schemas"]["oauthClient"]) | components["schemas"]["oauthError"];
+                    } & components["schemas"]["oauthClient"]) | components["schemas"]["oauthError"] | {
+                        /** @enum {string} */
+                        status: "CLIENT_NOT_FOUND_ERROR";
+                    };
                 };
             };
             400: components["responses"]["400"];
