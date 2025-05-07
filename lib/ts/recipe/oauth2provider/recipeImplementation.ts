@@ -136,7 +136,7 @@ export default function getRecipeInterface(
                 amr: resp.amr,
                 challenge: resp.challenge,
                 client: OAuth2Client.fromAPIResponse(resp.client),
-                context: resp.context,
+                context: resp.context as JSONObject,
                 loginChallenge: resp.loginChallenge,
                 loginSessionId: resp.loginSessionId,
                 oidcContext: resp.oidcContext,

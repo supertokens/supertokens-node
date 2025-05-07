@@ -8588,10 +8588,6 @@ export interface operations {
                     "application/json": {
                         status: components["schemas"]["statusOK"];
                         createdNew: boolean;
-                    } | {
-                        /** @enum {string} */
-                        status: "CONFIG_VALIDATION_ERROR";
-                        reason: string;
                     };
                 };
             };
@@ -9031,7 +9027,11 @@ export interface operations {
                             property1?: string;
                             property2?: string;
                         };
-                    } | components["schemas"]["oauthError"];
+                        acr?: string;
+                        amr?: string[];
+                        challenge: string;
+                        oidcContext?: Record<string, unknown>;
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -9081,6 +9081,12 @@ export interface operations {
                             [key: string]: unknown;
                         };
                     };
+                    iss?: string;
+                    tId?: string;
+                    rsub?: string;
+                    sessionHandle?: string;
+                    initialAccessTokenPayload?: Record<string, unknown>;
+                    initialIdTokenPayload?: Record<string, unknown>;
                 };
             };
         };
@@ -9095,7 +9101,7 @@ export interface operations {
                         status: components["schemas"]["statusOK"];
                         /** @example {apiDomain}/oauth/consent?... */
                         redirectTo?: string;
-                    } | components["schemas"]["oauthError"];
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -9147,7 +9153,7 @@ export interface operations {
                         status: components["schemas"]["statusOK"];
                         /** @example {apiDomain}/oauth/consent?... */
                         redirectTo?: string;
-                    } | components["schemas"]["oauthError"];
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -9188,6 +9194,12 @@ export interface operations {
                         status: components["schemas"]["statusOK"];
                         challenge?: string;
                         client?: components["schemas"]["oauthClient"];
+                        requestUrl: string;
+                        requestedAccessTokenAudience?: string[];
+                        requestedScope?: string[];
+                        sessionId?: string;
+                        skip?: boolean;
+                        subject?: string;
                         oidcContext?: {
                             acrValues?: string[];
                             display?: string;
@@ -9259,7 +9271,7 @@ export interface operations {
                         status: components["schemas"]["statusOK"];
                         /** @example {apiDomain}/oauth/login?... */
                         redirectTo?: string;
-                    } | components["schemas"]["oauthError"];
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -9311,7 +9323,7 @@ export interface operations {
                         status: components["schemas"]["statusOK"];
                         /** @example {apiDomain}/oauth/login?... */
                         redirectTo?: string;
-                    } | components["schemas"]["oauthError"];
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -9520,7 +9532,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @example stcl_fed7cff0-cc6e-406e-b7a6-766148675a4a */
-                    client_id?: string;
+                    clientId?: string;
                 };
             };
         };
@@ -9634,7 +9646,10 @@ export interface operations {
                         scope?: string;
                         /** @example bearer */
                         token_type?: string;
-                    } | components["schemas"]["oauthError"];
+                    } | components["schemas"]["oauthError"] | {
+                        /** @enum {string} */
+                        status: "CLIENT_NOT_FOUND_ERROR";
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -9709,6 +9724,7 @@ export interface operations {
             content: {
                 "application/json": {
                     token: string;
+                    scope?: string;
                 };
             };
         };
@@ -9755,7 +9771,7 @@ export interface operations {
                         token_type?: string;
                         /** @example access_token */
                         token_use?: string;
-                    } | components["schemas"]["oauthError"];
+                    };
                 };
             };
             400: components["responses"]["400"];
