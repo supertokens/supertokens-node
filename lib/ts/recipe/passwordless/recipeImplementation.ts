@@ -42,16 +42,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             logDebugMessage("Passwordless.consumeCode code consumed OK");
 
-            response.user = new User(response.user);
-            response.recipeUserId = new RecipeUserId(response.recipeUserId);
+            const userAsObj = User.fromApi(response.user);
+            const recipeUserIdAsObj = new RecipeUserId(response.recipeUserId);
 
             // Attempt account linking (this is a sign up)
-            let updatedUser = response.user;
+            let updatedUser = userAsObj;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId: input.tenantId,
-                inputUser: response.user,
-                recipeUserId: response.recipeUserId,
+                inputUser: userAsObj,
+                recipeUserId: recipeUserIdAsObj,
                 session: input.session,
                 shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                 userContext: input.userContext,
@@ -62,14 +62,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
             updatedUser = linkResult.user;
 
-            response.user = updatedUser;
-
             return {
                 ...response,
                 consumedDevice: response.consumedDevice,
                 createdNewRecipeUser: response.createdNewUser,
-                user: response.user!,
-                recipeUserId: response.recipeUserId!,
+                user: updatedUser,
+                recipeUserId: recipeUserIdAsObj,
             };
         },
 
