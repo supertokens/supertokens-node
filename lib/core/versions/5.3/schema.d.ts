@@ -4592,9 +4592,6 @@ export interface operations {
                         linkCode?: components["schemas"]["linkCode"];
                         timeCreated?: components["schemas"]["timeCreated"];
                         codeLifetime?: components["schemas"]["codeLifetime"];
-                    } | {
-                        /** @enum {string} */
-                        status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR";
                     };
                 };
             };
@@ -4685,15 +4682,15 @@ export interface operations {
                     "application/json": {
                         status: components["schemas"]["statusOK"];
                         devices?: {
-                            preAuthSessionId?: components["schemas"]["preAuthSessionId"];
+                            preAuthSessionId: components["schemas"]["preAuthSessionId"];
                             /** @example 2 */
-                            failedCodeInputAttemptCount?: number;
+                            failedCodeInputAttemptCount: number;
                             email?: components["schemas"]["email"];
                             phoneNumber?: components["schemas"]["phoneNumber"];
-                            codes?: {
-                                codeId?: components["schemas"]["codeId"];
-                                timeCreated?: components["schemas"]["timeCreated"];
-                                codeLifetime?: components["schemas"]["codeLifetime"];
+                            codes: {
+                                codeId: components["schemas"]["codeId"];
+                                timeCreated: string;
+                                codeLifetime: components["schemas"]["codeLifetime"];
                             }[];
                         }[];
                     };
