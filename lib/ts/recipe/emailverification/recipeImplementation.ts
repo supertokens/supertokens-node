@@ -1,6 +1,5 @@
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
 import { getUser } from "../..";

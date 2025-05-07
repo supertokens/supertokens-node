@@ -16,10 +16,8 @@
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 

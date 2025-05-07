@@ -4,7 +4,7 @@ import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "
 import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { getUser, listUsersByAccountInfo } from "../..";
+import { listUsersByAccountInfo } from "../..";
 import { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";

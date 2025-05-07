@@ -2,7 +2,6 @@ import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import AccountLinking from "../accountlinking/recipe";
 import EmailVerification from "../emailverification/recipe";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
 import { getUser } from "../..";

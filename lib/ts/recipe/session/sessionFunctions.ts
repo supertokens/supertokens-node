@@ -17,7 +17,6 @@ import { ParsedJWTInfo } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation, TypeNormalisedInput } from "./types";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
@@ -120,7 +119,7 @@ export async function getSession(
             getCombinedJWKS(config),
             helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN" && doAntiCsrfCheck
         );
-    } catch (err) {
+    } catch (err: any) {
         /**
          * if error type is not TRY_REFRESH_TOKEN, we return the
          * error to the user
@@ -253,9 +252,8 @@ export async function getSession(
     );
 
     if (response.status === "OK") {
-        delete response.status;
         return {
-            ...response,
+            accessToken: response.accessToken,
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,

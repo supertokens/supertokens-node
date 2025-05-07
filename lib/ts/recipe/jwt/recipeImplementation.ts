@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";

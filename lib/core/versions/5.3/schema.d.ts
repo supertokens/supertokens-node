@@ -974,6 +974,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/recipe/session/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Delete a sesion
+         *
+         *     If revoking session by `userId`, the sessions are cleared across all tenants by default.
+         *
+         *     Note: If `revokeAcrossAllTenants` is set to `true`, this API can only be called from `public` tenant.
+         *      */
+        post: operations["deleteSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/recipe/session/verify": {
         parameters: {
             query?: never;
@@ -1011,6 +1033,28 @@ export interface paths {
         trace?: never;
     };
     "/<tenantId>/recipe/session/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get session handles for a user
+         *
+         *     By default, the session handles are fetched across all tenants. Set `fetchAcrossAllTenants` to `false` to get sessionHandles for the user for a particular tenant.
+         *
+         *     Note: If `fetchAcrossAllTenants` is set to `true`, this API can only be called from `public` tenant.
+         *      */
+        get: operations["getUserSessionHandles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recipe/session/user": {
         parameters: {
             query?: never;
             header?: never;
@@ -1190,7 +1234,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/<tenantId>/recipe/jwt/data": {
+    "/recipe/jwt/data": {
         parameters: {
             query?: never;
             header?: never;
@@ -6197,7 +6241,54 @@ export interface operations {
                         timeCreated?: components["schemas"]["timeCreated"];
                         sessionHandle?: components["schemas"]["handle"];
                         tenantId?: components["schemas"]["tenantId"];
+                        recipeUserId?: components["schemas"]["userId"];
                     } | components["schemas"]["unauthorisedMessageResponse"];
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    deleteSession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example session */
+                rid?: components["parameters"]["sessionRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    sessionHandles?: components["schemas"]["sessionHandles"];
+                } | {
+                    userId: components["schemas"]["userId"];
+                    revokeAcrossAllTenants?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Delete a session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        sessionHandlesRevoked?: components["schemas"]["sessionHandles"];
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -6351,10 +6442,51 @@ export interface operations {
                     } | {
                         status: components["schemas"]["tokenTheftResponse"];
                         session?: {
-                            handle?: components["schemas"]["handle"];
-                            userId?: components["schemas"]["userId"];
+                            handle: components["schemas"]["handle"];
+                            userId: components["schemas"]["userId"];
+                            recipeUserId: components["schemas"]["userId"];
                         };
                     } | components["schemas"]["unauthorisedMessageResponse"];
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    getUserSessionHandles: {
+        parameters: {
+            query?: {
+                userId?: components["parameters"]["userId"];
+                fetchAcrossAllTenants?: "true" | "false";
+            };
+            header?: {
+                /** @example session */
+                rid?: components["parameters"]["sessionRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Get user Session Handles */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        sessionHandles?: components["schemas"]["sessionHandles"];
+                    };
                 };
             };
             400: components["responses"]["400"];
@@ -7263,14 +7395,12 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {boolean} */
-                        exists?: true;
+                        exists: true;
                         /** @example 99c87c72-1807-22d-9b39-7a88f95re56c */
-                        telemetryId?: string;
+                        telemetryId: string;
                     } | {
-                        /** @example [
-                         *       false
-                         *     ] */
-                        exists?: boolean;
+                        /** @enum {boolean} */
+                        exists: false;
                     };
                 };
             };

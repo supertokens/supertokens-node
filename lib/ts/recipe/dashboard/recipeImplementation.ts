@@ -15,7 +15,6 @@
 
 import RecipeError from "./error";
 import { logDebugMessage } from "../../logger";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { normaliseHttpMethod } from "../../utils";
 import { dashboardVersion } from "../../version";

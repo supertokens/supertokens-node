@@ -21,7 +21,6 @@ import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
-import NormalisedURLPath from "../../../../normalisedURLPath";
 import { Querier } from "../../../../querier";
 import { UserContext } from "../../../../types";
 import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
