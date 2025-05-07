@@ -16,7 +16,6 @@
 import { APIInterface, APIOptions } from "../types";
 import SuperTokens from "../../../supertokens";
 import { Querier } from "../../../querier";
-import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
 import { doFetch } from "../../../utils";
