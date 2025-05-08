@@ -1,4 +1,3 @@
-// scripts/generate-schemas.js
 const fs = require("fs/promises");
 const path = require("path");
 const { exec } = require("child_process");

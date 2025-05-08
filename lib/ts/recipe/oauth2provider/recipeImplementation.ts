@@ -306,7 +306,7 @@ export default function getRecipeInterface(
 
             const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
             if (redirectTo === undefined) {
-                throw new Error(resp.body);
+                throw new Error("Got redirectTo as undefined, cannot continue");
             }
             const redirectToURL = new URL(redirectTo);
             const consentChallenge = redirectToURL.searchParams.get("consent_challenge");

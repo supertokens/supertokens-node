@@ -2650,7 +2650,9 @@ export interface paths {
          *      */
         get: operations["getOAuth2Auth"];
         put?: never;
-        post?: never;
+        /** @description Exchange OAuth2 Auth request for redirect or error.
+         *      */
+        post: operations["postOAuth2Auth"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9715,6 +9717,50 @@ export interface operations {
                     "application/json": ({
                         status: components["schemas"]["statusOK"];
                     } & components["schemas"]["oauthClient"]) | components["schemas"]["oauthError"];
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            402: components["responses"]["402"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    postOAuth2Auth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    params: Record<string, unknown>;
+                    iss: string;
+                    cookies?: string;
+                    session?: {
+                        idToken?: Record<string, unknown>;
+                        accessToken?: Record<string, unknown>;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description OAuth2 auth result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        redirectTo: string;
+                        cookies: string[];
+                    } | components["schemas"]["oauthError"] | {
+                        /** @enum {string} */
+                        status: "CLIENT_NOT_FOUND_ERROR";
+                    };
                 };
             };
             400: components["responses"]["400"];
