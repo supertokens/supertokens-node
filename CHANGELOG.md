@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Adds workflow to test supertokens-website
     -   Updates `frontendIntegration` servers
 
+## [22.2.0] - 2025-05-09
+
+-   Refactors querier to use dynamic request body and response body types inference
+
 ## [22.1.0] - 2025-04-04
 
 -   Adds support for using `code_challenge_method` from OIDC provider response to determine whether to use PKCE or not.
