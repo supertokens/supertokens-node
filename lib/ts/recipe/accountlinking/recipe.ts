@@ -730,17 +730,18 @@ export default class Recipe extends RecipeModule {
                 });
 
                 if (shouldVerifyEmail) {
-                    let resp = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
-                        {
-                            // While the token we create here is tenant specific, the verification status is not
-                            // So we can use any tenantId the user is associated with here as long as we use the
-                            // same in the verifyEmailUsingToken call
-                            tenantId: input.user.tenantIds[0],
-                            recipeUserId: input.recipeUserId,
-                            email: recipeUserEmail,
-                            userContext: input.userContext,
-                        }
-                    );
+                    let resp =
+                        await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                // While the token we create here is tenant specific, the verification status is not
+                                // So we can use any tenantId the user is associated with here as long as we use the
+                                // same in the verifyEmailUsingToken call
+                                tenantId: input.user.tenantIds[0],
+                                recipeUserId: input.recipeUserId,
+                                email: recipeUserEmail,
+                                userContext: input.userContext,
+                            }
+                        );
                     if (resp.status === "OK") {
                         // we purposely pass in false below cause we don't want account
                         // linking to happen

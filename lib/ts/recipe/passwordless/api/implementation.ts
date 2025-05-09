@@ -125,14 +125,13 @@ export default function getAPIImplementation(): APIInterface {
                 if (loginMethod.hasSameEmailAs(accountInfo.email) && !loginMethod.verified) {
                     // We first check that the submitted code is actually valid
                     if (await checkCredentials()) {
-                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                            {
+                        const tokenResponse =
+                            await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
                                 tenantId: input.tenantId,
                                 recipeUserId: loginMethod.recipeUserId,
                                 email: accountInfo.email,
                                 userContext: input.userContext,
-                            }
-                        );
+                            });
 
                         if (tokenResponse.status === "OK") {
                             await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({

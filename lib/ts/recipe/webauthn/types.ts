@@ -319,11 +319,7 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ status: "OK"; token: string } | GenerateRecoverAccountTokenErrorResponse>;
 
-    consumeRecoverAccountToken(input: {
-        token: string;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
+    consumeRecoverAccountToken(input: { token: string; tenantId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
               email: string;
@@ -350,22 +346,14 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | GetUserFromRecoverAccountTokenErrorResponse>;
 
-    removeCredential(input: {
-        webauthnCredentialId: string;
-        recipeUserId: string;
-        userContext: UserContext;
-    }): Promise<
+    removeCredential(input: { webauthnCredentialId: string; recipeUserId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
           }
         | RemoveCredentialErrorResponse
     >;
 
-    getCredential(input: {
-        webauthnCredentialId: string;
-        recipeUserId: string;
-        userContext: UserContext;
-    }): Promise<
+    getCredential(input: { webauthnCredentialId: string; recipeUserId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
               webauthnCredentialId: string;
@@ -376,10 +364,7 @@ export type RecipeInterface = {
         | GetCredentialErrorResponse
     >;
 
-    listCredentials(input: {
-        recipeUserId: string;
-        userContext: UserContext;
-    }): Promise<{
+    listCredentials(input: { recipeUserId: string; userContext: UserContext }): Promise<{
         status: "OK";
         credentials: {
             webauthnCredentialId: string;
@@ -533,11 +518,7 @@ export type APIInterface = {
 
     signInOptionsPOST:
         | undefined
-        | ((input: {
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { tenantId: string; options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
@@ -594,12 +575,7 @@ export type APIInterface = {
 
     generateRecoverAccountTokenPOST:
         | undefined
-        | ((input: {
-              email: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { email: string; tenantId: string; options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                 }
@@ -645,12 +621,7 @@ export type APIInterface = {
 
     emailExistsGET:
         | undefined
-        | ((input: {
-              email: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { email: string; tenantId: string; options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     exists: boolean;

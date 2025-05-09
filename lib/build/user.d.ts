@@ -35,6 +35,11 @@ export declare class User implements UserType {
     readonly loginMethods: LoginMethod[];
     readonly timeJoined: number;
     constructor(user: UserWithoutHelperFunctions);
+    static fromApi(
+        apiUser: Omit<UserWithoutHelperFunctions, "id"> & {
+            id: string;
+        }
+    ): User;
     toJson(): JSONObject;
 }
 export declare type UserWithoutHelperFunctions = {

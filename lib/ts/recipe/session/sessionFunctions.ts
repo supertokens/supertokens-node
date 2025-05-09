@@ -119,7 +119,7 @@ export async function getSession(
             getCombinedJWKS(config),
             helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN" && doAntiCsrfCheck
         );
-    } catch (err: any) {
+    } catch (err) {
         /**
          * if error type is not TRY_REFRESH_TOKEN, we return the
          * error to the user
@@ -245,11 +245,7 @@ export async function getSession(
         checkDatabase: alwaysCheckCore,
     };
 
-    let response = await helpers.querier.sendPostRequest(
-        "/recipe/session/verify",
-        requestBody,
-        userContext
-    );
+    let response = await helpers.querier.sendPostRequest("/recipe/session/verify", requestBody, userContext);
 
     if (response.status === "OK") {
         return {
@@ -349,11 +345,7 @@ export async function refreshSession(
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
     }
 
-    let response = await helpers.querier.sendPostRequest(
-        "/recipe/session/refresh",
-        requestBody,
-        userContext
-    );
+    let response = await helpers.querier.sendPostRequest("/recipe/session/refresh", requestBody, userContext);
 
     if (response.status === "OK") {
         return {
@@ -419,11 +411,7 @@ export async function revokeAllSessionsForUser(
     };
 
     if (revokeAcrossAllTenants) {
-        const response = await helpers.querier.sendPostRequest(
-            "/recipe/session/remove",
-            body,
-            userContext
-        );
+        const response = await helpers.querier.sendPostRequest("/recipe/session/remove", body, userContext);
         return response.sessionHandlesRevoked;
     }
 
@@ -455,12 +443,14 @@ export async function getAllSessionHandlesForUser(
         tenantId = DEFAULT_TENANT_ID;
     }
     let response = await helpers.querier.sendGetRequest(
-        fetchAcrossAllTenants ? "/recipe/session/user" : {
-            path: "/<tenantId>/recipe/session/user",
-            params: {
-                tenantId: tenantId,
-            },
-        },
+        fetchAcrossAllTenants
+            ? "/recipe/session/user"
+            : {
+                  path: "/<tenantId>/recipe/session/user",
+                  params: {
+                      tenantId: tenantId,
+                  },
+              },
         {
             userId,
             fetchSessionsForAllLinkedAccounts,

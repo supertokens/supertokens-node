@@ -425,10 +425,7 @@ export default class Wrapper {
               createdAt: number;
           }
     >;
-    static listCredentials(input: {
-        recipeUserId: string;
-        userContext?: Record<string, any>;
-    }): Promise<{
+    static listCredentials(input: { recipeUserId: string; userContext?: Record<string, any> }): Promise<{
         status: "OK";
         credentials: {
             webauthnCredentialId: string;

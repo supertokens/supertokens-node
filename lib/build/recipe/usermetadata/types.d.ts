@@ -21,10 +21,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type APIInterface = {};
 export declare type RecipeInterface = {
-    getUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    getUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         metadata: any;
     }>;
@@ -36,18 +33,11 @@ export declare type RecipeInterface = {
      *   - update: `{ "notifications": { "sms": true }, "todos": null }`
      *   - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
      */
-    updateUserMetadata: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: UserContext;
-    }) => Promise<{
+    updateUserMetadata: (input: { userId: string; metadataUpdate: JSONObject; userContext: UserContext }) => Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
-    clearUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    clearUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
     }>;
 };

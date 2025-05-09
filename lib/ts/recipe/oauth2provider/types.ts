@@ -249,10 +249,7 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string }>;
 
-    getOAuth2Client(input: {
-        clientId: string;
-        userContext: UserContext;
-    }): Promise<
+    getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
               client: OAuth2Client;

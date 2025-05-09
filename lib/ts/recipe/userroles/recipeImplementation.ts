@@ -72,12 +72,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
 
         createNewRoleOrAddPermissions: function ({ role, permissions, userContext }) {
-            return querier.sendPutRequest(
-                "/recipe/role",
-                { role, permissions },
-                {},
-                userContext
-            );
+            return querier.sendPutRequest("/recipe/role", { role, permissions }, {}, userContext);
         },
 
         getPermissionsForRole: function ({ role, userContext }) {
@@ -96,11 +91,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
 
         getRolesThatHavePermission: function ({ permission, userContext }) {
-            return querier.sendGetRequest(
-                "/recipe/permission/roles",
-                { permission },
-                userContext
-            );
+            return querier.sendGetRequest("/recipe/permission/roles", { permission }, userContext);
         },
 
         deleteRole: function ({ role, userContext }) {

@@ -156,12 +156,7 @@ export default function getRecipeInterface(
             return response;
         },
 
-        verifyCredentials: async function ({
-            email,
-            password,
-            tenantId,
-            userContext,
-        }): Promise<
+        verifyCredentials: async function ({ email, password, tenantId, userContext }): Promise<
             | {
                   status: "OK";
                   user: User;

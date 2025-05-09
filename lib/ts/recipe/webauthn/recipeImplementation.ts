@@ -362,11 +362,7 @@ export default function getRecipeInterface(
         },
 
         listCredentials: async function ({ recipeUserId, userContext }) {
-            return await querier.sendGetRequest(
-                "/recipe/webauthn/user/credential/list",
-                { recipeUserId },
-                userContext
-            );
+            return await querier.sendGetRequest("/recipe/webauthn/user/credential/list", { recipeUserId }, userContext);
         },
 
         removeGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {

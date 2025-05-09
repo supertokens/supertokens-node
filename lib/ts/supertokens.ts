@@ -59,14 +59,14 @@ export default class SuperTokens {
             config.appInfo.origin === undefined
                 ? undefined
                 : typeof config.appInfo.origin === "string"
-                  ? config.appInfo.origin
-                  : "function";
+                ? config.appInfo.origin
+                : "function";
         logDebugMessage(
             "appInfo: " +
                 JSON.stringify({
                     ...config.appInfo,
                     origin: originToPrint,
-                }),
+                })
         );
 
         this.framework = config.framework !== undefined ? config.framework : "express";
@@ -86,7 +86,7 @@ export default class SuperTokens {
                 }),
             config.supertokens?.apiKey,
             config.supertokens?.networkInterceptor,
-            config.supertokens?.disableCoreCallCache,
+            config.supertokens?.disableCoreCallCache
         );
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
@@ -209,7 +209,7 @@ export default class SuperTokens {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: UserContext,
+        userContext: UserContext
     ) => {
         return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method, userContext);
     };
@@ -230,13 +230,13 @@ export default class SuperTokens {
     getUserCount = async (
         includeRecipeIds: string[] | undefined,
         tenantId: string | undefined,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion(userContext);
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             throw new Error(
-                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())",
+                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())"
             );
         }
         let includeRecipeIdsStr = undefined;
@@ -255,7 +255,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            userContext,
+            userContext
         );
         return Number(response.count);
     };
@@ -288,7 +288,7 @@ export default class SuperTokens {
                     externalUserIdInfo: input.externalUserIdInfo,
                     force: input.force,
                 },
-                input.userContext,
+                input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -320,7 +320,7 @@ export default class SuperTokens {
                     userId: input.userId,
                     userIdType: input.userIdType,
                 },
-                input.userContext,
+                input.userContext
             );
             return response;
         } else {
@@ -347,7 +347,7 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     force: input.force,
                 },
-                input.userContext,
+                input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -373,7 +373,7 @@ export default class SuperTokens {
                     externalUserIdInfo: input.externalUserIdInfo || null,
                 },
                 {},
-                input.userContext,
+                input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -389,7 +389,7 @@ export default class SuperTokens {
         if (!path.startsWith(this.appInfo.apiBasePath)) {
             logDebugMessage(
                 "middleware: Not handling because request path did not start with config path. Request path: " +
-                    path.getAsStringDangerous(),
+                    path.getAsStringDangerous()
             );
             return false;
         }
@@ -416,7 +416,7 @@ export default class SuperTokens {
                         " with path: " +
                         path.getAsStringDangerous() +
                         " and method: " +
-                        method,
+                        method
                 );
                 let idResult = await recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
                 if (idResult !== undefined) {
@@ -445,7 +445,7 @@ export default class SuperTokens {
                     response,
                     path,
                     method,
-                    userContext,
+                    userContext
                 );
                 if (!requestHandled) {
                     logDebugMessage("middleware: Not handled because API returned requestHandled as false");
@@ -517,7 +517,7 @@ export default class SuperTokens {
                         idResult = currIdResult;
                     } else {
                         throw new Error(
-                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support.",
+                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support."
                         );
                     }
                 }
@@ -536,7 +536,7 @@ export default class SuperTokens {
                 response,
                 path,
                 method,
-                userContext,
+                userContext
             );
             if (!requestHandled) {
                 logDebugMessage("middleware: Not handled because API returned requestHandled as false");

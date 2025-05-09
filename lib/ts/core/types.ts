@@ -37,22 +37,20 @@ type MakeAllRequired<T> = {
 type DeepRequireAllFields<T> = T extends any ? MakeAllRequired<T> : never;
 
 // Type to extract the request body from the method type
-export type RequestBody<P extends keyof paths, M extends Method> =
-    ExtractMethodType<P, M> extends {
-        requestBody?: infer ReqBody;
-    }
-        ? ReqBody extends { content: { "application/json": infer R } }
-            ? R | undefined
-            : undefined
-        : undefined;
+export type RequestBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
+    requestBody?: infer ReqBody;
+}
+    ? ReqBody extends { content: { "application/json": infer R } }
+        ? R | undefined
+        : undefined
+    : undefined;
 
 // Type to extract the response body from the method type
-export type UncleanedResponseBody<P extends keyof paths, M extends Method> =
-    ExtractMethodType<P, M> extends {
-        responses: { 200: { content: { "application/json": infer R } } };
-    }
-        ? R
-        : unknown;
+export type UncleanedResponseBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
+    responses: { 200: { content: { "application/json": infer R } } };
+}
+    ? R
+    : unknown;
 
 // Type to clean the response body from the method type
 export type ResponseBody<P extends keyof paths, M extends Method> = DeepRequireAllFields<UncleanedResponseBody<P, M>>;
@@ -63,8 +61,9 @@ type ExtractPathParams<T extends string> = T extends `${string}<${infer Param}>$
     ? Param | ExtractPathParams<Rest>
     : never;
 
-type PathParamsObject<T extends string> =
-    ExtractPathParams<T> extends never ? undefined : { [K in ExtractPathParams<T>]: string };
+type PathParamsObject<T extends string> = ExtractPathParams<T> extends never
+    ? undefined
+    : { [K in ExtractPathParams<T>]: string };
 
 // Type to handle the path parameter
 export type PathParam<P extends keyof paths> = P | { path: P; params: PathParamsObject<P> };

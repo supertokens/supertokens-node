@@ -17,9 +17,7 @@ export default class Wrapper {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    static getJWKS(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getJWKS(userContext?: Record<string, any>): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number | undefined;
     }>;

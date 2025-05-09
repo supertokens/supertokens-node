@@ -591,23 +591,23 @@ export default function getAPIImplementation(): APIInterface {
             if (!emailVerified && hasOtherEmailOrPhone) {
                 return {
                     status: "RECOVER_ACCOUNT_NOT_ALLOWED",
-                    reason:
-                        "Recover account link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
+                    reason: "Recover account link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
                 };
             }
 
-            const shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                webauthnAccount !== undefined
-                    ? webauthnAccount
-                    : {
-                          recipeId: "webauthn",
-                          email,
-                      },
-                primaryUserAssociatedWithEmail,
-                undefined,
-                tenantId,
-                userContext
-            );
+            const shouldDoAccountLinkingResponse =
+                await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                    webauthnAccount !== undefined
+                        ? webauthnAccount
+                        : {
+                              recipeId: "webauthn",
+                              email,
+                          },
+                    primaryUserAssociatedWithEmail,
+                    undefined,
+                    tenantId,
+                    userContext
+                );
 
             // Now we need to check that if there exists any webauthn user at all
             // for the input email. If not, then it implies that when the token is consumed,
@@ -728,14 +728,13 @@ export default function getAPIImplementation(): APIInterface {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
+                    const tokenResponse =
+                        await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
                             tenantId,
                             recipeUserId,
                             email,
                             userContext,
-                        }
-                    );
+                        });
 
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
