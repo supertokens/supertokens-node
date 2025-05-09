@@ -130,9 +130,7 @@ export async function getSessionForSSR<RequestType extends ParsableRequest = Req
     return getSessionForSSRUsingAccessToken(getAccessToken(request));
 }
 
-export async function getSessionForSSRUsingAccessToken(
-    accessToken: string | undefined
-): Promise<{
+export async function getSessionForSSRUsingAccessToken(accessToken: string | undefined): Promise<{
     accessTokenPayload: JWTPayload | undefined;
     hasToken: boolean;
     error: Error | undefined;

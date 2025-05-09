@@ -78,14 +78,15 @@ describe(`apiInterface: ${printPath("[test/emailverification/apiInterface.js]")}
             assert.equal(typeof signUpResult.user.id, "string");
             assert.equal(typeof signUpResult.recipeUserId.getAsString(), "string");
 
-            const tokenResult = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
-                {
-                    email,
-                    recipeUserId: signUpResult.recipeUserId,
-                    tenantId: "public",
-                    userContext: {},
-                }
-            );
+            const tokenResult =
+                await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
+                    {
+                        email,
+                        recipeUserId: signUpResult.recipeUserId,
+                        tenantId: "public",
+                        userContext: {},
+                    }
+                );
 
             assert.equal(tokenResult.status, "OK");
             assert.equal(typeof tokenResult.token, "string");
@@ -168,14 +169,15 @@ describe(`apiInterface: ${printPath("[test/emailverification/apiInterface.js]")}
                 signUpResponse.user?.loginMethods?.find((method) => method.recipeId === "webauthn")?.recipeUserId
             );
 
-            const tokenResult = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
-                {
-                    email,
-                    recipeUserId,
-                    tenantId: "public",
-                    userContext: {},
-                }
-            );
+            const tokenResult =
+                await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
+                    {
+                        email,
+                        recipeUserId,
+                        tenantId: "public",
+                        userContext: {},
+                    }
+                );
 
             assert.equal(tokenResult.status, "OK");
             assert.equal(typeof tokenResult.token, "string");

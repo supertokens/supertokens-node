@@ -453,11 +453,7 @@ export default function getRecipeInterface(
                 body["authorizationHeader"] = input.authorizationHeader;
             }
 
-            const res = await querier.sendPostRequest(
-                "/recipe/oauth/token",
-                body,
-                input.userContext
-            );
+            const res = await querier.sendPostRequest("/recipe/oauth/token", body, input.userContext);
 
             if (res.status === "CLIENT_NOT_FOUND_ERROR") {
                 return {
@@ -697,11 +693,7 @@ export default function getRecipeInterface(
                 }
             }
 
-            const res = await querier.sendPostRequest(
-                "/recipe/oauth/token/revoke",
-                requestBody,
-                input.userContext
-            );
+            const res = await querier.sendPostRequest("/recipe/oauth/token/revoke", requestBody, input.userContext);
 
             if (res.status !== "OK") {
                 return {

@@ -129,17 +129,10 @@ export declare type RecipeInterface = {
     }): Promise<{
         redirectTo: string;
     }>;
-    rejectConsentRequest(input: {
-        challenge: string;
-        error: ErrorOAuth2;
-        userContext: UserContext;
-    }): Promise<{
+    rejectConsentRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<{
         redirectTo: string;
     }>;
-    getLoginRequest(input: {
-        challenge: string;
-        userContext: UserContext;
-    }): Promise<
+    getLoginRequest(input: { challenge: string; userContext: UserContext }): Promise<
         | (LoginRequest & {
               status: "OK";
           })
@@ -157,17 +150,10 @@ export declare type RecipeInterface = {
     }): Promise<{
         redirectTo: string;
     }>;
-    rejectLoginRequest(input: {
-        challenge: string;
-        error: ErrorOAuth2;
-        userContext: UserContext;
-    }): Promise<{
+    rejectLoginRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<{
         redirectTo: string;
     }>;
-    getOAuth2Client(input: {
-        clientId: string;
-        userContext: UserContext;
-    }): Promise<
+    getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
               client: OAuth2Client;
@@ -323,16 +309,10 @@ export declare type RecipeInterface = {
           }
         | ErrorOAuth2
     >;
-    revokeTokensByClientId(input: {
-        clientId: string;
-        userContext: UserContext;
-    }): Promise<{
+    revokeTokensByClientId(input: { clientId: string; userContext: UserContext }): Promise<{
         status: "OK";
     }>;
-    revokeTokensBySessionHandle(input: {
-        sessionHandle: string;
-        userContext: UserContext;
-    }): Promise<{
+    revokeTokensBySessionHandle(input: { sessionHandle: string; userContext: UserContext }): Promise<{
         status: "OK";
     }>;
     introspectToken(input: {
@@ -351,19 +331,13 @@ export declare type RecipeInterface = {
           }
         | ErrorOAuth2
     >;
-    acceptLogoutRequest(input: {
-        challenge: string;
-        userContext: UserContext;
-    }): Promise<
+    acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<
         | {
               redirectTo: string;
           }
         | ErrorOAuth2
     >;
-    rejectLogoutRequest(input: {
-        challenge: string;
-        userContext: UserContext;
-    }): Promise<{
+    rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{
         status: "OK";
     }>;
 };
@@ -411,11 +385,7 @@ export declare type APIInterface = {
           }) => Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>);
     loginInfoGET:
         | undefined
-        | ((input: {
-              loginChallenge: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { loginChallenge: string; options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     info: LoginInfo;

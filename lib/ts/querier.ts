@@ -23,8 +23,8 @@ import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 import SuperTokens from "./supertokens";
 
-import { PathParam, RequestBody, ResponseBody } from "../core/types";
-import { paths } from "../core/paths";
+import { PathParam, RequestBody, ResponseBody } from "./core/types";
+import { paths } from "./core/paths";
 
 export class Querier {
     private static initCalled = false;
@@ -46,7 +46,7 @@ export class Querier {
     // to support multiple rIds per API
     private constructor(
         hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined,
-        rIdToCore?: string,
+        rIdToCore?: string
     ) {
         this.__hosts = hosts;
         this.rIdToCore = rIdToCore;
@@ -89,7 +89,7 @@ export class Querier {
                             headers: headers,
                             params: queryParamsObj,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -101,13 +101,13 @@ export class Querier {
                 });
                 return response;
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
         let cdiSupportedByServer: string[] = response.versions;
         let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
         if (supportedVersion === undefined) {
             throw Error(
-                "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions",
+                "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
             );
         }
         Querier.apiVersion = supportedVersion;
@@ -140,7 +140,7 @@ export class Querier {
         hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[],
         apiKey?: string,
         networkInterceptor?: NetworkInterceptor,
-        disableCache?: boolean,
+        disableCache?: boolean
     ) {
         if (!Querier.initCalled) {
             logDebugMessage("querier initialized");
@@ -157,7 +157,7 @@ export class Querier {
 
     private getPath = <P extends keyof paths>(path: PathParam<P>): NormalisedURLPath => {
         const template = typeof path === "string" ? path : path.path;
-        const params = typeof path === "string" ? {} : (path.params ?? {});
+        const params = typeof path === "string" ? {} : path.params ?? {};
 
         let populated = String(template);
         for (const [key, value] of Object.entries(params)) {
@@ -171,7 +171,7 @@ export class Querier {
     sendPostRequest = async <P extends keyof paths>(
         template: PathParam<P>,
         body: RequestBody<P, "post">,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<ResponseBody<P, "post">> => {
         this.invalidateCoreCallCache(userContext);
         const path = this.getPath(template);
@@ -206,7 +206,7 @@ export class Querier {
                             headers: headers,
                             body: body,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -220,7 +220,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
         return respBody;
     };
@@ -230,7 +230,7 @@ export class Querier {
         template: PathParam<P>,
         body: RequestBody<P, "delete">,
         params: any | undefined,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<ResponseBody<P, "delete">> => {
         this.invalidateCoreCallCache(userContext);
         const path = this.getPath(template);
@@ -262,7 +262,7 @@ export class Querier {
                             params: params,
                             body: body,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -284,7 +284,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
         return respBody;
     };
@@ -293,7 +293,7 @@ export class Querier {
     sendGetRequest = async <P extends keyof paths>(
         template: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<ResponseBody<P, "get">> => {
         const path = this.getPath(template);
         const { body: respBody } = await this.sendRequestHelper(
@@ -357,7 +357,7 @@ export class Querier {
                             headers: headers,
                             params: params,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -367,7 +367,7 @@ export class Querier {
                 }
                 const finalURL = new URL(url);
                 const searchParams = new URLSearchParams(
-                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][],
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
 
@@ -396,7 +396,7 @@ export class Querier {
 
                 return response;
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
 
         return respBody;
@@ -406,7 +406,7 @@ export class Querier {
         template: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<{ body: ResponseBody<P, "get">; headers: Headers }> => {
         const path = this.getPath(template);
         return await this.sendRequestHelper(
@@ -437,7 +437,7 @@ export class Querier {
                             headers: headers,
                             params: params,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -447,7 +447,7 @@ export class Querier {
                 }
                 const finalURL = new URL(url);
                 const searchParams = new URLSearchParams(
-                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][],
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
                 return doFetch(finalURL.toString(), {
@@ -455,7 +455,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
     };
 
@@ -464,7 +464,7 @@ export class Querier {
         template: PathParam<P>,
         body: RequestBody<P, "put">,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<ResponseBody<P, "put">> => {
         this.invalidateCoreCallCache(userContext);
         const path = this.getPath(template);
@@ -496,7 +496,7 @@ export class Querier {
                             body: body,
                             params: params,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -507,7 +507,7 @@ export class Querier {
 
                 const finalURL = new URL(url);
                 const searchParams = new URLSearchParams(
-                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][],
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
 
@@ -517,7 +517,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
         return respBody;
     };
@@ -526,7 +526,7 @@ export class Querier {
     sendPatchRequest = async <P extends keyof paths>(
         template: PathParam<P>,
         body: RequestBody<P, "patch">,
-        userContext: UserContext,
+        userContext: UserContext
     ): Promise<ResponseBody<P, "patch">> => {
         this.invalidateCoreCallCache(userContext);
         const path = this.getPath(template);
@@ -557,7 +557,7 @@ export class Querier {
                             headers: headers,
                             body: body,
                         },
-                        userContext,
+                        userContext
                     );
                     url = request.url;
                     headers = request.headers;
@@ -572,7 +572,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts?.length || 0,
+            this.__hosts?.length || 0
         );
         return respBody;
     };
@@ -609,11 +609,11 @@ export class Querier {
         method: string,
         requestFunc: (url: string) => Promise<Response>,
         numberOfTries: number,
-        retryInfoMap?: Record<string, number>,
+        retryInfoMap?: Record<string, number>
     ): Promise<any> => {
         if (this.__hosts === undefined) {
             throw Error(
-                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using.",
+                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
             );
         }
         if (numberOfTries === 0) {
@@ -652,7 +652,7 @@ export class Querier {
                 return { body: await response.clone().text(), headers: response.headers };
             }
             return { body: await response.clone().json(), headers: response.headers };
-        } catch (err: any) {
+        } catch (err) {
             if (
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") ||
@@ -687,7 +687,7 @@ export class Querier {
                         "' with status code: " +
                         err.status +
                         " and message: " +
-                        (await err.text()),
+                        (await err.text())
                 );
             }
 

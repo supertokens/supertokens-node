@@ -59,11 +59,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
 
         listAllTenants: async function ({ userContext }) {
-            let response = await querier.sendGetRequest(
-                "/recipe/multitenancy/tenant/list/v2",
-                {},
-                userContext
-            );
+            let response = await querier.sendGetRequest("/recipe/multitenancy/tenant/list/v2", {}, userContext);
             return response;
         },
 

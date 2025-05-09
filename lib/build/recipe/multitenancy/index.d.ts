@@ -36,9 +36,7 @@ export default class Wrapper {
           } & TenantConfig)
         | undefined
     >;
-    static listAllTenants(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static listAllTenants(userContext?: Record<string, any>): Promise<{
         status: "OK";
         tenants: ({
             tenantId: string;
