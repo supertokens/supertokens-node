@@ -348,7 +348,9 @@ export type RecipeInterface = {
         token: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | GetUserFromRecoverAccountTokenErrorResponse>;
+    }): Promise<
+        { status: "OK"; user: User; recipeUserId?: RecipeUserId } | GetUserFromRecoverAccountTokenErrorResponse
+    >;
 
     removeCredential(input: {
         webauthnCredentialId: string;
