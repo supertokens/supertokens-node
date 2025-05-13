@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     signUPRequest,
     assertJSONEquals,
@@ -42,18 +40,11 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("overriding functions tests", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         STExpress.init({
             supertokens: {
@@ -217,7 +208,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding api tests", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         let emailExists = undefined;
         STExpress.init({
@@ -365,7 +356,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding functions tests, throws error", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         STExpress.init({
             supertokens: {
@@ -495,7 +486,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding api tests, throws error", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         let emailExists = undefined;
         STExpress.init({

@@ -1,6 +1,6 @@
 const SuperTokens = require("../../");
 const { ProcessState } = require("../../lib/build/processState");
-const { setupST, startST, killAllST, cleanST } = require("../utils");
+const { createCoreApplication } = require("../utils");
 
 const express = require("express");
 const request = require("supertest");
@@ -66,20 +66,13 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
         describe(`express w/ auth-mode=${tokenTransferMethod}`, () => {
             let app;
             beforeEach(async () => {
-                await killAllST();
-                await setupST();
                 ProcessState.getInstance().reset();
                 app = undefined;
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
-
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    const connectionURI = await startST();
+                    const connectionURI = await createCoreApplication();
 
                     SuperTokens.init({
                         supertokens: {
@@ -145,8 +138,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
         describe(`fastify w/ auth-mode=${tokenTransferMethod}`, () => {
             let server;
             beforeEach(async () => {
-                await killAllST();
-                await setupST();
                 ProcessState.getInstance().reset();
                 server = undefined;
             });
@@ -157,14 +148,9 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 } catch (err) {}
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
-
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    const connectionURI = await startST();
+                    const connectionURI = await createCoreApplication();
 
                     SuperTokens.init({
                         framework: "fastify",
@@ -225,8 +211,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
         describe(`hapi w/ auth-mode=${tokenTransferMethod}`, () => {
             let server;
             beforeEach(async () => {
-                await killAllST();
-                await setupST();
                 ProcessState.getInstance().reset();
                 server = undefined;
             });
@@ -237,14 +221,9 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 } catch (err) {}
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
-
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    const connectionURI = await startST();
+                    const connectionURI = await createCoreApplication();
 
                     SuperTokens.init({
                         framework: "hapi",
@@ -302,8 +281,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
         describe(`koa w/ auth-mode=${tokenTransferMethod}`, () => {
             let app, server;
             beforeEach(async () => {
-                await killAllST();
-                await setupST();
                 ProcessState.getInstance().reset();
                 app = undefined;
                 server = undefined;
@@ -315,14 +292,9 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 } catch (err) {}
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
-
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    const connectionURI = await startST();
+                    const connectionURI = await createCoreApplication();
 
                     SuperTokens.init({
                         framework: "koa",
@@ -391,8 +363,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
         describe(`loopback w/ auth-mode=${tokenTransferMethod}`, () => {
             let app;
             beforeEach(async () => {
-                await killAllST();
-                await setupST();
                 ProcessState.getInstance().reset();
             });
 
@@ -402,11 +372,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 } catch (err) {}
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
-
             getTestCases(
                 async ({ stConfig, routes }) => {
                     if (withoutMiddleware === true) {
@@ -414,7 +379,7 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                     }
                     app = require("./loopback-server/index.js");
 
-                    const connectionURI = await startST();
+                    const connectionURI = await createCoreApplication();
 
                     SuperTokens.init({
                         framework: "loopback",
