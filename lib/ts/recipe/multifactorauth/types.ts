@@ -154,6 +154,7 @@ export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
 
 export const FactorIds = {
     EMAILPASSWORD: "emailpassword",
+    WEBAUTHN: "webauthn",
     OTP_EMAIL: "otp-email",
     OTP_PHONE: "otp-phone",
     LINK_EMAIL: "link-email",

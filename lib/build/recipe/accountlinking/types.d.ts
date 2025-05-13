@@ -3,7 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import type { User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
-export type TypeInput = {
+export declare type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: UserContext) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId & {
@@ -25,11 +25,11 @@ export type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
     };
 };
-export type TypeNormalisedInput = {
+export declare type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: UserContext) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId & {
@@ -51,11 +51,11 @@ export type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
     };
 };
-export type RecipeInterface = {
+export declare type RecipeInterface = {
     getUsers: (input: {
         tenantId: string;
         timeJoinedOrder: "ASC" | "DESC";
@@ -163,7 +163,7 @@ export type RecipeInterface = {
     getUser: (input: { userId: string; userContext: UserContext }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
         tenantId: string;
-        accountInfo: AccountInfo;
+        accountInfo: AccountInfoInput;
         doUnionOfAccountInfo: boolean;
         userContext: UserContext;
     }) => Promise<User[]>;
@@ -175,18 +175,26 @@ export type RecipeInterface = {
         status: "OK";
     }>;
 };
-export type AccountInfo = {
+export declare type AccountInfo = {
     email?: string;
     phoneNumber?: string;
     thirdParty?: {
         id: string;
         userId: string;
     };
+    webauthn?: {
+        credentialIds: string[];
+    };
 };
-export type AccountInfoWithRecipeId = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+export declare type AccountInfoInput = Omit<AccountInfo, "webauthn"> & {
+    webauthn?: {
+        credentialId: string;
+    };
+};
+export declare type AccountInfoWithRecipeId = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 } & AccountInfo;
-export type RecipeLevelUser = {
+export declare type RecipeLevelUser = {
     tenantIds: string[];
     timeJoined: number;
     recipeUserId: RecipeUserId;

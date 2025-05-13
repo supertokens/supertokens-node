@@ -60,6 +60,7 @@ type CommonProviderConfig = {
     userInfoEndpointQueryParams?: { [key: string]: string | null };
     userInfoEndpointHeaders?: { [key: string]: string | null };
     jwksURI?: string;
+    codeChallengeMethodsSupported?: string[];
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;
     validateIdTokenPayload?: (input: {

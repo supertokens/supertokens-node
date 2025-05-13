@@ -181,7 +181,7 @@ export type RecipeInterface = {
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; cookies: string | undefined } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string; cookies: string[] | undefined } | ErrorOAuth2>;
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;
@@ -428,7 +428,7 @@ export type APIInterface = {
               session?: SessionContainerInterface;
               shouldTryRefresh: boolean;
               userContext: UserContext;
-          }) => Promise<{ frontendRedirectTo: string; cookies?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ frontendRedirectTo: string; cookies?: string[] } | ErrorOAuth2 | GeneralErrorResponse>);
 
     authGET:
         | undefined
@@ -439,7 +439,7 @@ export type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; cookies?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2 | GeneralErrorResponse>);
     tokenPOST:
         | undefined
         | ((input: {

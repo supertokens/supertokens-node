@@ -2,30 +2,30 @@
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo, User, UserContext } from "../../types";
-export type TypeInput = {
+export declare type TypeInput = {
     apiKey?: string;
     admins?: string[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type TypeNormalisedInput = {
+export declare type TypeNormalisedInput = {
     apiKey?: string;
     admins?: string[];
     authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type RecipeInterface = {
+export declare type RecipeInterface = {
     getDashboardBundleLocation(input: { userContext: UserContext }): Promise<string>;
     shouldAllowAccess(input: {
         req: BaseRequest;
@@ -33,7 +33,7 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<boolean>;
 };
-export type APIOptions = {
+export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -42,22 +42,22 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     appInfo: NormalisedAppinfo;
 };
-export type APIInterface = {
+export declare type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: UserContext }) => Promise<string>);
 };
-export type APIFunction = (
+export declare type APIFunction = (
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
     userContext: UserContext
 ) => Promise<any>;
-export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
-export type AuthMode = "api-key" | "email-password";
-export type UserWithFirstAndLastName = User & {
+export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
+export declare type AuthMode = "api-key" | "email-password";
+export declare type UserWithFirstAndLastName = User & {
     firstName?: string;
     lastName?: string;
 };
-export type CoreConfigFieldInfo = {
+export declare type CoreConfigFieldInfo = {
     key: string;
     valueType: "string" | "boolean" | "number";
     value: string | number | boolean | null;

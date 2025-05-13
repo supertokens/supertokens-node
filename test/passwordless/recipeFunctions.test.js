@@ -87,7 +87,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert.strictEqual(result.thirdParty.length, 0);
             assert.strictEqual(result.loginMethods.length, 1);
             assert.strictEqual(typeof result.loginMethods[0].timeJoined, "number");
-            assert.strictEqual(Object.keys(result).length, 8);
+            assert.strictEqual(Object.keys(result).length, 9);
         }
 
         {
@@ -116,7 +116,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result.thirdParty.length === 0);
             assert(result.loginMethods.length === 1);
             assert(typeof result.loginMethods[0].timeJoined === "number");
-            assert(Object.keys(result).length === 8);
+            assert(Object.keys(result).length === 9);
         }
 
         {
@@ -146,7 +146,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result.thirdParty.length === 0);
             assert(result.loginMethods.length === 1);
             assert(typeof result.loginMethods[0].timeJoined === "number");
-            assert(Object.keys(result).length === 8);
+            assert(Object.keys(result).length === 9);
         }
     });
 
@@ -380,7 +380,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert.strictEqual(resp.user.phoneNumbers[0], undefined);
             assert.strictEqual(typeof resp.user.timeJoined, "number");
             assert.strictEqual(Object.keys(resp).length, 6);
-            assert.strictEqual(Object.keys(resp.user).length, 8);
+            assert.strictEqual(Object.keys(resp.user).length, 9);
 
             const emailVerified = await EmailVerification.isEmailVerified(
                 STExpress.convertToRecipeUserId(resp.user.id)
@@ -1028,7 +1028,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         assert(result.user.phoneNumbers[0] === "+12345678901");
         assert(typeof result.user.id === "string");
         assert(typeof result.user.timeJoined === "number");
-        assert(Object.keys(result.user).length === 8);
+        assert(Object.keys(result.user).length === 9);
     });
 
     it("Passwordless user that isEmailVerified returns true for both email and phone", async function () {

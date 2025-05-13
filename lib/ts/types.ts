@@ -207,11 +207,15 @@ export type User = {
         id: string;
         userId: string;
     }[];
+    webauthn: {
+        credentialIds: string[];
+    };
     loginMethods: (RecipeLevelUser & {
         verified: boolean;
         hasSameEmailAs: (email: string | undefined) => boolean;
         hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
         hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
+        hasSameWebauthnInfoAs: (webauthn?: { credentialId: string }) => boolean;
         toJson: () => any;
     })[];
 

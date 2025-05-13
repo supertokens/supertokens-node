@@ -156,11 +156,13 @@ export declare const AuthUtils: {
                   email: string;
                   thirdParty?: undefined;
                   phoneNumber?: undefined;
+                  webauthn?: undefined;
               }
             | {
                   email?: undefined;
                   thirdParty?: undefined;
                   phoneNumber: string;
+                  webauthn?: undefined;
               }
             | {
                   email?: undefined;
@@ -169,6 +171,15 @@ export declare const AuthUtils: {
                       userId: string;
                   };
                   phoneNumber?: undefined;
+                  webauthn?: undefined;
+              }
+            | {
+                  email?: undefined;
+                  thirdParty?: undefined;
+                  phoneNumber?: undefined;
+                  webauthn: {
+                      credentialId: string;
+                  };
               };
         tenantId: string;
         session: SessionContainerInterface | undefined;

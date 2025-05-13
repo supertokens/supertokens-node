@@ -174,7 +174,7 @@ export type RecipeInterface = {
     getUser: (input: { userId: string; userContext: UserContext }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
         tenantId: string;
-        accountInfo: AccountInfo;
+        accountInfo: AccountInfoInput;
         doUnionOfAccountInfo: boolean;
         userContext: UserContext;
     }) => Promise<User[]>;
@@ -192,10 +192,19 @@ export type AccountInfo = {
         id: string;
         userId: string;
     };
+    webauthn?: {
+        credentialIds: string[];
+    };
+};
+
+export type AccountInfoInput = Omit<AccountInfo, "webauthn"> & {
+    webauthn?: {
+        credentialId: string;
+    };
 };
 
 export type AccountInfoWithRecipeId = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+    recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 } & AccountInfo;
 
 export type RecipeLevelUser = {

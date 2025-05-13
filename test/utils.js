@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -32,6 +32,7 @@ let MultitenancyRecipe = require("../lib/build/recipe/multitenancy/recipe").defa
 let MultiFactorAuthRecipe = require("../lib/build/recipe/multifactorauth/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
 const OAuth2Recipe = require("../lib/build/recipe/oauth2provider/recipe").default;
+const WebAuthnRecipe = require("../lib/build/recipe/webauthn/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
@@ -268,6 +269,7 @@ module.exports.resetAll = function (disableLogging = true) {
     TotpRecipe.reset();
     MultiFactorAuthRecipe.reset();
     OAuth2Recipe.reset();
+    WebAuthnRecipe.reset();
     if (disableLogging) {
         debug.disable();
     }

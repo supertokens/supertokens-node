@@ -5,7 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [unreleased]
+## [22.1.0] - 2025-04-04
+
+-   Adds support for using `code_challenge_method` from OIDC provider response to determine whether to use PKCE or not.
+-   Fixes issue with ThirdParty provider info on dashboard
+
+## [22.0.1] - 2025-03-26
+
+-   Added Dashboard support for WebAuthn
+
+## [22.0.0] - 2025-03-19
+
+### Breaking changes
+
+-   Makes URL path normalization case sensitive
+    -   Updates `normalise_url_path_or_throw_error` to be case sensitive
+    -   URL paths will not be converted to lower-case, and will be kept as-is.
+-   Updated CDI supported version from `5.2` to `5.3`
+-   Changed `AccountInfo` to `AccountInfoInput` in various methods for better type safety. This is required in order to allow querying by a single WebAuthn `credentialId`, while the WebAuthn login method contains an array of `credentialId`
+
+### Added WebAuthn (Passkeys) Support
+
+-   Added WebAuthn recipe with authentication support:
+
+    -   Registration, sign-in, and credential verification flows
+    -   Account recovery functionality
+
+-   Added new API endpoints for WebAuthn operations:
+
+    -   GET `/api/webauthn/email/exists` - Check if email exists in system
+    -   POST `/api/webauthn/options/register` - Handle registration options
+    -   POST `/api/webauthn/options/signin` - Handle sign-in options
+    -   POST `/api/webauthn/signin` - Handle WebAuthn sign-in
+    -   POST `/api/webauthn/signup` - Handle WebAuthn sign-up
+    -   POST `/api/user/webauthn/reset` - Handle account recovery
+    -   POST `/api/user/webauthn/reset/token` - Generate recovery tokens
+
+-   Added WebAuthn support to account linking functionality:
+
+    -   Support for linking users based on WebAuthn `credentialId`
+    -   Updated `AccountInfo` type to `AccountInfoInput` with WebAuthn fields
+    -   Added `hasSameWebauthnInfoAs` method for credential comparison
+
+-   Updated FDI support to `4.1`
+
+## [21.1.1] - 2025-03-18
+
+-   Fixes an issue where the response body was not being cloned when using cache
+-   Fixes type of `cookies` to `string[]` instead of `string` in:
+    -   Return type of `authorization` in `RecipeInterface` in `oauth2provider` recipe
+    -   Return type of `authGET` in `APIInterface` in `oauth2provider` recipe
+    -   Return type of `loginGET` in `APIInterface` in `oauth2provider` recipe
 
 ## [21.1.0] - 2024-11-19
 

@@ -427,6 +427,7 @@ export async function postWithFetch(
         logDebugMessage(errorLogHeader);
         if (error instanceof Error) {
             logDebugMessage(`Error: ${error.message}`);
+            logDebugMessage(`Stack: ${error.stack}`);
         } else {
             logDebugMessage(`Error: ${JSON.stringify(error)}`);
         }
