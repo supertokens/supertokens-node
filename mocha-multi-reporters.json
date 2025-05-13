@@ -1,0 +1,9 @@
+{
+    "reporterEnabled": "spec, mocha-junit-reporter, mocha-json-output-reporter",
+    "mochaJunitReporterReporterOptions": {
+        "mochaFile": "test-results.xml"
+    },
+    "mochaJsonOutputReporterReporterOptions": {
+        "output": "test-results.json"
+    }
+}

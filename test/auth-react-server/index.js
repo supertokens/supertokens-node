@@ -60,7 +60,7 @@ const Webauthn = require("../../recipe/webauthn");
 require("./webauthn/wasm_exec");
 
 let {
-    startST,
+    createCoreApplication,
     killAllST,
     setupST,
     cleanST,
@@ -218,13 +218,15 @@ app.get("/ping", async (req, res) => {
 
 app.post("/startst", async (req, res) => {
     try {
-        connectionURI = await startST(req.body);
+        connectionURI = await createCoreApplication(req.body);
         console.log("Connection URI: " + connectionURI);
 
         const OPAQUE_KEY_WITH_ALL_FEATURES_ENABLED =
             "N2yITHflaFS4BPm7n0bnfFCjP4sJoTERmP0J=kXQ5YONtALeGnfOOe2rf2QZ0mfOh0aO3pBqfF-S0jb0ABpat6pySluTpJO6jieD6tzUOR1HrGjJO=50Ob3mHi21tQHJ";
 
-        await fetch(`${connectionURI}/ee/license`, {
+        const coreURI = getCoreUrlFromConnectionURI(connectionURI);
+
+        await fetch(`${coreURI}/ee/license`, {
             method: "PUT",
             headers: {
                 "content-type": "application/json; charset=utf-8",
@@ -242,7 +244,11 @@ app.post("/startst", async (req, res) => {
     }
 });
 
-app.post("/beforeeach", async (req, res) => {
+app.post("/test/before", async (req, res) => {
+    res.send();
+});
+
+app.post("/test/beforeEach", async (req, res) => {
     deviceStore = new Map();
 
     mfaInfo = {};
@@ -259,11 +265,23 @@ app.post("/beforeeach", async (req, res) => {
     res.send();
 });
 
-app.post("/after", async (req, res) => {
+app.post("/test/after", async (req, res) => {
     if (process.env.INSTALL_PATH !== undefined) {
         await killAllST();
         await cleanST();
     }
+    res.send();
+});
+
+app.post("/test/afterEach", async (req, res) => {
+    res.send();
+});
+
+app.post("/test/setup/app", async (req, res) => {
+    const connectionURI = await createCoreApplication(req.body);
+    res.send(connectionURI);
+});
+app.post("/test/setup/st", async (req, res) => {
     res.send();
 });
 
@@ -366,12 +384,6 @@ app.post(
     }
 );
 
-app.post("/setMFAInfo", async (req, res) => {
-    mfaInfo = req.body;
-
-    res.send({ status: "OK" });
-});
-
 app.post("/completeFactor", verifySession(), async (req, res) => {
     let session = req.session;
 
@@ -400,33 +412,6 @@ app.get("/token", async (_, res) => {
     res.send({
         latestURLWithToken,
     });
-});
-
-app.post("/test/setFlow", (req, res) => {
-    initST({
-        passwordlessConfig: {
-            contactMethod: req.body.contactMethod,
-            flowType: req.body.flowType,
-
-            emailDelivery: {
-                override: (oI) => {
-                    return {
-                        ...oI,
-                        sendEmail: saveCode,
-                    };
-                },
-            },
-            smsDelivery: {
-                override: (oI) => {
-                    return {
-                        ...oI,
-                        sendSms: saveCode,
-                    };
-                },
-            },
-        },
-    });
-    res.sendStatus(200);
 });
 
 app.post("/setupTenant", async (req, res) => {
@@ -469,55 +454,6 @@ app.post("/removeTenant", async (req, res) => {
     const { tenantId } = req.body;
     let coreResp = await Multitenancy.deleteTenant(tenantId);
     res.send(coreResp);
-});
-
-app.post("/test/setFlow", (req, res) => {
-    passwordlessConfig = {
-        contactMethod: req.body.contactMethod,
-        flowType: req.body.flowType,
-
-        emailDelivery: {
-            override: (oI) => {
-                return {
-                    ...oI,
-                    sendEmail: saveCode,
-                };
-            },
-        },
-        smsDelivery: {
-            override: (oI) => {
-                return {
-                    ...oI,
-                    sendSms: saveCode,
-                };
-            },
-        },
-    };
-    initST();
-    res.sendStatus(200);
-});
-
-app.post("/test/setAccountLinkingConfig", (req, res) => {
-    accountLinkingConfig = {
-        ...req.body,
-    };
-    initST();
-    res.sendStatus(200);
-});
-
-app.post("/test/setEnabledRecipes", (req, res) => {
-    enabledRecipes = req.body.enabledRecipes;
-    if (enabledRecipes.includes("thirdpartyemailpassword")) {
-        enabledRecipes.push("thirdparty");
-        enabledRecipes.push("emailpassword");
-    }
-    if (enabledRecipes.includes("thirdpartypasswordless")) {
-        enabledRecipes.push("thirdparty");
-        enabledRecipes.push("passwordless");
-    }
-    enabledProviders = req.body.enabledProviders;
-    initST();
-    res.sendStatus(200);
 });
 
 app.get("/test/getDevice", (req, res) => {
@@ -635,7 +571,7 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
         } catch (e) {}
 
         await setupST();
-        const pid = await startST();
+        const pid = await createCoreApplication();
         console.log(`Application started on http://localhost:${process.env.NODE_PORT | 8083}`);
         console.log(`processId: ${pid}`);
     }

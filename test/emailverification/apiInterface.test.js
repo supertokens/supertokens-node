@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, stopST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 const assert = require("assert");
 
 const request = require("supertest");
@@ -36,19 +36,12 @@ const createWebauthnUser = require("../webauthn/lib/createUser");
 
 describe(`apiInterface: ${printPath("[test/emailverification/apiInterface.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("[verifyEmailPOST]", function () {
         it("should verify the user when user signed up with emailpassword recipe", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -120,7 +113,7 @@ describe(`apiInterface: ${printPath("[test/emailverification/apiInterface.js]")}
         });
 
         it("should verify the user when user signed up with webauthn recipe", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const origin = "https://supertokens.io";
             const rpId = "supertokens.io";
