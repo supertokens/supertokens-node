@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy } = require("../utils");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -29,19 +29,12 @@ let ThirdParty = require("../../recipe/thirdparty");
 
 describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("with mfa not enabled", function () {
         it("should return firstFactors based on enabled recipes if no other configuration is available", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -75,7 +68,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         });
 
         it("should return firstFactors based on enabled combination recipes if no other configuration is available", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -110,7 +103,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         });
 
         it("should return from core config when configured in core", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -147,7 +140,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
     describe("with mfa enabled", function () {
         it("static config is filtered with enabled recipes", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -181,7 +174,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         });
 
         it("core config is prioritised over static config and is filtered with enabled recipes in SDK", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -219,7 +212,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         });
 
         it("static config is filtered with enabled recipes in core", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -258,7 +251,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         });
 
         it("static config is filtered with enabled recipes, but custom is allowed", async function () {
-            const connectionURI = await startSTWithMultitenancy();
+            const connectionURI = await createCoreApplicationWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,

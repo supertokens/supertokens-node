@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, resetAll } = require("../utils");
+const { printPath, createCoreApplication, resetAll } = require("../utils");
 const assert = require("assert");
 const SuperTokens = require("../..");
 const Session = require("../../recipe/session");
@@ -23,9 +23,6 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     let requestMock;
     let clock;
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
-
         requestMock.reset();
         requestMock.callThrough();
         if (clock) {
@@ -39,14 +36,12 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
 
     after(async function () {
         requestMock.restore();
-        await killAllST();
-        await cleanST();
     });
 
     it("should fetch the keys as expected", async () => {
         clock = sinon.useFakeTimers({ shouldAdvanceTime: true, now: Date.now() });
 
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -77,7 +72,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     it("should not re-fetch if the cache is available", async () => {
         clock = sinon.useFakeTimers({ shouldAdvanceTime: true, now: Date.now() });
 
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -106,7 +101,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("should re-fetch keys for unknown kid", async () => {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
         }); // 5 seconds is the update interval
         SuperTokens.init({
@@ -152,7 +147,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("should throw if jwks endpoint errors", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -189,7 +184,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     it("should re-fetch after the cache expires", async () => {
         clock = sinon.useFakeTimers({ shouldAdvanceTime: true, now: Date.now() });
 
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -233,7 +228,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("jwks multiple cores work ok", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI: `${connectionURI};http://localhost:8081`,
@@ -261,7 +256,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("jwks endpoint throwing should fall back to next core if fetching throws", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 // We are using two valid core values here, but make it throw below
@@ -293,7 +288,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("jwks endpoint throwing should fall back to next core if fetching returns the wrong status/shape", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

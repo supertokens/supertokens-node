@@ -1,6 +1,6 @@
 let assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 const JWTRecipe = require("../../lib/build/recipe/jwt/recipe").default;
@@ -9,18 +9,11 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("Test that the default config sets values correctly for JWT recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -45,7 +38,7 @@ describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
     });
 
     it("Test that the config sets values correctly for JWT recipe when jwt validity is set", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
