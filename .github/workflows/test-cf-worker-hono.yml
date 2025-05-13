@@ -13,7 +13,7 @@ jobs:
             run:
                 working-directory: examples/cloudflare-workers/with-email-password-hono-be-only
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - run: echo $GITHUB_SHA
             - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
             - run: npm install
@@ -36,7 +36,7 @@ jobs:
                   )
             - name: The job has failed
               if: ${{ failure() }}
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: screenshots
                   path: |
