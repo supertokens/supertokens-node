@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy } = require("../utils");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -27,18 +27,11 @@ const { default: SessionRecipe } = require("../../lib/build/recipe/session/recip
 
 describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test that different roles can be assigned for the same user for each tenant", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

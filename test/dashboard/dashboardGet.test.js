@@ -1,5 +1,5 @@
 const { ProcessState } = require("../../lib/build/processState");
-const { printPath, killAllST, setupST, cleanST, startST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Dashboard = require("../../recipe/dashboard");
 let EmailPassword = require("../../recipe/emailpassword");
@@ -10,21 +10,14 @@ let assert = require("assert");
 
 describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]")}`, () => {
     beforeEach(async () => {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     const dashboardURL = "/auth/dashboard/";
 
     describe("Test connectionURI", function () {
         it("Test connectionURI contains http protocol", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             // removing protocol from the original connectionURI.
             const connectionURIWithoutProtocol = connectionURI.replace("http://", "");
 
@@ -69,7 +62,7 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
 
         it("Test connectionURI contains https protocol", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             // removing protocol from the original connectionURI.
             const connectionURIWithoutProtocol = connectionURI.replace("https://", "").replace("http://", "");
 
@@ -113,7 +106,7 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
 
         it("Test multiple connection URIs", async () => {
-            const firstConnectionURI = await startST();
+            const firstConnectionURI = await createCoreApplication();
             const secondConnectionURI = "http://no-core-here.supertokens.com";
 
             const multipleConnectionURIs = `${firstConnectionURI};${secondConnectionURI}`;
