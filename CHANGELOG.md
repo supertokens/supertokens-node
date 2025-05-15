@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Migrates from CircleCI to Github Actions
 -   Adds workflow to test supertokens-website
     -   Updates `frontendIntegration` servers
+-   Fixes broken workflows (Example Tests, AWS Edge function compatibility)
+-   Sets up workflow to run auth-react tests
+    -   Updates test-servers to work with updated tests
+
+## [22.2.0] - 2025-05-09
+
+-   Refactors querier to use dynamic request body and response body types inference
 
 ## [22.2.0] - 2025-05-09
 
