@@ -35,6 +35,12 @@ export declare class User implements UserType {
     readonly loginMethods: LoginMethod[];
     readonly timeJoined: number;
     constructor(user: UserWithoutHelperFunctions);
+    /**
+     * This function is used to create a User object from the API response.
+     *
+     * @param apiUser - The API response from the user endpoint.
+     * @returns A User object.
+     */
     static fromApi(
         apiUser: Omit<UserWithoutHelperFunctions, "id"> & {
             id: string;

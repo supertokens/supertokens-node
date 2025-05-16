@@ -120,6 +120,12 @@ export class User implements UserType {
         this.loginMethods = user.loginMethods.map((m) => new LoginMethod(m));
     }
 
+    /**
+     * This function is used to create a User object from the API response.
+     *
+     * @param apiUser - The API response from the user endpoint.
+     * @returns A User object.
+     */
     static fromApi(apiUser: Omit<UserWithoutHelperFunctions, "id"> & { id: string }): User {
         return new User(apiUser);
     }
