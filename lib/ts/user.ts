@@ -121,10 +121,7 @@ export class User implements UserType {
     }
 
     static fromApi(apiUser: Omit<UserWithoutHelperFunctions, "id"> & { id: string }): User {
-        return new User({
-            ...apiUser,
-            id: new RecipeUserId(apiUser.id).getAsString(),
-        });
+        return new User(apiUser);
     }
 
     toJson(): JSONObject {
