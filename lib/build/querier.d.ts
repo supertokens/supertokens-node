@@ -4,6 +4,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 import { PathParam, RequestBody, ResponseBody } from "./core/types";
+import { paths } from "./core/paths";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -31,7 +32,7 @@ export declare class Querier {
         disableCache?: boolean
     ): void;
     private getPath;
-    sendPostRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
+    sendPostRequest: <P extends keyof paths>(
         template_path: PathParam<P>,
         body: RequestBody<P, "post">,
         userContext: UserContext
@@ -40,7 +41,7 @@ export declare class Querier {
             ? Required<import("./core/types").UncleanedResponseBody<P, "post">>
             : never
     >;
-    sendDeleteRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
+    sendDeleteRequest: <P extends keyof paths>(
         template_path: PathParam<P>,
         body: RequestBody<P, "delete">,
         params: any | undefined,
@@ -50,7 +51,7 @@ export declare class Querier {
             ? Required<import("./core/types").UncleanedResponseBody<P, "delete">>
             : never
     >;
-    sendGetRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
+    sendGetRequest: <P extends keyof paths>(
         template_path: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
@@ -59,7 +60,7 @@ export declare class Querier {
             ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
             : never
     >;
-    sendGetRequestWithResponseHeaders: <P extends keyof import("./core/versions/5.3/schema").paths>(
+    sendGetRequestWithResponseHeaders: <P extends keyof paths>(
         template_path: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
@@ -70,7 +71,7 @@ export declare class Querier {
             : never;
         headers: Headers;
     }>;
-    sendPutRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
+    sendPutRequest: <P extends keyof paths>(
         template_path: PathParam<P>,
         body: RequestBody<P, "put">,
         params: Record<string, boolean | number | string | undefined>,
@@ -80,7 +81,7 @@ export declare class Querier {
             ? Required<import("./core/types").UncleanedResponseBody<P, "put">>
             : never
     >;
-    sendPatchRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
+    sendPatchRequest: <P extends keyof paths>(
         template_path: PathParam<P>,
         body: RequestBody<P, "patch">,
         userContext: UserContext
