@@ -32,85 +32,61 @@ export declare class Querier {
     ): void;
     private getPath;
     sendPostRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "post">,
         userContext: UserContext
     ) => Promise<
         import("./core/types").UncleanedResponseBody<P, "post"> extends any
-            ? {
-                  [K in keyof import("./core/types").UncleanedResponseBody<P, "post">]-?: NonNullable<
-                      import("./core/types").UncleanedResponseBody<P, "post">[K]
-                  >;
-              }
+            ? Required<import("./core/types").UncleanedResponseBody<P, "post">>
             : never
     >;
     sendDeleteRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "delete">,
         params: any | undefined,
         userContext: UserContext
     ) => Promise<
         import("./core/types").UncleanedResponseBody<P, "delete"> extends any
-            ? {
-                  [K in keyof import("./core/types").UncleanedResponseBody<P, "delete">]-?: NonNullable<
-                      import("./core/types").UncleanedResponseBody<P, "delete">[K]
-                  >;
-              }
+            ? Required<import("./core/types").UncleanedResponseBody<P, "delete">>
             : never
     >;
     sendGetRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
     ) => Promise<
         import("./core/types").UncleanedResponseBody<P, "get"> extends any
-            ? {
-                  [K in keyof import("./core/types").UncleanedResponseBody<P, "get">]-?: NonNullable<
-                      import("./core/types").UncleanedResponseBody<P, "get">[K]
-                  >;
-              }
+            ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
             : never
     >;
     sendGetRequestWithResponseHeaders: <P extends keyof import("./core/versions/5.3/schema").paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ) => Promise<{
         body: import("./core/types").UncleanedResponseBody<P, "get"> extends any
-            ? {
-                  [K in keyof import("./core/types").UncleanedResponseBody<P, "get">]-?: NonNullable<
-                      import("./core/types").UncleanedResponseBody<P, "get">[K]
-                  >;
-              }
+            ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
             : never;
         headers: Headers;
     }>;
     sendPutRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "put">,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
     ) => Promise<
         import("./core/types").UncleanedResponseBody<P, "put"> extends any
-            ? {
-                  [K in keyof import("./core/types").UncleanedResponseBody<P, "put">]-?: NonNullable<
-                      import("./core/types").UncleanedResponseBody<P, "put">[K]
-                  >;
-              }
+            ? Required<import("./core/types").UncleanedResponseBody<P, "put">>
             : never
     >;
     sendPatchRequest: <P extends keyof import("./core/versions/5.3/schema").paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "patch">,
         userContext: UserContext
     ) => Promise<
         import("./core/types").UncleanedResponseBody<P, "patch"> extends any
-            ? {
-                  [K in keyof import("./core/types").UncleanedResponseBody<P, "patch">]-?: NonNullable<
-                      import("./core/types").UncleanedResponseBody<P, "patch">[K]
-                  >;
-              }
+            ? Required<import("./core/types").UncleanedResponseBody<P, "patch">>
             : never
     >;
     invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;

@@ -19,22 +19,9 @@ export type ExtractMethodType<P extends keyof paths, M extends Method> = Exclude
     undefined
 >;
 
-// Type to ensure that the `status` is a required field instead of
-// it being optional. We should use this until the spec is not updated.
-// TODO: Remove if we decide to go ahead with MakeAllRequired
-// type MakeStatusRequired<T> = T extends { status?: infer S }
-//     ? Omit<T, "status"> & { status: S }
-//     : T;
-
-// Type to make all fields required. This should be used only if
-// it is absolutely guaranteed that the fields are not optional.
-type MakeAllRequired<T> = {
-    [K in keyof T]-?: NonNullable<T[K]>;
-};
-
-// Wrapper around MakeAllRequired to ensure that it is applied recursively
+// Wrapper around Required to ensure that it is applied recursively
 // to all unions.
-type DeepRequireAllFields<T> = T extends any ? MakeAllRequired<T> : never;
+type DeepRequireAllFields<T> = T extends any ? Required<T> : never;
 
 // Type to extract the request body from the method type
 export type RequestBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {

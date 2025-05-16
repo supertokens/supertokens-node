@@ -15,10 +15,7 @@ export declare type ExtractMethodType<P extends keyof paths, M extends Method> =
     ExtractMethodTypeWithUndefined<P, M>,
     undefined
 >;
-declare type MakeAllRequired<T> = {
-    [K in keyof T]-?: NonNullable<T[K]>;
-};
-declare type DeepRequireAllFields<T> = T extends any ? MakeAllRequired<T> : never;
+declare type DeepRequireAllFields<T> = T extends any ? Required<T> : never;
 export declare type RequestBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
     requestBody?: infer ReqBody;
 }
