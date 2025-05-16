@@ -169,12 +169,12 @@ export class Querier {
 
     // path should start with "/"
     sendPostRequest = async <P extends keyof paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "post">,
         userContext: UserContext
     ): Promise<ResponseBody<P, "post">> => {
         this.invalidateCoreCallCache(userContext);
-        const path = this.getPath(template);
+        const path = this.getPath(template_path);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -227,13 +227,13 @@ export class Querier {
 
     // path should start with "/"
     sendDeleteRequest = async <P extends keyof paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "delete">,
         params: any | undefined,
         userContext: UserContext
     ): Promise<ResponseBody<P, "delete">> => {
         this.invalidateCoreCallCache(userContext);
-        const path = this.getPath(template);
+        const path = this.getPath(template_path);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -291,11 +291,11 @@ export class Querier {
 
     // path should start with "/"
     sendGetRequest = async <P extends keyof paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
     ): Promise<ResponseBody<P, "get">> => {
-        const path = this.getPath(template);
+        const path = this.getPath(template_path);
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "GET",
@@ -403,12 +403,12 @@ export class Querier {
     };
 
     sendGetRequestWithResponseHeaders = async <P extends keyof paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ): Promise<{ body: ResponseBody<P, "get">; headers: Headers }> => {
-        const path = this.getPath(template);
+        const path = this.getPath(template_path);
         return await this.sendRequestHelper(
             path,
             "GET",
@@ -461,13 +461,13 @@ export class Querier {
 
     // path should start with "/"
     sendPutRequest = async <P extends keyof paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "put">,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
     ): Promise<ResponseBody<P, "put">> => {
         this.invalidateCoreCallCache(userContext);
-        const path = this.getPath(template);
+        const path = this.getPath(template_path);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -524,12 +524,12 @@ export class Querier {
 
     // path should start with "/"
     sendPatchRequest = async <P extends keyof paths>(
-        template: PathParam<P>,
+        template_path: PathParam<P>,
         body: RequestBody<P, "patch">,
         userContext: UserContext
     ): Promise<ResponseBody<P, "patch">> => {
         this.invalidateCoreCallCache(userContext);
-        const path = this.getPath(template);
+        const path = this.getPath(template_path);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
