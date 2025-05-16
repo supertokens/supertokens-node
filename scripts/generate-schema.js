@@ -7,7 +7,7 @@ const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fet
 
 const coreJsonPath = path.join(__dirname, "..", "coreDriverInterfaceSupported.json");
 const specsDir = path.join(__dirname, "..", "specs");
-const libDir = path.join(__dirname, "..", "lib", "core", "versions");
+const libDir = path.join(__dirname, "..", "lib", "ts", "core", "versions");
 
 const BASE_URL = "https://raw.githubusercontent.com/supertokens/core-driver-interface/refs/heads";
 
