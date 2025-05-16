@@ -33,7 +33,7 @@ export declare class Querier {
     ): void;
     private getPath;
     sendPostRequest: <P extends keyof paths>(
-        template_path: PathParam<P>,
+        templatePath: PathParam<P>,
         body: RequestBody<P, "post">,
         userContext: UserContext
     ) => Promise<
@@ -42,7 +42,7 @@ export declare class Querier {
             : never
     >;
     sendDeleteRequest: <P extends keyof paths>(
-        template_path: PathParam<P>,
+        templatePath: PathParam<P>,
         body: RequestBody<P, "delete">,
         params: any | undefined,
         userContext: UserContext
@@ -52,7 +52,7 @@ export declare class Querier {
             : never
     >;
     sendGetRequest: <P extends keyof paths>(
-        template_path: PathParam<P>,
+        templatePath: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
     ) => Promise<
@@ -61,7 +61,7 @@ export declare class Querier {
             : never
     >;
     sendGetRequestWithResponseHeaders: <P extends keyof paths>(
-        template_path: PathParam<P>,
+        templatePath: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
@@ -72,7 +72,7 @@ export declare class Querier {
         headers: Headers;
     }>;
     sendPutRequest: <P extends keyof paths>(
-        template_path: PathParam<P>,
+        templatePath: PathParam<P>,
         body: RequestBody<P, "put">,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
@@ -82,7 +82,7 @@ export declare class Querier {
             : never
     >;
     sendPatchRequest: <P extends keyof paths>(
-        template_path: PathParam<P>,
+        templatePath: PathParam<P>,
         body: RequestBody<P, "patch">,
         userContext: UserContext
     ) => Promise<
