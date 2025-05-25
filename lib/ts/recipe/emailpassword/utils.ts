@@ -148,7 +148,7 @@ function normaliseSignInFormFields(formFields?: TypeInputFormField[]) {
         // no password field give by user
         normalisedFormFields.push({
             id: FORM_FIELD_PASSWORD_ID,
-            validate: defaultPasswordValidator,
+            validate: defaultValidator,
             optional: false,
         });
     }
