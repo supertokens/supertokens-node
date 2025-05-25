@@ -125,6 +125,11 @@ export type SuperTokensPlugin = {
     id: string; // TODO: validate that no two plugins have the same id
     version?: string;
     compatibleSDKVersions?: string | string[]; // match the syntax of the engines field in package.json
+    init?: (
+        config: Omit<TypeInput, "recipeList" | "experimental">,
+        allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
+        sdkVersion: string
+    ) => Promise<void> | void;
     dependencies?: (
         pluginsAbove: SuperTokensPlugin[],
         sdkVersion: string
@@ -134,9 +139,19 @@ export type SuperTokensPlugin = {
             recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
         };
     };
-    routeHandlers?: PluginRouteHandler[];
+    routeHandlers?: (
+        config: Omit<TypeInput, "recipeList" | "experimental">,
+        allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
+        sdkVersion: string
+    ) => { status: "OK"; routeHandlers: PluginRouteHandler[] } | { status: "ERROR"; message: string };
     config?: (config: Omit<TypeInput, "recipeList">) => Omit<TypeInput, "recipeList"> | undefined;
+    exports?: Record<string, any>;
 };
+
+export type SuperTokensPublicPlugin = Pick<
+    SuperTokensPlugin,
+    "id" | "version" | "compatibleSDKVersions" | "exports"
+> & { initialized: boolean };
 
 export type TypeInput = {
     supertokens?: SuperTokensInfo;

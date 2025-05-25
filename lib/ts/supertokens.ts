@@ -21,6 +21,7 @@ import {
     UserContext,
     PluginRouteHandler,
     SuperTokensPlugin,
+    SuperTokensPublicPlugin,
 } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
@@ -29,6 +30,7 @@ import {
     sendNon200ResponseWithMessage,
     getRidFromHeader,
     isTestEnv,
+    getPublicPlugin,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -58,12 +60,15 @@ export default class SuperTokens {
 
     pluginRouteHandlers: PluginRouteHandler[];
 
+    pluginList: SuperTokensPublicPlugin[];
+
     supertokens: undefined | SuperTokensInfo;
 
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
         const inputPluginList = config.experimental?.plugins ?? [];
+
         this.pluginRouteHandlers = [];
         const finalPluginList: SuperTokensPlugin[] = [];
         for (const plugin of inputPluginList) {
@@ -85,14 +90,29 @@ export default class SuperTokens {
             }
             finalPluginList.push(plugin);
         }
+        this.pluginList = finalPluginList.map(getPublicPlugin);
 
-        for (const plugin of finalPluginList) {
-            if (plugin.routeHandlers) {
-                this.pluginRouteHandlers.push(...plugin.routeHandlers);
+        for (let pluginIndex = 0; pluginIndex < this.pluginList.length; pluginIndex += 1) {
+            const pluginConfig = finalPluginList[pluginIndex].config;
+            if (pluginConfig) {
+                config = { ...config, ...pluginConfig(config) };
             }
 
-            if (plugin.config) {
-                config = { ...config, ...plugin.config(config) };
+            const pluginRouteHandlers = finalPluginList[pluginIndex].routeHandlers;
+            if (pluginRouteHandlers) {
+                const result = pluginRouteHandlers(config, this.pluginList, version);
+                if (result.status === "ERROR") {
+                    throw new Error(result.message);
+                }
+                this.pluginRouteHandlers.push(...result.routeHandlers);
+            }
+
+            const pluginInit = finalPluginList[pluginIndex].init;
+            if (pluginInit) {
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    pluginInit(config, this.pluginList, version);
+                    this.pluginList[pluginIndex].initialized = true;
+                });
             }
         }
 

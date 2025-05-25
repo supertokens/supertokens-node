@@ -9,7 +9,7 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     getRelyingPartyId: TypeNormalisedInputRelyingPartyId;
     getRelyingPartyName: TypeNormalisedInputRelyingPartyName;
     getOrigin: TypeNormalisedInputGetOrigin;
@@ -25,27 +25,27 @@ export declare type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInputRelyingPartyId = (input: {
+export type TypeNormalisedInputRelyingPartyId = (input: {
     tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;
 }) => Promise<string>;
-export declare type TypeNormalisedInputRelyingPartyName = (input: {
+export type TypeNormalisedInputRelyingPartyName = (input: {
     tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;
 }) => Promise<string>;
-export declare type TypeNormalisedInputGetOrigin = (input: {
+export type TypeNormalisedInputGetOrigin = (input: {
     tenantId: string;
     request: BaseRequest;
     userContext: UserContext;
 }) => Promise<string>;
-export declare type TypeNormalisedInputValidateEmailAddress = (
+export type TypeNormalisedInputValidateEmailAddress = (
     email: string,
     tenantId: string,
     userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
-export declare type TypeInput = {
+export type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
     getRelyingPartyId?: TypeInputRelyingPartyId;
     getRelyingPartyName?: TypeInputRelyingPartyName;
@@ -59,23 +59,23 @@ export declare type TypeInput = {
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeInputRelyingPartyId =
+export type TypeInputRelyingPartyId =
     | string
     | ((input: { tenantId: string; request: BaseRequest | undefined; userContext: UserContext }) => Promise<string>);
-export declare type TypeInputRelyingPartyName =
+export type TypeInputRelyingPartyName =
     | string
     | ((input: { tenantId: string; userContext: UserContext }) => Promise<string>);
-export declare type TypeInputGetOrigin = (input: {
+export type TypeInputGetOrigin = (input: {
     tenantId: string;
     request: BaseRequest;
     userContext: UserContext;
 }) => Promise<string>;
-export declare type TypeInputValidateEmailAddress = (
+export type TypeInputValidateEmailAddress = (
     email: string,
     tenantId: string,
     userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
-declare type RegisterOptionsErrorResponse =
+type RegisterOptionsErrorResponse =
     | {
           status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
       }
@@ -86,10 +86,10 @@ declare type RegisterOptionsErrorResponse =
     | {
           status: "INVALID_OPTIONS_ERROR";
       };
-declare type SignInOptionsErrorResponse = {
+type SignInOptionsErrorResponse = {
     status: "INVALID_OPTIONS_ERROR";
 };
-declare type CreateNewRecipeUserErrorResponse =
+type CreateNewRecipeUserErrorResponse =
     | {
           status: "EMAIL_ALREADY_EXISTS_ERROR";
       }
@@ -106,7 +106,7 @@ declare type CreateNewRecipeUserErrorResponse =
           status: "INVALID_AUTHENTICATOR_ERROR";
           reason: string;
       };
-declare type SignUpErrorResponse =
+type SignUpErrorResponse =
     | CreateNewRecipeUserErrorResponse
     | {
           status: "LINKING_TO_SESSION_USER_FAILED";
@@ -116,7 +116,7 @@ declare type SignUpErrorResponse =
               | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
               | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
       };
-declare type VerifyCredentialsErrorResponse =
+type VerifyCredentialsErrorResponse =
     | {
           status: "INVALID_CREDENTIALS_ERROR";
       }
@@ -135,7 +135,7 @@ declare type VerifyCredentialsErrorResponse =
     | {
           status: "OPTIONS_NOT_FOUND_ERROR";
       };
-declare type SignInErrorResponse =
+type SignInErrorResponse =
     | VerifyCredentialsErrorResponse
     | {
           status: "LINKING_TO_SESSION_USER_FAILED";
@@ -145,13 +145,13 @@ declare type SignInErrorResponse =
               | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
               | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
       };
-declare type GenerateRecoverAccountTokenErrorResponse = {
+type GenerateRecoverAccountTokenErrorResponse = {
     status: "UNKNOWN_USER_ID_ERROR";
 };
-declare type ConsumeRecoverAccountTokenErrorResponse = {
+type ConsumeRecoverAccountTokenErrorResponse = {
     status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
 };
-declare type RegisterCredentialErrorResponse =
+type RegisterCredentialErrorResponse =
     | {
           status: "INVALID_CREDENTIALS_ERROR";
       }
@@ -165,33 +165,33 @@ declare type RegisterCredentialErrorResponse =
           status: "INVALID_AUTHENTICATOR_ERROR";
           reason: string;
       };
-declare type GetUserFromRecoverAccountTokenErrorResponse = {
+type GetUserFromRecoverAccountTokenErrorResponse = {
     status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
 };
-declare type RemoveCredentialErrorResponse = {
+type RemoveCredentialErrorResponse = {
     status: "CREDENTIAL_NOT_FOUND_ERROR";
 };
-declare type GetCredentialErrorResponse = {
+type GetCredentialErrorResponse = {
     status: "CREDENTIAL_NOT_FOUND_ERROR";
 };
-declare type RemoveGeneratedOptionsErrorResponse = {
+type RemoveGeneratedOptionsErrorResponse = {
     status: "OPTIONS_NOT_FOUND_ERROR";
 };
-declare type GetGeneratedOptionsErrorResponse = {
+type GetGeneratedOptionsErrorResponse = {
     status: "OPTIONS_NOT_FOUND_ERROR";
 };
-declare type UpdateUserEmailErrorResponse =
+type UpdateUserEmailErrorResponse =
     | {
           status: "EMAIL_ALREADY_EXISTS_ERROR";
       }
     | {
           status: "UNKNOWN_USER_ID_ERROR";
       };
-declare type Base64URLString = string;
-export declare type ResidentKey = "required" | "preferred" | "discouraged";
-export declare type UserVerification = "required" | "preferred" | "discouraged";
-export declare type Attestation = "none" | "indirect" | "direct" | "enterprise";
-export declare type RecipeInterface = {
+type Base64URLString = string;
+export type ResidentKey = "required" | "preferred" | "discouraged";
+export type UserVerification = "required" | "preferred" | "discouraged";
+export type Attestation = "none" | "indirect" | "direct" | "enterprise";
+export type RecipeInterface = {
     registerOptions(
         input: {
             relyingPartyId: string;
@@ -463,7 +463,7 @@ export declare type RecipeInterface = {
         | UpdateUserEmailErrorResponse
     >;
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     appInfo: NormalisedAppinfo;
     config: TypeNormalisedInput;
@@ -473,9 +473,9 @@ export declare type APIOptions = {
     res: BaseResponse;
     emailDelivery: EmailDeliveryIngredient<TypeWebauthnEmailDeliveryInput>;
 };
-declare type RegisterOptionsPOSTErrorResponse = RegisterOptionsErrorResponse;
-declare type SignInOptionsPOSTErrorResponse = SignInOptionsErrorResponse;
-declare type SignUpPOSTErrorResponse =
+type RegisterOptionsPOSTErrorResponse = RegisterOptionsErrorResponse;
+type SignInOptionsPOSTErrorResponse = SignInOptionsErrorResponse;
+type SignUpPOSTErrorResponse =
     | {
           status: "SIGN_UP_NOT_ALLOWED";
           reason: string;
@@ -496,7 +496,7 @@ declare type SignUpPOSTErrorResponse =
     | {
           status: "INVALID_OPTIONS_ERROR";
       };
-declare type SignInPOSTErrorResponse =
+type SignInPOSTErrorResponse =
     | {
           status: "INVALID_CREDENTIALS_ERROR";
       }
@@ -504,11 +504,11 @@ declare type SignInPOSTErrorResponse =
           status: "SIGN_IN_NOT_ALLOWED";
           reason: string;
       };
-declare type GenerateRecoverAccountTokenPOSTErrorResponse = {
+type GenerateRecoverAccountTokenPOSTErrorResponse = {
     status: "RECOVER_ACCOUNT_NOT_ALLOWED";
     reason: string;
 };
-declare type RecoverAccountPOSTErrorResponse =
+type RecoverAccountPOSTErrorResponse =
     | {
           status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
       }
@@ -525,7 +525,7 @@ declare type RecoverAccountPOSTErrorResponse =
           status: "INVALID_AUTHENTICATOR_ERROR";
           reason: string;
       };
-declare type RegisterCredentialPOSTErrorResponse =
+type RegisterCredentialPOSTErrorResponse =
     | {
           status: "REGISTER_CREDENTIAL_NOT_ALLOWED";
           reason: string;
@@ -543,7 +543,7 @@ declare type RegisterCredentialPOSTErrorResponse =
           status: "INVALID_AUTHENTICATOR_ERROR";
           reason: string;
       };
-export declare type APIInterface = {
+export type APIInterface = {
     registerOptionsPOST:
         | undefined
         | ((
@@ -717,7 +717,7 @@ export declare type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-export declare type TypeWebauthnRecoverAccountEmailDeliveryInput = {
+export type TypeWebauthnRecoverAccountEmailDeliveryInput = {
     type: "RECOVER_ACCOUNT";
     user: {
         id: string;
@@ -727,21 +727,21 @@ export declare type TypeWebauthnRecoverAccountEmailDeliveryInput = {
     recoverAccountLink: string;
     tenantId: string;
 };
-export declare type TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput;
-export declare type CredentialPayloadBase = {
+export type TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput;
+export type CredentialPayloadBase = {
     id: string;
     rawId: string;
     authenticatorAttachment?: "platform" | "cross-platform";
     clientExtensionResults: Record<string, unknown>;
     type: "public-key";
 };
-export declare type AuthenticatorAssertionResponseJSON = {
+export type AuthenticatorAssertionResponseJSON = {
     clientDataJSON: Base64URLString;
     authenticatorData: Base64URLString;
     signature: Base64URLString;
     userHandle?: Base64URLString;
 };
-export declare type AuthenticatorAttestationResponseJSON = {
+export type AuthenticatorAttestationResponseJSON = {
     clientDataJSON: Base64URLString;
     attestationObject: Base64URLString;
     authenticatorData?: Base64URLString;
@@ -749,13 +749,13 @@ export declare type AuthenticatorAttestationResponseJSON = {
     publicKeyAlgorithm?: COSEAlgorithmIdentifier;
     publicKey?: Base64URLString;
 };
-export declare type AuthenticationPayload = CredentialPayloadBase & {
+export type AuthenticationPayload = CredentialPayloadBase & {
     response: AuthenticatorAssertionResponseJSON;
 };
-export declare type RegistrationPayload = CredentialPayloadBase & {
+export type RegistrationPayload = CredentialPayloadBase & {
     response: AuthenticatorAttestationResponseJSON;
 };
-export declare type CredentialPayload = CredentialPayloadBase & {
+export type CredentialPayload = CredentialPayloadBase & {
     response: {
         clientDataJSON: string;
         attestationObject: string;

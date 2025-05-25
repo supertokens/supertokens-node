@@ -8,6 +8,7 @@ import type {
     UserContext,
     SuperTokensPlugin,
     AllRecipeConfigs,
+    SuperTokensPublicPlugin,
 } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -568,4 +569,14 @@ export function applyPlugins<T extends keyof AllRecipeConfigs>(
         };
     }
     return config;
+}
+
+export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin {
+    return {
+        id: plugin.id,
+        initialized: plugin.init ? false : true, // since the init method is optional, we default to true
+        version: plugin.version,
+        exports: plugin.exports,
+        compatibleSDKVersions: plugin.compatibleSDKVersions,
+    };
 }
