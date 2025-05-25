@@ -126,7 +126,7 @@ function normaliseSignInFormFields(formFields?: TypeInputFormField[]) {
             if (field.id === FORM_FIELD_PASSWORD_ID) {
                 normalisedFormFields.push({
                     id: field.id,
-                    validate: field.validate === undefined ? defaultPasswordValidator : field.validate,
+                    validate: field.validate === undefined ? defaultValidator : field.validate,
                     optional: false,
                 });
             } else if (field.id === FORM_FIELD_EMAIL_ID) {
