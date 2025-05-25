@@ -230,11 +230,20 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 })
         );
 
+        // Check for existence of `code_challenge` in the url
+        let url = new URL(response1.body.urlWithQueryParams);
+        let codeChallenge = url.searchParams.get("code_challenge");
+        assert.notStrictEqual(codeChallenge, undefined);
+
+        // Value of `code_challenge` will be variable so we cannot do a strict match
+        // thus we will get rid of it from the url.
+        url.searchParams.delete("code_challenge");
+
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(
-            response1.body.urlWithQueryParams,
-            "https://accounts.google.com/o/oauth2/v2/auth?client_id=google-client-id&redirect_uri=redirect&response_type=code&scope=openid+email&included_grant_scopes=true&access_type=offline"
+            url.toString(),
+            "https://accounts.google.com/o/oauth2/v2/auth?client_id=google-client-id&redirect_uri=redirect&response_type=code&scope=openid+email&code_challenge_method=S256&included_grant_scopes=true&access_type=offline"
         );
     });
 

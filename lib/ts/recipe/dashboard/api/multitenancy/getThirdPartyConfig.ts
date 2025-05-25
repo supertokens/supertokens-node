@@ -80,18 +80,23 @@ export default async function getThirdPartyConfig(
 
     // query param may be passed if we are creating a new third party config, check and update accordingly
 
-    if (["okta", "active-directory", "boxy-saml", "google-workspaces"].includes(thirdPartyId)) {
-        if (thirdPartyId === "okta") {
+    if (
+        thirdPartyId.startsWith("okta") ||
+        thirdPartyId.startsWith("active-directory") ||
+        thirdPartyId.startsWith("boxy-saml") ||
+        thirdPartyId.startsWith("google-workspaces")
+    ) {
+        if (thirdPartyId.startsWith("okta")) {
             const oktaDomain = options.req.getKeyValueFromQuery("oktaDomain");
             if (oktaDomain !== undefined) {
                 additionalConfig = { oktaDomain };
             }
-        } else if (thirdPartyId === "active-directory") {
+        } else if (thirdPartyId.startsWith("active-directory")) {
             const directoryId = options.req.getKeyValueFromQuery("directoryId");
             if (directoryId !== undefined) {
                 additionalConfig = { directoryId };
             }
-        } else if (thirdPartyId === "boxy-saml") {
+        } else if (thirdPartyId.startsWith("boxy-saml")) {
             let boxyURL = options.req.getKeyValueFromQuery("boxyUrl");
             let boxyAPIKey = options.req.getKeyValueFromQuery("boxyAPIKey");
             if (boxyURL !== undefined) {
@@ -100,7 +105,7 @@ export default async function getThirdPartyConfig(
                     additionalConfig = { ...additionalConfig, boxyAPIKey };
                 }
             }
-        } else if (thirdPartyId === "google-workspaces") {
+        } else if (thirdPartyId.startsWith("google-workspaces")) {
             const hd = options.req.getKeyValueFromQuery("hd");
             if (hd !== undefined) {
                 additionalConfig = { hd };

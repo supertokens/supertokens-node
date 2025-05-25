@@ -560,5 +560,30 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         }
     }
 
+    // todo figure out if this is ok or not
+    if (evalStr.startsWith("webauthn.init.getRelyingPartyName")) {
+        return eval(evalStr.replace("webauthn.init.getRelyingPartyName:", ""));
+    }
+
+    if (evalStr.startsWith("webauthn.init.getRelyingPartyId")) {
+        return eval(evalStr.replace("webauthn.init.getRelyingPartyId:", ""));
+    }
+
+    if (evalStr.startsWith("webauthn.init.getOrigin")) {
+        return eval(evalStr.replace("webauthn.init.getOrigin:", ""));
+    }
+
+    if (evalStr.startsWith("webauthn.init.validateEmailAddress")) {
+        return eval(evalStr.replace("webauthn.init.validateEmailAddress:", ""));
+    }
+
+    if (evalStr.startsWith("webauthn.init.override.functions")) {
+        return eval(evalStr.replace("webauthn.init.override.functions:", ""));
+    }
+
+    if (evalStr.startsWith("webauthn.init.override.apis")) {
+        return eval(evalStr.replace("webauthn.init.override.apis:", ""));
+    }
+
     throw new Error("Unknown eval string: " + evalStr);
 }

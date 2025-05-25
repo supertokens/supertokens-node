@@ -159,8 +159,14 @@ done
 sleep 2 # Because the server is responding does not mean the app is ready. Let's wait another 2secs to make sure the app is up.
 echo "Start mocha testing"
 
+export MOCHA_FILE=~/test_report/auth-react-junit.xml
+export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
+export TEST_MODE=testing
+export APP_SERVER=$apiPort
+export SCREENSHOT_ROOT=~/test_report/screenshots
+
 export SPEC_FILES=$(circleci tests glob 'test/end-to-end/**/*.test.js' 'test/unit/**/*.test.js')
-echo $SPEC_FILES | SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing multi="spec=- mocha-junit-reporter=/dev/null" circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config" --verbose --split-by=timings
+echo $SPEC_FILES | circleci tests run --command="xargs npx mocha --reporter mocha-multi --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config" --verbose --split-by=timings
 
 testPassed=$?;
 cp ../supertokens-root/logs/error.log ~/test_report/logs/core_error.log

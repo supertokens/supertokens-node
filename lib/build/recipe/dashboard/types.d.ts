@@ -51,7 +51,7 @@ export declare type APIFunction = (
     options: APIOptions,
     userContext: UserContext
 ) => Promise<any>;
-export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 export declare type AuthMode = "api-key" | "email-password";
 export declare type UserWithFirstAndLastName = User & {
     firstName?: string;

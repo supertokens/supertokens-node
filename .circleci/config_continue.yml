@@ -56,6 +56,8 @@ jobs:
             - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
+            - store_test_results:
+                  path: ~/test_report/free-core-junit.xml
             - slack/status
     test-backend-sdk-testing:
         docker:
@@ -75,6 +77,8 @@ jobs:
             - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
+            - store_test_results:
+                  path: ~/backend-sdk-testing/test-results/junit.xml
             - slack/status
     test-website:
         docker:
@@ -94,20 +98,23 @@ jobs:
             - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./website.sh << parameters.fdi-version >>)
+            - store_test_results:
+                  path: ~/test_report/website-junit.xml
             - slack/status
     test-authreact:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: node:18
             - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
             fdi-version:
                 type: string
-        environment:
-            MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
         parallelism: 4
         steps:
             - checkout
+            - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+            - run: chmod +x .circleci/installJava.sh
+            - run: (cd .circleci/ && ./installJava.sh)
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
             - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
@@ -125,7 +132,7 @@ jobs:
                   path: ~/test_report/react-logs
                   destination: react-logs
             - store_test_results:
-                  path: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+                  path: ~/test_report/auth-react-junit.xml
             - slack/status
     test-success:
         docker:

@@ -22,6 +22,8 @@ while IFS='"' read -ra ADDR; do
 done <<< "$version"
 
 echo "calling /driver PATCH to make testing passed"
+echo $version
+echo $SUPERTOKENS_API_KEY
 responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PATCH \
     https://api.supertokens.io/0/driver \
     -H 'Content-Type: application/json' \

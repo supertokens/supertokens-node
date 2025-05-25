@@ -2,8 +2,10 @@ import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailPasswordRecipe from "../../../emailpassword/recipe";
 import PasswordlessRecipe from "../../../passwordless/recipe";
+import WebAuthnRecipe from "../../../webauthn/recipe";
 import EmailPassword from "../../../emailpassword";
 import Passwordless from "../../../passwordless";
+import WebAuthn from "../../../webauthn";
 import { isValidRecipeId, getUserForRecipeId } from "../../utils";
 import UserMetadataRecipe from "../../../usermetadata/recipe";
 import UserMetadata from "../../../usermetadata";
@@ -40,7 +42,7 @@ type Response =
       };
 
 const updateEmailForRecipeId = async (
-    recipeId: "emailpassword" | "passwordless" | "thirdparty",
+    recipeId: "emailpassword" | "passwordless" | "thirdparty" | "webauthn",
     recipeUserId: RecipeUserId,
     email: string,
     tenantId: string,
@@ -152,6 +154,40 @@ const updateEmailForRecipeId = async (
                 status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
                 reason: updateResult.reason,
             };
+        }
+
+        return {
+            status: "OK",
+        };
+    }
+
+    if (recipeId === "webauthn") {
+        let validationError = await WebAuthnRecipe.getInstanceOrThrowError().config.validateEmailAddress(
+            email,
+            tenantId,
+            userContext
+        );
+
+        if (validationError !== undefined) {
+            return {
+                status: "INVALID_EMAIL_ERROR",
+                error: validationError,
+            };
+        }
+
+        const emailUpdateResponse = await WebAuthn.updateUserEmail({
+            email,
+            recipeUserId: recipeUserId.getAsString(),
+            tenantId,
+            userContext,
+        });
+
+        if (emailUpdateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            return {
+                status: "EMAIL_ALREADY_EXISTS_ERROR",
+            };
+        } else if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
+            throw new Error("Should never come here");
         }
 
         return {

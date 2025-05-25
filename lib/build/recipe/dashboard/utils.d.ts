@@ -12,7 +12,7 @@ export declare function getUserForRecipeId(
     userContext: UserContext
 ): Promise<{
     user: UserWithFirstAndLastName | undefined;
-    recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
+    recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 }>;
 export declare function validateApiKey(input: {
     req: BaseRequest;
