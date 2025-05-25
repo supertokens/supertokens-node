@@ -144,7 +144,7 @@ function normaliseSignInFormFields(formFields?: TypeInputFormField[]) {
             }
         });
     }
-    if (normalisedFormFields.filter((field) => field.id === FORM_FIELD_PASSWORD_ID).length === 0) {
+    if (!normalisedFormFields.some((field) => field.id === FORM_FIELD_PASSWORD_ID)) {
         // no password field give by user
         normalisedFormFields.push({
             id: FORM_FIELD_PASSWORD_ID,
