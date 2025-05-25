@@ -152,7 +152,7 @@ function normaliseSignInFormFields(formFields?: TypeInputFormField[]) {
             optional: false,
         });
     }
-    if (normalisedFormFields.filter((field) => field.id === FORM_FIELD_EMAIL_ID).length === 0) {
+    if (!normalisedFormFields.some((field) => field.id === FORM_FIELD_EMAIL_ID)) {
         // no email field give by user
         normalisedFormFields.push({
             id: FORM_FIELD_EMAIL_ID,
