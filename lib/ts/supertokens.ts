@@ -100,11 +100,18 @@ export default class SuperTokens {
 
             const pluginRouteHandlers = finalPluginList[pluginIndex].routeHandlers;
             if (pluginRouteHandlers) {
-                const result = pluginRouteHandlers(config, this.pluginList, version);
-                if (result.status === "ERROR") {
-                    throw new Error(result.message);
+                let handlers: PluginRouteHandler[] = [];
+                if (typeof pluginRouteHandlers === "function") {
+                    const result = pluginRouteHandlers(config, this.pluginList, version);
+                    if (result.status === "ERROR") {
+                        throw new Error(result.message);
+                    }
+                    handlers = result.routeHandlers;
+                } else {
+                    handlers = pluginRouteHandlers;
                 }
-                this.pluginRouteHandlers.push(...result.routeHandlers);
+
+                this.pluginRouteHandlers.push(...handlers);
             }
 
             const pluginInit = finalPluginList[pluginIndex].init;

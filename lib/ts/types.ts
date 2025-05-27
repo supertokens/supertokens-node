@@ -139,11 +139,13 @@ export type SuperTokensPlugin = {
             recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
         };
     };
-    routeHandlers?: (
-        config: Omit<TypeInput, "recipeList" | "experimental">,
-        allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
-        sdkVersion: string
-    ) => { status: "OK"; routeHandlers: PluginRouteHandler[] } | { status: "ERROR"; message: string };
+    routeHandlers?:
+        | ((
+              config: Omit<TypeInput, "recipeList" | "experimental">,
+              allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
+              sdkVersion: string
+          ) => { status: "OK"; routeHandlers: PluginRouteHandler[] } | { status: "ERROR"; message: string })
+        | PluginRouteHandler[];
     config?: (config: Omit<TypeInput, "recipeList">) => Omit<TypeInput, "recipeList"> | undefined;
     exports?: Record<string, any>;
 };
