@@ -129,7 +129,7 @@ export type SuperTokensPlugin = {
         config: Omit<TypeInput, "recipeList" | "experimental">,
         allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
         sdkVersion: string
-    ) => Promise<void> | void;
+    ) => void;
     dependencies?: (
         pluginsAbove: SuperTokensPlugin[],
         sdkVersion: string

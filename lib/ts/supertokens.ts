@@ -92,32 +92,29 @@ export default class SuperTokens {
         }
         this.pluginList = finalPluginList.map(getPublicPlugin);
 
-        for (let pluginIndex = 0; pluginIndex < this.pluginList.length; pluginIndex += 1) {
-            const pluginConfig = finalPluginList[pluginIndex].config;
-            if (pluginConfig) {
-                config = { ...config, ...pluginConfig(config) };
+        for (const [pluginIndex, plugin] of finalPluginList.entries()) {
+            if (plugin.config) {
+                config = { ...config, ...plugin.config(config) };
             }
 
-            const pluginRouteHandlers = finalPluginList[pluginIndex].routeHandlers;
-            if (pluginRouteHandlers) {
+            if (plugin.routeHandlers) {
                 let handlers: PluginRouteHandler[] = [];
-                if (typeof pluginRouteHandlers === "function") {
-                    const result = pluginRouteHandlers(config, this.pluginList, version);
+                if (typeof plugin.routeHandlers === "function") {
+                    const result = plugin.routeHandlers(config, this.pluginList, version);
                     if (result.status === "ERROR") {
                         throw new Error(result.message);
                     }
                     handlers = result.routeHandlers;
                 } else {
-                    handlers = pluginRouteHandlers;
+                    handlers = plugin.routeHandlers;
                 }
 
                 this.pluginRouteHandlers.push(...handlers);
             }
 
-            const pluginInit = finalPluginList[pluginIndex].init;
-            if (pluginInit) {
+            if (plugin.init) {
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    pluginInit(config, this.pluginList, version);
+                    plugin.init!(config, this.pluginList, version);
                     this.pluginList[pluginIndex].initialized = true;
                 });
             }
