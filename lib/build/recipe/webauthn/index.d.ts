@@ -382,7 +382,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
-              recipeUserId: import("../..").RecipeUserId;
+              recipeUserId?: import("../..").RecipeUserId | undefined;
           }
     >;
     static removeGeneratedOptions(input: {

@@ -380,7 +380,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
-              recipeUserId: RecipeUserId;
+              recipeUserId?: RecipeUserId;
           }
         | GetUserFromRecoverAccountTokenErrorResponse
     >;
