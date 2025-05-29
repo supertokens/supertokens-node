@@ -199,8 +199,8 @@ export type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               // for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
               rp: {
                   id: string;
@@ -246,8 +246,8 @@ export type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
@@ -410,8 +410,8 @@ export type RecipeInterface = {
               userVerification: UserVerification;
               userPresence: boolean;
               origin: string;
-              email: string;
-              timeout: string;
+              email?: string;
+              timeout: number;
               challenge: string;
               createdAt: number;
               expiresAt: number;
@@ -500,8 +500,8 @@ export type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
-                    createdAt: string;
-                    expiresAt: string;
+                    createdAt: number;
+                    expiresAt: number;
                     rp: {
                         id: string;
                         name: string;
@@ -543,8 +543,8 @@ export type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
-                    createdAt: string;
-                    expiresAt: string;
+                    createdAt: number;
+                    expiresAt: number;
                     rpId: string;
                     challenge: string;
                     timeout: number;

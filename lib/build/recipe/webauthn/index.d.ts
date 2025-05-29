@@ -52,8 +52,8 @@ export default class Wrapper {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               rp: {
                   id: string;
                   name: string;
@@ -98,8 +98,8 @@ export default class Wrapper {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
@@ -121,8 +121,8 @@ export default class Wrapper {
               userVerification: UserVerification;
               userPresence: boolean;
               origin: string;
-              email: string;
-              timeout: string;
+              email?: string | undefined;
+              timeout: number;
               challenge: string;
               createdAt: number;
               expiresAt: number;

@@ -218,8 +218,8 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               rp: {
                   id: string;
                   name: string;
@@ -262,8 +262,8 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
@@ -443,8 +443,8 @@ export declare type RecipeInterface = {
               userVerification: UserVerification;
               userPresence: boolean;
               origin: string;
-              email: string;
-              timeout: string;
+              email?: string;
+              timeout: number;
               challenge: string;
               createdAt: number;
               expiresAt: number;
@@ -564,8 +564,8 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
-                    createdAt: string;
-                    expiresAt: string;
+                    createdAt: number;
+                    expiresAt: number;
                     rp: {
                         id: string;
                         name: string;
@@ -606,8 +606,8 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
-                    createdAt: string;
-                    expiresAt: string;
+                    createdAt: number;
+                    expiresAt: number;
                     rpId: string;
                     challenge: string;
                     timeout: number;
