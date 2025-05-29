@@ -6,10 +6,11 @@ jobs:
         outputs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - run: bash test/findExamplesWithTests.sh
             - id: set-matrix
-              run: echo "::set-output name=matrix::{\"include\":$(bash test/findExamplesWithTests.sh)}"
+              run: echo "matrix={\"include\":$(bash test/findExamplesWithTests.sh)}" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
     test:
         needs: setup
         runs-on: ubuntu-latest
@@ -25,9 +26,9 @@ jobs:
             run:
                 working-directory: ${{ matrix.examplePath }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v2
+              uses: aws-actions/configure-aws-credentials@v4
               with:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -47,7 +48,7 @@ jobs:
                   )
             - name: The job has failed
               if: ${{ failure() }}
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: screenshots
                   path: ./**/*screenshot.jpeg
