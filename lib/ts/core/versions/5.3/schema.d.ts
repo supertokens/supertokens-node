@@ -9847,7 +9847,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @example stcl_fed7cff0-cc6e-406e-b7a6-766148675a4a */
-                    clientId?: string;
+                    client_id?: string;
                 };
             };
         };

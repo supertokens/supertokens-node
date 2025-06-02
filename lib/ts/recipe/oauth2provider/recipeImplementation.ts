@@ -718,7 +718,7 @@ export default function getRecipeInterface(
         revokeTokensByClientId: async function (this: RecipeInterface, input) {
             await querier.sendPostRequest(
                 "/recipe/oauth/tokens/revoke",
-                { clientId: input.clientId },
+                { client_id: input.clientId },
                 input.userContext
             );
 
