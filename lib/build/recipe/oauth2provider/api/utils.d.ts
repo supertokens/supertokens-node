@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { UserContext } from "../../../types";
 import { SessionContainerInterface } from "../../session/types";
-import { ErrorOAuth2, RecipeInterface } from "../types";
+import { ErrorOAuth2, RecipeInterface, OauthError } from "../types";
 export declare function loginGET({
     recipeImplementation,
     loginChallenge,
@@ -20,6 +20,7 @@ export declare function loginGET({
     isDirectCall: boolean;
 }): Promise<
     | ErrorOAuth2
+    | OauthError
     | {
           status: string;
           redirectTo: string;
@@ -54,6 +55,7 @@ export declare function handleLoginInternalRedirects({
           cookies?: string[];
       }
     | ErrorOAuth2
+    | OauthError
 >;
 export declare function handleLogoutInternalRedirects({
     response,

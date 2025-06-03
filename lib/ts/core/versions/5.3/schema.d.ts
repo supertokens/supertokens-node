@@ -9574,11 +9574,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status: components["schemas"]["statusOK"];
-                        /** @example {apiDomain}/oauth/login?... */
-                        redirectTo?: string;
-                    };
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              /** @example {apiDomain}/oauth/login?... */
+                              redirectTo?: string;
+                          }
+                        | components["schemas"]["oauthError"];
                 };
             };
             400: components["responses"]["400"];
@@ -9626,11 +9628,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status: components["schemas"]["statusOK"];
-                        /** @example {apiDomain}/oauth/login?... */
-                        redirectTo?: string;
-                    };
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              /** @example {apiDomain}/oauth/login?... */
+                              redirectTo?: string;
+                          }
+                        | components["schemas"]["oauthError"];
                 };
             };
             400: components["responses"]["400"];

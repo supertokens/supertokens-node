@@ -22,6 +22,7 @@ import {
     ConsentRequest,
     PayloadBuilderFunction,
     UserInfoBuilderFunction,
+    OauthError,
 } from "./types";
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
@@ -85,7 +86,10 @@ export default function getRecipeInterface(
                 subject: resp.subject,
             };
         },
-        acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+        acceptLoginRequest: async function (
+            this: RecipeInterface,
+            input
+        ): Promise<{ redirectTo: string; status: "OK" } | OauthError> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/login/accept",
                 {
@@ -102,11 +106,19 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
+            if (resp.status === "OAUTH_ERROR") {
+                return resp;
+            }
+
             return {
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
+                status: "OK",
             };
         },
-        rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+        rejectLoginRequest: async function (
+            this: RecipeInterface,
+            input
+        ): Promise<{ redirectTo: string; status: "OK" } | OauthError> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/login/reject",
                 {
@@ -120,8 +132,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
+            if (resp.status === "OAUTH_ERROR") {
+                return resp;
+            }
+
             return {
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
+                status: "OK",
             };
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {

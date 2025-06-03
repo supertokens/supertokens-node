@@ -38,6 +38,12 @@ export declare type ErrorOAuth2 = {
     errorDescription: string;
     statusCode?: number;
 };
+export declare type OauthError = {
+    status: "OAUTH_ERROR";
+    error: string;
+    errorDescription: string;
+    statusCode: number;
+};
 export declare type ConsentRequest = {
     acr?: string;
     amr?: string[];
@@ -147,12 +153,20 @@ export declare type RecipeInterface = {
         identityProviderSessionId?: string;
         subject: string;
         userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-    }>;
-    rejectLoginRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<{
-        redirectTo: string;
-    }>;
+    }): Promise<
+        | {
+              redirectTo: string;
+              status: "OK";
+          }
+        | OauthError
+    >;
+    rejectLoginRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<
+        | {
+              redirectTo: string;
+              status: "OK";
+          }
+        | OauthError
+    >;
     getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
@@ -356,6 +370,7 @@ export declare type APIInterface = {
                     cookies?: string[];
                 }
               | ErrorOAuth2
+              | OauthError
               | GeneralErrorResponse
           >);
     authGET:
@@ -373,6 +388,7 @@ export declare type APIInterface = {
                     cookies?: string[];
                 }
               | ErrorOAuth2
+              | OauthError
               | GeneralErrorResponse
           >);
     tokenPOST:

@@ -4,7 +4,7 @@ import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH, END_SESSION_PATH } from "../constants";
-import { ErrorOAuth2, RecipeInterface } from "../types";
+import { ErrorOAuth2, RecipeInterface, OauthError } from "../types";
 import setCookieParser from "set-cookie-parser";
 
 // API implementation for the loginGET function.
@@ -58,6 +58,11 @@ export async function loginGET({
                     },
                     userContext,
                 });
+
+                if (reject.status === "OAUTH_ERROR") {
+                    return reject;
+                }
+
                 return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
             }
 
@@ -71,6 +76,11 @@ export async function loginGET({
                     },
                     userContext,
                 });
+
+                if (reject.status === "OAUTH_ERROR") {
+                    return reject;
+                }
+
                 return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
             }
         } catch {
@@ -83,6 +93,11 @@ export async function loginGET({
                 },
                 userContext,
             });
+
+            if (reject.status === "OAUTH_ERROR") {
+                return reject;
+            }
+
             return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
         }
     }
@@ -102,6 +117,11 @@ export async function loginGET({
             identityProviderSessionId: session.getHandle(),
             userContext,
         });
+
+        if (accept.status === "OAUTH_ERROR") {
+            return accept;
+        }
+
         return { status: "REDIRECT", redirectTo: accept.redirectTo, cookies: cookies };
     }
 
@@ -126,6 +146,11 @@ export async function loginGET({
             },
             userContext,
         });
+
+        if (reject.status === "OAUTH_ERROR") {
+            return reject;
+        }
+
         return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
     }
 
@@ -212,7 +237,7 @@ export async function handleLoginInternalRedirects({
     shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
-}): Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2> {
+}): Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2 | OauthError> {
     if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }

@@ -65,6 +65,21 @@ export type ErrorOAuth2 = {
     statusCode?: number;
 };
 
+export type OauthError = {
+    status: "OAUTH_ERROR";
+
+    // The error should follow the OAuth2 error format (e.g. invalid_request, login_required).
+    // Defaults to request_denied.
+    error: string;
+
+    // Description of the error in a human readable format.
+    errorDescription: string;
+
+    // Represents the HTTP status code of the error (e.g. 401 or 403)
+    // Defaults to 400
+    statusCode: number;
+};
+
 export type ConsentRequest = {
     // ACR represents the Authentication AuthorizationContext Class Reference value for this authentication session. You can use it to express that, for example, a user authenticated using two factor authentication.
     acr?: string;
@@ -242,12 +257,12 @@ export type RecipeInterface = {
         // Subject is the user ID of the end-user that authenticated.
         subject: string;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string; status: "OK" } | OauthError>;
     rejectLoginRequest(input: {
         challenge: string;
         error: ErrorOAuth2;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string; status: "OK" } | OauthError>;
 
     getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
@@ -425,7 +440,9 @@ export type APIInterface = {
               session?: SessionContainerInterface;
               shouldTryRefresh: boolean;
               userContext: UserContext;
-          }) => Promise<{ frontendRedirectTo: string; cookies?: string[] } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<
+              { frontendRedirectTo: string; cookies?: string[] } | ErrorOAuth2 | OauthError | GeneralErrorResponse
+          >);
 
     authGET:
         | undefined
@@ -436,7 +453,7 @@ export type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2 | OauthError | GeneralErrorResponse>);
     tokenPOST:
         | undefined
         | ((input: {
