@@ -31,6 +31,7 @@ import {
     getRidFromHeader,
     isTestEnv,
     getPublicPlugin,
+    getPublicConfig,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -80,7 +81,11 @@ export default class SuperTokens {
                 throw new Error("Plugin version mismatch");
             }
             if (plugin.dependencies) {
-                const result = plugin.dependencies(finalPluginList, version);
+                const result = plugin.dependencies(
+                    getPublicConfig(config),
+                    finalPluginList.map(getPublicPlugin),
+                    version
+                );
                 if (result.status === "ERROR") {
                     throw new Error(result.message);
                 }
@@ -94,13 +99,13 @@ export default class SuperTokens {
 
         for (const [pluginIndex, plugin] of finalPluginList.entries()) {
             if (plugin.config) {
-                config = { ...config, ...plugin.config(config) };
+                config = { ...config, ...plugin.config(getPublicConfig(config)) };
             }
 
             if (plugin.routeHandlers) {
                 let handlers: PluginRouteHandler[] = [];
                 if (typeof plugin.routeHandlers === "function") {
-                    const result = plugin.routeHandlers(config, this.pluginList, version);
+                    const result = plugin.routeHandlers(getPublicConfig(config), this.pluginList, version);
                     if (result.status === "ERROR") {
                         throw new Error(result.message);
                     }

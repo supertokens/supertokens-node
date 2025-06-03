@@ -102,13 +102,10 @@ export type SuperTokensPlugin = {
     id: string;
     version?: string;
     compatibleSDKVersions?: string | string[];
-    init?: (
-        config: Omit<TypeInput, "recipeList" | "experimental">,
-        allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
-        sdkVersion: string
-    ) => void;
+    init?: (config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => void;
     dependencies?: (
-        pluginsAbove: SuperTokensPlugin[],
+        config: SuperTokensPublicConfig,
+        pluginsAbove: SuperTokensPublicPlugin[],
         sdkVersion: string
     ) =>
         | {
@@ -126,8 +123,8 @@ export type SuperTokensPlugin = {
     };
     routeHandlers?:
         | ((
-              config: Omit<TypeInput, "recipeList" | "experimental">,
-              allPlugins: Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports">[],
+              config: SuperTokensPublicConfig,
+              allPlugins: SuperTokensPublicPlugin[],
               sdkVersion: string
           ) =>
               | {
@@ -139,7 +136,7 @@ export type SuperTokensPlugin = {
                     message: string;
                 })
         | PluginRouteHandler[];
-    config?: (config: Omit<TypeInput, "recipeList">) => Omit<TypeInput, "recipeList"> | undefined;
+    config?: (config: SuperTokensPublicConfig) => SuperTokensPublicConfig | undefined;
     exports?: Record<string, any>;
 };
 export type SuperTokensPublicPlugin = Pick<
@@ -148,6 +145,7 @@ export type SuperTokensPublicPlugin = Pick<
 > & {
     initialized: boolean;
 };
+export type SuperTokensPublicConfig = Omit<TypeInput, "recipeList" | "experimental">;
 export type TypeInput = {
     supertokens?: SuperTokensInfo;
     framework?: TypeFramework;

@@ -9,6 +9,8 @@ import type {
     SuperTokensPlugin,
     AllRecipeConfigs,
     SuperTokensPublicPlugin,
+    TypeInput,
+    SuperTokensPublicConfig,
 } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -579,4 +581,9 @@ export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlu
         exports: plugin.exports,
         compatibleSDKVersions: plugin.compatibleSDKVersions,
     };
+}
+
+export function getPublicConfig(config: TypeInput): SuperTokensPublicConfig {
+    const { experimental, recipeList, ...publicConfig } = config;
+    return publicConfig;
 }
