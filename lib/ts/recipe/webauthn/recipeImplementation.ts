@@ -384,7 +384,7 @@ export default function getRecipeInterface(
                 {
                     path: "/<tenantId>/recipe/webauthn/options",
                     params: {
-                        tenantId: tenantId,
+                        tenantId: tenantId || "public",
                     },
                 },
                 { webauthnGeneratedOptionsId },
