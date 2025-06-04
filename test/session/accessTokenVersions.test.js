@@ -338,7 +338,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -439,7 +439,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -508,7 +508,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -567,7 +567,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -656,7 +656,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "3.0";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -724,7 +724,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "3.0";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -979,7 +979,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
@@ -1034,7 +1034,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
             const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-                new NormalisedURLPath("/recipe/session"),
+                "/recipe/session",
                 {
                     userId: "test-user-id",
                     enableAntiCsrf: false,
