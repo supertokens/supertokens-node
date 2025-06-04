@@ -4,7 +4,7 @@ import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "
 import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { listUsersByAccountInfo } from "../..";
+import { getUser, listUsersByAccountInfo } from "../..";
 import { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";
@@ -71,7 +71,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 return response;
             }
 
-            const userAsObj = User.fromApi(response.user);
+            let userAsObj = User.fromApi(response.user);
             const recipeUserIdAsObj = new RecipeUserId(response.recipeUserId);
 
             await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
@@ -79,6 +79,10 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 recipeUserId: recipeUserIdAsObj,
                 userContext,
             });
+
+            // we do this so that we get the updated user (in case the above
+            // function updated the verification status) and can return that
+            userAsObj = (await getUser(recipeUserIdAsObj.getAsString(), userContext))!;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
