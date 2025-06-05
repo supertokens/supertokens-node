@@ -41,11 +41,11 @@ jobs:
             - name: Setup ENVs
               id: envs
               run: |
-                APP_SERVER_LOG_DIR=${{ github.workspace }}/logs
-                echo "APP_SERVER_LOG_DIR=$APP_SERVER_LOG_DIR" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  APP_SERVER_LOG_DIR=${{ github.workspace }}/logs
+                  echo "APP_SERVER_LOG_DIR=$APP_SERVER_LOG_DIR" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
 
-                mkdir -p $APP_SERVER_LOG_DIR
-        
+                  mkdir -p $APP_SERVER_LOG_DIR
+
             - uses: actions/checkout@v4
               with:
                   path: supertokens-node
