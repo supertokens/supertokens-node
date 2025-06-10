@@ -532,8 +532,8 @@ export function applyPlugins<T extends keyof AllRecipeConfigs>(
     plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
 ): AllRecipeConfigs[T] {
     config = config ?? ({} as AllRecipeConfigs[T]);
-    let functionLayers = [config.override?.functions];
-    let apiLayers = [config.override?.apis];
+    let functionLayers = [];
+    let apiLayers = [];
     for (const plugin of plugins) {
         const overrides = plugin[recipeId];
         if (overrides) {
@@ -546,8 +546,11 @@ export function applyPlugins<T extends keyof AllRecipeConfigs>(
             }
         }
     }
-    functionLayers = functionLayers.reverse().filter((layer) => layer !== undefined);
-    apiLayers = apiLayers.reverse().filter((layer) => layer !== undefined);
+    functionLayers.push(config.override?.functions);
+    apiLayers.push(config.override?.apis);
+
+    functionLayers = functionLayers.filter((layer) => layer !== undefined);
+    apiLayers = apiLayers.filter((layer) => layer !== undefined);
     if (recipeId !== "accountlinking" && apiLayers.length > 0) {
         config.override = {
             ...config.override,
@@ -586,4 +589,45 @@ export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlu
 export function getPublicConfig(config: TypeInput): SuperTokensPublicConfig {
     const { experimental, recipeList, ...publicConfig } = config;
     return publicConfig;
+}
+
+export function getPluginDependencies(
+    plugin: SuperTokensPlugin,
+    publicConfig: SuperTokensPublicConfig,
+    pluginsAbove: SuperTokensPlugin[],
+    sdkVersion: string
+): SuperTokensPlugin[] {
+    function recurseDependencies(
+        plugin: SuperTokensPlugin,
+        dependencies?: SuperTokensPlugin[],
+        visited?: Set<string>
+    ): SuperTokensPlugin[] {
+        if (dependencies === undefined) {
+            dependencies = [];
+        }
+        if (visited === undefined) {
+            visited = new Set();
+        }
+        if (visited.has(plugin.id)) {
+            return dependencies;
+        }
+        visited.add(plugin.id);
+
+        if (plugin.dependencies) {
+            const result = plugin.dependencies(publicConfig, pluginsAbove.map(getPublicPlugin), sdkVersion);
+            if (result.status === "ERROR") {
+                throw new Error(result.message);
+            }
+            if (result.pluginsToAdd) {
+                for (const dep of result.pluginsToAdd) {
+                    recurseDependencies(dep, dependencies, visited);
+                }
+            }
+        }
+
+        dependencies.push(plugin);
+        return dependencies;
+    }
+
+    return recurseDependencies(plugin);
 }

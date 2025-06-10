@@ -32,6 +32,7 @@ import {
     isTestEnv,
     getPublicPlugin,
     getPublicConfig,
+    getPluginDependencies,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -70,8 +71,11 @@ export default class SuperTokens {
     constructor(config: TypeInput) {
         const inputPluginList = config.experimental?.plugins ?? [];
 
+        // TODO: Move this to a function - `loadPlugins`
         this.pluginRouteHandlers = [];
-        const finalPluginList: SuperTokensPlugin[] = [];
+        let finalPluginList: SuperTokensPlugin[] = [];
+        const seenPlugins: Set<string> = new Set();
+
         for (const plugin of inputPluginList) {
             const versionContraints = Array.isArray(plugin.compatibleSDKVersions)
                 ? plugin.compatibleSDKVersions
@@ -80,20 +84,10 @@ export default class SuperTokens {
                 // TODO: better checks
                 throw new Error("Plugin version mismatch");
             }
-            if (plugin.dependencies) {
-                const result = plugin.dependencies(
-                    getPublicConfig(config),
-                    finalPluginList.map(getPublicPlugin),
-                    version
-                );
-                if (result.status === "ERROR") {
-                    throw new Error(result.message);
-                }
-                if (result.pluginsToAdd) {
-                    finalPluginList.push(...result.pluginsToAdd);
-                }
-            }
-            finalPluginList.push(plugin);
+
+            const dependencies = getPluginDependencies(plugin, getPublicConfig(config), finalPluginList, version);
+            finalPluginList = [...finalPluginList, ...dependencies];
+            dependencies.map((p) => p.id).forEach((pluginId) => seenPlugins.add(pluginId));
         }
         this.pluginList = finalPluginList.map(getPublicPlugin);
 

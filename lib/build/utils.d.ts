@@ -90,3 +90,9 @@ export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
 ): AllRecipeConfigs[T];
 export declare function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin;
 export declare function getPublicConfig(config: TypeInput): SuperTokensPublicConfig;
+export declare function getPluginDependencies(
+    plugin: SuperTokensPlugin,
+    publicConfig: SuperTokensPublicConfig,
+    pluginsAbove: SuperTokensPlugin[],
+    sdkVersion: string
+): SuperTokensPlugin[];
