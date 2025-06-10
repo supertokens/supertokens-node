@@ -15,11 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Sets up workflow to run auth-react tests
     -   Updates test-servers to work with updated tests
 
-## [23.0.0] - 2025-06-05
+## [23.0.0] - 2025-06-10
 
--   The `rejectLoginRequest` and `acceptLoginRequest` can now possibly return a `OauthError`.
--   The `loginGET` and `authGET` can now possibly return a `OauthError`.
+-   The `rejectLoginRequest`, `acceptLoginRequest`, `authorization`, `tokenExchange`, `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `validateOAuth2AccessToken` and `introspectToken` can now possibly return a `OauthError`.
+-   The `loginGET`, `authGET`, `tokenPOST` and `introspectTokenPOST` can now possibly return a `OauthError`.
 -   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
+-   The `/oauth/userinfo` endpoint can now possibly return a `OAUTH_ERROR`.
 -   Refactors querier to use dynamic request body and response body types inference.
 -   Refactor internal network calls made with querier to use the new dynamic types.
 

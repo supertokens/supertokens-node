@@ -141,12 +141,16 @@ export default function getRecipeInterface(
                 status: "OK",
             };
         },
-        getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
+        getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest | OauthError> {
             const resp = await querier.sendGetRequest(
                 "/recipe/oauth/auth/requests/consent",
                 { consentChallenge: input.challenge },
                 input.userContext
             );
+
+            if (resp.status === "OAUTH_ERROR") {
+                return resp;
+            }
 
             return {
                 acr: resp.acr,
@@ -163,7 +167,10 @@ export default function getRecipeInterface(
                 subject: resp.subject,
             };
         },
-        acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+        acceptConsentRequest: async function (
+            this: RecipeInterface,
+            input
+        ): Promise<{ redirectTo: string } | OauthError> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/consent/accept",
                 {
@@ -184,6 +191,10 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
+            if (resp.status === "OAUTH_ERROR") {
+                return resp;
+            }
+
             return {
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
@@ -202,6 +213,10 @@ export default function getRecipeInterface(
                 },
                 input.userContext
             );
+
+            if (resp.status === "OAUTH_ERROR") {
+                return resp;
+            }
 
             return {
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
@@ -333,6 +348,10 @@ export default function getRecipeInterface(
                     userContext: input.userContext,
                 });
 
+                if ("error" in consentRequest) {
+                    return consentRequest;
+                }
+
                 const consentRes = await this.acceptConsentRequest({
                     userContext: input.userContext,
                     challenge: consentRequest.challenge,
@@ -344,6 +363,10 @@ export default function getRecipeInterface(
                     initialAccessTokenPayload: payloads?.accessToken,
                     initialIdTokenPayload: payloads?.idToken,
                 });
+
+                if ("error" in consentRes) {
+                    return consentRes;
+                }
 
                 return {
                     redirectTo: consentRes.redirectTo,
@@ -423,6 +446,10 @@ export default function getRecipeInterface(
                     scopes,
                     userContext: input.userContext,
                 });
+
+                if (tokenInfo.status === "OAUTH_ERROR") {
+                    return tokenInfo;
+                }
 
                 if (tokenInfo.active === true) {
                     const sessionHandle = tokenInfo.sessionHandle as string;
@@ -688,6 +715,10 @@ export default function getRecipeInterface(
                     input.userContext
                 );
 
+                if (response.status === "OAUTH_ERROR") {
+                    return response;
+                }
+
                 if (response.active !== true) {
                     throw new Error("The token is expired, invalid or has been revoked");
                 }
@@ -757,7 +788,7 @@ export default function getRecipeInterface(
                         userContext,
                     });
                 } catch (error) {
-                    return { active: false };
+                    return { active: false, status: "OK" };
                 }
             }
 

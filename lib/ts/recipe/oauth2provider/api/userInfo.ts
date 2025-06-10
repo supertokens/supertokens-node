@@ -41,12 +41,22 @@ export default async function userInfoGET(
     let accessTokenPayload: JSONObject;
 
     try {
-        const { payload } =
+        const validateTokenResponse =
             await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
                 token: accessToken,
                 userContext,
             });
-        accessTokenPayload = payload;
+
+        if (validateTokenResponse.status === "OAUTH_ERROR") {
+            sendNon200ResponseWithMessage(
+                options.res,
+                validateTokenResponse.errorDescription,
+                validateTokenResponse.statusCode
+            );
+            return true;
+        }
+
+        accessTokenPayload = validateTokenResponse.payload;
     } catch (error) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
         options.res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate", true);

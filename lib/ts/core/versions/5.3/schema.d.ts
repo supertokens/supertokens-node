@@ -9280,63 +9280,65 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status: components["schemas"]["statusOK"];
-                        client?: components["schemas"]["oauthClient"];
-                        requestedScope?: string[];
-                        requestedAudience?: string[];
-                        requestedClaims?: {
-                            idToken?: {
-                                property1?: string;
-                                property2?: string;
-                            };
-                        };
-                        loginHint?: string;
-                        uiLocales?: string[];
-                        acrValues?: string[];
-                        subject?: string;
-                        requestUrl?: string;
-                        skip?: boolean;
-                        clientId?: string;
-                        redirectUri?: string;
-                        forceSubjectIdentifier?: string;
-                        requestedAccessTokenAudience?: string[];
-                        context?: Record<string, unknown>;
-                        sessionId?: string;
-                        loginSessionId?: string;
-                        loginChallenge?: string;
-                        loginRequestedAt?: string;
-                        consentRequestedAt?: string;
-                        consentChallenge?: string;
-                        consentSkip?: boolean;
-                        consentRemember?: boolean;
-                        consentRememberFor?: number;
-                        consentError?: {
-                            name?: string;
-                            description?: string;
-                        };
-                        consentErrorDebug?: string;
-                        consentErrorDescription?: string;
-                        consentErrorHint?: string;
-                        consentErrorCode?: string;
-                        consentStatusCode?: number;
-                        sessionIdToken?: {
-                            property1?: string;
-                            property2?: string;
-                        };
-                        sessionAccessToken?: {
-                            property1?: string;
-                            property2?: string;
-                        };
-                        sessionToken?: {
-                            property1?: string;
-                            property2?: string;
-                        };
-                        acr?: string;
-                        amr?: string[];
-                        challenge: string;
-                        oidcContext?: Record<string, unknown>;
-                    };
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              client?: components["schemas"]["oauthClient"];
+                              requestedScope?: string[];
+                              requestedAudience?: string[];
+                              requestedClaims?: {
+                                  idToken?: {
+                                      property1?: string;
+                                      property2?: string;
+                                  };
+                              };
+                              loginHint?: string;
+                              uiLocales?: string[];
+                              acrValues?: string[];
+                              subject?: string;
+                              requestUrl?: string;
+                              skip?: boolean;
+                              clientId?: string;
+                              redirectUri?: string;
+                              forceSubjectIdentifier?: string;
+                              requestedAccessTokenAudience?: string[];
+                              context?: Record<string, unknown>;
+                              sessionId?: string;
+                              loginSessionId?: string;
+                              loginChallenge?: string;
+                              loginRequestedAt?: string;
+                              consentRequestedAt?: string;
+                              consentChallenge?: string;
+                              consentSkip?: boolean;
+                              consentRemember?: boolean;
+                              consentRememberFor?: number;
+                              consentError?: {
+                                  name?: string;
+                                  description?: string;
+                              };
+                              consentErrorDebug?: string;
+                              consentErrorDescription?: string;
+                              consentErrorHint?: string;
+                              consentErrorCode?: string;
+                              consentStatusCode?: number;
+                              sessionIdToken?: {
+                                  property1?: string;
+                                  property2?: string;
+                              };
+                              sessionAccessToken?: {
+                                  property1?: string;
+                                  property2?: string;
+                              };
+                              sessionToken?: {
+                                  property1?: string;
+                                  property2?: string;
+                              };
+                              acr?: string;
+                              amr?: string[];
+                              challenge: string;
+                              oidcContext?: Record<string, unknown>;
+                          }
+                        | components["schemas"]["oauthError"];
                 };
             };
             400: components["responses"]["400"];
@@ -9402,11 +9404,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status: components["schemas"]["statusOK"];
-                        /** @example {apiDomain}/oauth/consent?... */
-                        redirectTo?: string;
-                    };
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              /** @example {apiDomain}/oauth/consent?... */
+                              redirectTo?: string;
+                          }
+                        | components["schemas"]["oauthError"];
                 };
             };
             400: components["responses"]["400"];
@@ -9454,11 +9458,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status: components["schemas"]["statusOK"];
-                        /** @example {apiDomain}/oauth/consent?... */
-                        redirectTo?: string;
-                    };
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              /** @example {apiDomain}/oauth/consent?... */
+                              redirectTo?: string;
+                          }
+                        | components["schemas"]["oauthError"];
                 };
             };
             400: components["responses"]["400"];
@@ -10110,43 +10116,45 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status: components["schemas"]["statusOK"];
-                        active?: boolean;
-                        /** @example 1740992368 */
-                        iat?: number;
-                        /** @example 1740995969 */
-                        exp?: number;
-                        /** @example stcl_fed7cff0-cc6e-406e-b7a6-766148675a4a */
-                        client_id?: string;
-                        /** @example http://localhost:3001/auth */
-                        iss?: string;
-                        /** @example 1c229efe-c55b-44c1-98cf-9fa3a366502e */
-                        jti?: string;
-                        /** @example 1740992368 */
-                        nbf?: number;
-                        /** @example [
-                         *       "openid",
-                         *       "offline_access"
-                         *     ] */
-                        scp?: string[];
-                        /** @example 137d053d-0d69-4dea-8a19-06ddbdfa4f96 */
-                        sub?: string;
-                        /** @example 1 */
-                        stt?: number;
-                        /** @example 87bcc2d8-f159-4e10-a097-0898179a2d7d */
-                        sessionHandle?: string;
-                        /** @example 137d053d-0d69-4dea-8a19-06ddbdfa4f96 */
-                        rsub?: string;
-                        /** @example public */
-                        tId?: string;
-                        /** @example 575b7130-d982-4945-be49-3ecde2a49eaa */
-                        gid?: string;
-                        /** @example Bearer */
-                        token_type?: string;
-                        /** @example access_token */
-                        token_use?: string;
-                    };
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              active?: boolean;
+                              /** @example 1740992368 */
+                              iat?: number;
+                              /** @example 1740995969 */
+                              exp?: number;
+                              /** @example stcl_fed7cff0-cc6e-406e-b7a6-766148675a4a */
+                              client_id?: string;
+                              /** @example http://localhost:3001/auth */
+                              iss?: string;
+                              /** @example 1c229efe-c55b-44c1-98cf-9fa3a366502e */
+                              jti?: string;
+                              /** @example 1740992368 */
+                              nbf?: number;
+                              /** @example [
+                               *       "openid",
+                               *       "offline_access"
+                               *     ] */
+                              scp?: string[];
+                              /** @example 137d053d-0d69-4dea-8a19-06ddbdfa4f96 */
+                              sub?: string;
+                              /** @example 1 */
+                              stt?: number;
+                              /** @example 87bcc2d8-f159-4e10-a097-0898179a2d7d */
+                              sessionHandle?: string;
+                              /** @example 137d053d-0d69-4dea-8a19-06ddbdfa4f96 */
+                              rsub?: string;
+                              /** @example public */
+                              tId?: string;
+                              /** @example 575b7130-d982-4945-be49-3ecde2a49eaa */
+                              gid?: string;
+                              /** @example Bearer */
+                              token_type?: string;
+                              /** @example access_token */
+                              token_use?: string;
+                          }
+                        | components["schemas"]["oauthError"];
                 };
             };
             400: components["responses"]["400"];
