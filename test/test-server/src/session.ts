@@ -39,6 +39,50 @@ const router = Router()
             next(e);
         }
     })
+    .post("/createnewsession", async (req, res, next) => {
+        const fdiVersion = req.headers["fdi-version"] as string;
+
+        try {
+            logDebugMessage("Session.createNewSessionWithoutRequestResponse %j", req.body);
+            let recipeUserId;
+            if (
+                maxVersion("1.17", fdiVersion) === "1.17" ||
+                (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+            ) {
+                // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
+                recipeUserId = supertokens.convertToRecipeUserId(req.body.userId);
+            } else {
+                recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
+            }
+            const response = await Session.createNewSession(
+                req,
+                res,
+                req.body.tenantId || "public",
+                recipeUserId,
+                req.body.accessTokenPayload,
+                req.body.sessionDataInDatabase,
+                req.body.userContext
+            );
+
+            res.json({
+                sessionHandle: response.getHandle(),
+                userId: response.getUserId(),
+                tenantId: response.getTenantId(),
+                userDataInAccessToken: response.getAccessTokenPayload(),
+                accessToken: response.getAccessToken(),
+                frontToken: response.getAllSessionTokensDangerously()["frontToken"],
+                refreshToken: response.getAllSessionTokensDangerously()["refreshToken"],
+                antiCsrfToken: response.getAllSessionTokensDangerously()["antiCsrfToken"],
+                accessTokenUpdated: response.getAllSessionTokensDangerously()["accessAndFrontTokenUpdated"],
+                recipeUserId: {
+                    recipeUserId: response.getRecipeUserId().getAsString(),
+                },
+            });
+        } catch (e) {
+            console.log(e);
+            next(e);
+        }
+    })
     .post("/getsessionwithoutrequestresponse", async (req, res, next) => {
         try {
             logDebugMessage("Session.getSessionWithoutRequestResponse %j", req.body);
