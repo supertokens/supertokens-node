@@ -149,11 +149,9 @@ export declare type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
-        status: "OK";
     }>;
     rejectLoginRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<{
         redirectTo: string;
-        status: "OK";
     }>;
     getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
@@ -317,11 +315,11 @@ export declare type RecipeInterface = {
     revokeTokensBySessionHandle(input: { sessionHandle: string; userContext: UserContext }): Promise<{
         status: "OK";
     }>;
-    introspectToken(input: { token: string; scopes?: string[]; userContext: UserContext }): Promise<
-        InstrospectTokenResponse & {
-            status: "OK";
-        }
-    >;
+    introspectToken(input: {
+        token: string;
+        scopes?: string[];
+        userContext: UserContext;
+    }): Promise<InstrospectTokenResponse>;
     endSession(input: {
         params: Record<string, string>;
         session?: SessionContainerInterface;

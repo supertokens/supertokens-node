@@ -85,10 +85,7 @@ export default function getRecipeInterface(
                 subject: resp.subject,
             };
         },
-        acceptLoginRequest: async function (
-            this: RecipeInterface,
-            input
-        ): Promise<{ redirectTo: string; status: "OK" }> {
+        acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/login/accept",
                 {
@@ -111,13 +108,9 @@ export default function getRecipeInterface(
 
             return {
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
-                status: "OK",
             };
         },
-        rejectLoginRequest: async function (
-            this: RecipeInterface,
-            input
-        ): Promise<{ redirectTo: string; status: "OK" }> {
+        rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/login/reject",
                 {
@@ -137,7 +130,6 @@ export default function getRecipeInterface(
 
             return {
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
-                status: "OK",
             };
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
@@ -772,7 +764,7 @@ export default function getRecipeInterface(
                         userContext,
                     });
                 } catch (error) {
-                    return { active: false, status: "OK" };
+                    return { active: false };
                 }
             }
 

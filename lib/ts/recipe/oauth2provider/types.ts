@@ -242,12 +242,12 @@ export type RecipeInterface = {
         // Subject is the user ID of the end-user that authenticated.
         subject: string;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; status: "OK" }>;
+    }): Promise<{ redirectTo: string }>;
     rejectLoginRequest(input: {
         challenge: string;
         error: ErrorOAuth2;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; status: "OK" }>;
+    }): Promise<{ redirectTo: string }>;
 
     getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
@@ -402,7 +402,7 @@ export type RecipeInterface = {
         token: string;
         scopes?: string[];
         userContext: UserContext;
-    }): Promise<InstrospectTokenResponse & { status: "OK" }>;
+    }): Promise<InstrospectTokenResponse>;
     endSession(input: {
         params: Record<string, string>;
         session?: SessionContainerInterface;
