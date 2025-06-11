@@ -38,12 +38,6 @@ export declare type ErrorOAuth2 = {
     errorDescription: string;
     statusCode?: number;
 };
-export declare type OauthError = {
-    status: "OAUTH_ERROR";
-    error: string;
-    errorDescription: string;
-    statusCode: number;
-};
 export declare type ConsentRequest = {
     acr?: string;
     amr?: string[];
@@ -113,14 +107,13 @@ export declare type RecipeInterface = {
               cookies: string[] | undefined;
           }
         | ErrorOAuth2
-        | OauthError
     >;
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;
         userContext: UserContext;
-    }): Promise<TokenInfo | ErrorOAuth2 | OauthError>;
-    getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest | OauthError>;
+    }): Promise<TokenInfo | ErrorOAuth2>;
+    getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
     acceptConsentRequest(input: {
         challenge: string;
         context?: any;
@@ -133,18 +126,12 @@ export declare type RecipeInterface = {
         initialAccessTokenPayload: JSONObject | undefined;
         initialIdTokenPayload: JSONObject | undefined;
         userContext: UserContext;
-    }): Promise<
-        | {
-              redirectTo: string;
-          }
-        | OauthError
-    >;
-    rejectConsentRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<
-        | {
-              redirectTo: string;
-          }
-        | OauthError
-    >;
+    }): Promise<{
+        redirectTo: string;
+    }>;
+    rejectConsentRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<{
+        redirectTo: string;
+    }>;
     getLoginRequest(input: { challenge: string; userContext: UserContext }): Promise<
         | (LoginRequest & {
               status: "OK";
@@ -160,20 +147,14 @@ export declare type RecipeInterface = {
         identityProviderSessionId?: string;
         subject: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              redirectTo: string;
-              status: "OK";
-          }
-        | OauthError
-    >;
-    rejectLoginRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<
-        | {
-              redirectTo: string;
-              status: "OK";
-          }
-        | OauthError
-    >;
+    }): Promise<{
+        redirectTo: string;
+        status: "OK";
+    }>;
+    rejectLoginRequest(input: { challenge: string; error: ErrorOAuth2; userContext: UserContext }): Promise<{
+        redirectTo: string;
+        status: "OK";
+    }>;
     getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
@@ -254,13 +235,10 @@ export declare type RecipeInterface = {
         };
         checkDatabase?: boolean;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              payload: JSONObject;
-          }
-        | OauthError
-    >;
+    }): Promise<{
+        status: "OK";
+        payload: JSONObject;
+    }>;
     getRequestedScopes(input: {
         recipeUserId: RecipeUserId | undefined;
         sessionHandle: string | undefined;
@@ -340,10 +318,9 @@ export declare type RecipeInterface = {
         status: "OK";
     }>;
     introspectToken(input: { token: string; scopes?: string[]; userContext: UserContext }): Promise<
-        | (InstrospectTokenResponse & {
-              status: "OK";
-          })
-        | OauthError
+        InstrospectTokenResponse & {
+            status: "OK";
+        }
     >;
     endSession(input: {
         params: Record<string, string>;
@@ -381,7 +358,6 @@ export declare type APIInterface = {
                     cookies?: string[];
                 }
               | ErrorOAuth2
-              | OauthError
               | GeneralErrorResponse
           >);
     authGET:
@@ -399,7 +375,6 @@ export declare type APIInterface = {
                     cookies?: string[];
                 }
               | ErrorOAuth2
-              | OauthError
               | GeneralErrorResponse
           >);
     tokenPOST:
@@ -409,7 +384,7 @@ export declare type APIInterface = {
               body: any;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse | OauthError>);
+          }) => Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>);
     loginInfoGET:
         | undefined
         | ((input: { loginChallenge: string; options: APIOptions; userContext: UserContext }) => Promise<
@@ -459,7 +434,7 @@ export declare type APIInterface = {
               scopes?: string[];
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse | OauthError>);
+          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
     endSessionGET:
         | undefined
         | ((input: {

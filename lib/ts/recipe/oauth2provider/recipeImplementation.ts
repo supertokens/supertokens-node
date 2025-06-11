@@ -22,7 +22,6 @@ import {
     ConsentRequest,
     PayloadBuilderFunction,
     UserInfoBuilderFunction,
-    OauthError,
 } from "./types";
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
@@ -89,7 +88,7 @@ export default function getRecipeInterface(
         acceptLoginRequest: async function (
             this: RecipeInterface,
             input
-        ): Promise<{ redirectTo: string; status: "OK" } | OauthError> {
+        ): Promise<{ redirectTo: string; status: "OK" }> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/login/accept",
                 {
@@ -107,7 +106,7 @@ export default function getRecipeInterface(
             );
 
             if (resp.status === "OAUTH_ERROR") {
-                return resp;
+                throw new Error("The token is expired, invalid or has been revoked");
             }
 
             return {
@@ -118,7 +117,7 @@ export default function getRecipeInterface(
         rejectLoginRequest: async function (
             this: RecipeInterface,
             input
-        ): Promise<{ redirectTo: string; status: "OK" } | OauthError> {
+        ): Promise<{ redirectTo: string; status: "OK" }> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/login/reject",
                 {
@@ -133,7 +132,7 @@ export default function getRecipeInterface(
             );
 
             if (resp.status === "OAUTH_ERROR") {
-                return resp;
+                throw new Error("The token is expired, invalid or has been revoked");
             }
 
             return {
@@ -141,7 +140,7 @@ export default function getRecipeInterface(
                 status: "OK",
             };
         },
-        getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest | OauthError> {
+        getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
             const resp = await querier.sendGetRequest(
                 "/recipe/oauth/auth/requests/consent",
                 { consentChallenge: input.challenge },
@@ -149,7 +148,7 @@ export default function getRecipeInterface(
             );
 
             if (resp.status === "OAUTH_ERROR") {
-                return resp;
+                throw new Error("The token is expired, invalid or has been revoked");
             }
 
             return {
@@ -167,10 +166,7 @@ export default function getRecipeInterface(
                 subject: resp.subject,
             };
         },
-        acceptConsentRequest: async function (
-            this: RecipeInterface,
-            input
-        ): Promise<{ redirectTo: string } | OauthError> {
+        acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
                 "/recipe/oauth/auth/requests/consent/accept",
                 {
@@ -192,7 +188,7 @@ export default function getRecipeInterface(
             );
 
             if (resp.status === "OAUTH_ERROR") {
-                return resp;
+                throw new Error("The token is expired, invalid or has been revoked");
             }
 
             return {
@@ -215,7 +211,7 @@ export default function getRecipeInterface(
             );
 
             if (resp.status === "OAUTH_ERROR") {
-                return resp;
+                throw new Error("The token is expired, invalid or has been revoked");
             }
 
             return {
@@ -348,10 +344,6 @@ export default function getRecipeInterface(
                     userContext: input.userContext,
                 });
 
-                if ("error" in consentRequest) {
-                    return consentRequest;
-                }
-
                 const consentRes = await this.acceptConsentRequest({
                     userContext: input.userContext,
                     challenge: consentRequest.challenge,
@@ -363,10 +355,6 @@ export default function getRecipeInterface(
                     initialAccessTokenPayload: payloads?.accessToken,
                     initialIdTokenPayload: payloads?.idToken,
                 });
-
-                if ("error" in consentRes) {
-                    return consentRes;
-                }
 
                 return {
                     redirectTo: consentRes.redirectTo,
@@ -446,10 +434,6 @@ export default function getRecipeInterface(
                     scopes,
                     userContext: input.userContext,
                 });
-
-                if (tokenInfo.status === "OAUTH_ERROR") {
-                    return tokenInfo;
-                }
 
                 if (tokenInfo.active === true) {
                     const sessionHandle = tokenInfo.sessionHandle as string;
@@ -716,7 +700,7 @@ export default function getRecipeInterface(
                 );
 
                 if (response.status === "OAUTH_ERROR") {
-                    return response;
+                    throw new Error("The token is expired, invalid or has been revoked");
                 }
 
                 if (response.active !== true) {
@@ -802,6 +786,10 @@ export default function getRecipeInterface(
                 },
                 userContext
             );
+
+            if (res.status === "OAUTH_ERROR") {
+                throw new Error("The token is expired, invalid or has been revoked");
+            }
 
             return res;
         },

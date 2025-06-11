@@ -90,20 +90,17 @@ export default class Wrapper {
         },
         checkDatabase?: boolean,
         userContext?: Record<string, any>
-    ): Promise<
-        | import("./types").OauthError
-        | {
-              status: "OK";
-              payload: import("../usermetadata").JSONObject;
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        payload: import("../usermetadata").JSONObject;
+    }>;
     static createTokenForClientCredentials(
         clientId: string,
         clientSecret: string,
         scope?: string[],
         audience?: string,
         userContext?: Record<string, any>
-    ): Promise<import("./types").ErrorOAuth2 | import("./types").OauthError | import("./types").TokenInfo>;
+    ): Promise<import("./types").ErrorOAuth2 | import("./types").TokenInfo>;
     static revokeToken(
         token: string,
         clientId: string,
@@ -132,10 +129,9 @@ export default class Wrapper {
         scopes?: string[],
         userContext?: Record<string, any>
     ): Promise<
-        | import("./types").OauthError
-        | (import("./types").InstrospectTokenResponse & {
-              status: "OK";
-          })
+        import("./types").InstrospectTokenResponse & {
+            status: "OK";
+        }
     >;
 }
 export declare let init: typeof Recipe.init;
