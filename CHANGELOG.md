@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [23.0.0] - 2025-06-10
 
+-   The `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `acceptLoginRequest`, `rejectLoginRequest` and `introspectToken` can now possibly return an `ErrorOAuth2`.
+-   The `/oauth/introspect` can now possibly return an `ErrorAuth2`.
 -   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
 -   Refactors querier to use dynamic request body and response body types inference.
 -   Refactor internal network calls made with querier to use the new dynamic types.
