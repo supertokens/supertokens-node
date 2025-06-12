@@ -187,7 +187,7 @@ export type RecipeInterface = {
         body: Record<string, string | undefined>;
         userContext: UserContext;
     }): Promise<TokenInfo | ErrorOAuth2>;
-    getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
+    getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest | ErrorOAuth2>;
     acceptConsentRequest(input: {
         challenge: string;
 
@@ -207,13 +207,13 @@ export type RecipeInterface = {
         initialIdTokenPayload: JSONObject | undefined;
 
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
 
     rejectConsentRequest(input: {
         challenge: string;
         error: ErrorOAuth2;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
 
     getLoginRequest(input: {
         challenge: string;
@@ -242,12 +242,12 @@ export type RecipeInterface = {
         // Subject is the user ID of the end-user that authenticated.
         subject: string;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
     rejectLoginRequest(input: {
         challenge: string;
         error: ErrorOAuth2;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
 
     getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
         | {
@@ -402,7 +402,7 @@ export type RecipeInterface = {
         token: string;
         scopes?: string[];
         userContext: UserContext;
-    }): Promise<InstrospectTokenResponse>;
+    }): Promise<(InstrospectTokenResponse & { status: "OK" }) | ErrorOAuth2>;
     endSession(input: {
         params: Record<string, string>;
         session?: SessionContainerInterface;
@@ -478,7 +478,7 @@ export type APIInterface = {
               scopes?: string[];
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
+          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse | ErrorOAuth2>);
     endSessionGET:
         | undefined
         | ((input: {
