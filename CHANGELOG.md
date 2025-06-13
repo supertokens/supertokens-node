@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Fixes broken workflows (Example Tests, AWS Edge function compatibility)
 -   Sets up workflow to run auth-react tests
     -   Updates test-servers to work with updated tests
+-   Fixes wrong types types from `string` to `number` on `createdAt`, `expiresAt` and `timeout` from the WebAuthn recipe
+-   Fixed `email` property by making it optional on `getGeneratedOptions` recipe implementation method
 
 ## [23.0.0] - 2025-06-10
 

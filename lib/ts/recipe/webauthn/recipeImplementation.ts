@@ -328,7 +328,7 @@ export default function getRecipeInterface(
                 return {
                     ...resp,
                     user: new User(resp.user),
-                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                    recipeUserId: resp.recipeUserId ? new RecipeUserId(resp.recipeUserId) : undefined,
                 };
             }
 
