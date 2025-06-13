@@ -10453,7 +10453,7 @@ export interface operations {
                         /** @example TQvEVDV8B64w_2zIifzKaPzBPfthqpx2uJkq_2PIB0k */
                         challenge?: string;
                         /** @example 10000 */
-                        timeout?: string;
+                        timeout?: number;
                         /** @example http://example.com */
                         origin?: string;
                         /** @example email@example.com */
@@ -10685,9 +10685,9 @@ export interface operations {
                               /** @example true */
                               userPresence?: boolean;
                               /** @example 1741793746 */
-                              createdAt?: string;
+                              createdAt?: number;
                               /** @example 1741793746 */
-                              expiresAt?: string;
+                              expiresAt?: number;
                           }
                         | {
                               /** @enum {string} */
