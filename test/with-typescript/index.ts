@@ -2398,19 +2398,22 @@ Supertokens.init({
                         }),
                     },
                 },
-                routeHandlers: [
-                    {
-                        method: "get",
-                        path: "/asdf",
-                        verifySessionOptions: {},
-                        handler: async (req, res, userContext) => {
-                            return {
-                                status: 200,
-                                body: {},
-                            };
+                routeHandlers: () => ({
+                    status: "OK",
+                    routeHandlers: [
+                        {
+                            method: "get",
+                            path: "/asdf",
+                            verifySessionOptions: {},
+                            handler: async (req, res, userContext) => {
+                                return {
+                                    status: 200,
+                                    body: {},
+                                };
+                            },
                         },
-                    },
-                ],
+                    ],
+                }),
             },
             customPlugin({
                 prefix: "asdf",

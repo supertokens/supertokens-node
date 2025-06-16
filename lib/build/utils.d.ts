@@ -7,6 +7,9 @@ import type {
     UserContext,
     SuperTokensPlugin,
     AllRecipeConfigs,
+    SuperTokensPublicPlugin,
+    TypeInput,
+    SuperTokensPublicConfig,
 } from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { User } from "./user";
@@ -85,3 +88,5 @@ export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
     config: AllRecipeConfigs[T] | undefined,
     plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
 ): AllRecipeConfigs[T];
+export declare function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin;
+export declare function getPublicConfig(config: TypeInput): SuperTokensPublicConfig;

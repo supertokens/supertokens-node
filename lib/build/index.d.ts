@@ -5,6 +5,12 @@ import { UserContext, User as UserType } from "./types";
 import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
+export type {
+    TypeInput as SuperTokensConfig,
+    SuperTokensPublicConfig,
+    SuperTokensPlugin,
+    SuperTokensPublicPlugin,
+} from "./types";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;

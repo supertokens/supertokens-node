@@ -102,8 +102,10 @@ export type SuperTokensPlugin = {
     id: string;
     version?: string;
     compatibleSDKVersions?: string | string[];
+    init?: (config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => void;
     dependencies?: (
-        pluginsAbove: SuperTokensPlugin[],
+        config: SuperTokensPublicConfig,
+        pluginsAbove: SuperTokensPublicPlugin[],
         sdkVersion: string
     ) =>
         | {
@@ -119,9 +121,31 @@ export type SuperTokensPlugin = {
             recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
         };
     };
-    routeHandlers?: PluginRouteHandler[];
-    config?: (config: Omit<TypeInput, "recipeList">) => Omit<TypeInput, "recipeList"> | undefined;
+    routeHandlers?:
+        | ((
+              config: SuperTokensPublicConfig,
+              allPlugins: SuperTokensPublicPlugin[],
+              sdkVersion: string
+          ) =>
+              | {
+                    status: "OK";
+                    routeHandlers: PluginRouteHandler[];
+                }
+              | {
+                    status: "ERROR";
+                    message: string;
+                })
+        | PluginRouteHandler[];
+    config?: (config: SuperTokensPublicConfig) => SuperTokensPublicConfig | undefined;
+    exports?: Record<string, any>;
 };
+export type SuperTokensPublicPlugin = Pick<
+    SuperTokensPlugin,
+    "id" | "version" | "compatibleSDKVersions" | "exports"
+> & {
+    initialized: boolean;
+};
+export type SuperTokensPublicConfig = Omit<TypeInput, "recipeList" | "experimental">;
 export type TypeInput = {
     supertokens?: SuperTokensInfo;
     framework?: TypeFramework;

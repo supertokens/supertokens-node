@@ -125,8 +125,10 @@ export type SuperTokensPlugin = {
     id: string; // TODO: validate that no two plugins have the same id
     version?: string;
     compatibleSDKVersions?: string | string[]; // match the syntax of the engines field in package.json
+    init?: (config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => void;
     dependencies?: (
-        pluginsAbove: SuperTokensPlugin[],
+        config: SuperTokensPublicConfig,
+        pluginsAbove: SuperTokensPublicPlugin[],
         sdkVersion: string
     ) => { status: "OK"; pluginsToAdd?: SuperTokensPlugin[] } | { status: "ERROR"; message: string };
     overrideMap?: {
@@ -134,9 +136,23 @@ export type SuperTokensPlugin = {
             recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
         };
     };
-    routeHandlers?: PluginRouteHandler[];
-    config?: (config: Omit<TypeInput, "recipeList">) => Omit<TypeInput, "recipeList"> | undefined;
+    routeHandlers?:
+        | ((
+              config: SuperTokensPublicConfig,
+              allPlugins: SuperTokensPublicPlugin[],
+              sdkVersion: string
+          ) => { status: "OK"; routeHandlers: PluginRouteHandler[] } | { status: "ERROR"; message: string })
+        | PluginRouteHandler[];
+    config?: (config: SuperTokensPublicConfig) => SuperTokensPublicConfig | undefined;
+    exports?: Record<string, any>;
 };
+
+export type SuperTokensPublicPlugin = Pick<
+    SuperTokensPlugin,
+    "id" | "version" | "compatibleSDKVersions" | "exports"
+> & { initialized: boolean };
+
+export type SuperTokensPublicConfig = Omit<TypeInput, "recipeList" | "experimental">;
 
 export type TypeInput = {
     supertokens?: SuperTokensInfo;

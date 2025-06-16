@@ -21,6 +21,7 @@ import {
     UserContext,
     PluginRouteHandler,
     SuperTokensPlugin,
+    SuperTokensPublicPlugin,
 } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
@@ -29,6 +30,8 @@ import {
     sendNon200ResponseWithMessage,
     getRidFromHeader,
     isTestEnv,
+    getPublicPlugin,
+    getPublicConfig,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -58,12 +61,15 @@ export default class SuperTokens {
 
     pluginRouteHandlers: PluginRouteHandler[];
 
+    pluginList: SuperTokensPublicPlugin[];
+
     supertokens: undefined | SuperTokensInfo;
 
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
         const inputPluginList = config.experimental?.plugins ?? [];
+
         this.pluginRouteHandlers = [];
         const finalPluginList: SuperTokensPlugin[] = [];
         for (const plugin of inputPluginList) {
@@ -75,7 +81,11 @@ export default class SuperTokens {
                 throw new Error("Plugin version mismatch");
             }
             if (plugin.dependencies) {
-                const result = plugin.dependencies(finalPluginList, version);
+                const result = plugin.dependencies(
+                    getPublicConfig(config),
+                    finalPluginList.map(getPublicPlugin),
+                    version
+                );
                 if (result.status === "ERROR") {
                     throw new Error(result.message);
                 }
@@ -85,14 +95,33 @@ export default class SuperTokens {
             }
             finalPluginList.push(plugin);
         }
+        this.pluginList = finalPluginList.map(getPublicPlugin);
 
-        for (const plugin of finalPluginList) {
-            if (plugin.routeHandlers) {
-                this.pluginRouteHandlers.push(...plugin.routeHandlers);
+        for (const [pluginIndex, plugin] of finalPluginList.entries()) {
+            if (plugin.config) {
+                config = { ...config, ...plugin.config(getPublicConfig(config)) };
             }
 
-            if (plugin.config) {
-                config = { ...config, ...plugin.config(config) };
+            if (plugin.routeHandlers) {
+                let handlers: PluginRouteHandler[] = [];
+                if (typeof plugin.routeHandlers === "function") {
+                    const result = plugin.routeHandlers(getPublicConfig(config), this.pluginList, version);
+                    if (result.status === "ERROR") {
+                        throw new Error(result.message);
+                    }
+                    handlers = result.routeHandlers;
+                } else {
+                    handlers = plugin.routeHandlers;
+                }
+
+                this.pluginRouteHandlers.push(...handlers);
+            }
+
+            if (plugin.init) {
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    plugin.init!(config, this.pluginList, version);
+                    this.pluginList[pluginIndex].initialized = true;
+                });
             }
         }
 
