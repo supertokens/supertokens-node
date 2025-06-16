@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "22.1.0",
+    "version": "23.0.0",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -13,7 +13,8 @@
         "build-pretty": "npm run build && npm run pretty && npm run pretty",
         "pretty-check": "npx pretty-quick --check .",
         "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
-        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts"
+        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts",
+        "build-core-types": "node scripts/generate-schema.js"
     },
     "keywords": [
         "auth",
@@ -175,9 +176,10 @@
         "next": "^14.0.4",
         "next-test-api-route-handler": "^3.1.10",
         "nock": "11.7.0",
+        "node-fetch": "^3.3.2",
         "nyc": "^15.1.0",
         "otpauth": "9.1.5",
-        "prettier": "2.0.5",
+        "prettier": "2.3.2",
         "pretty-quick": "^3.1.1",
         "react": "^18.2.0",
         "sinon": "^14.0.0",

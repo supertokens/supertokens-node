@@ -28,10 +28,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getUserIdentifierInfoForUserId: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<
+    getUserIdentifierInfoForUserId: (input: { userId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               info: string;
@@ -69,10 +66,7 @@ export declare type RecipeInterface = {
     }) => Promise<{
         status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
     }>;
-    listDevices: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    listDevices: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         devices: {
             name: string;
@@ -81,11 +75,7 @@ export declare type RecipeInterface = {
             verified: boolean;
         }[];
     }>;
-    removeDevice: (input: {
-        userId: string;
-        deviceName: string;
-        userContext: UserContext;
-    }) => Promise<{
+    removeDevice: (input: { userId: string; deviceName: string; userContext: UserContext }) => Promise<{
         status: "OK";
         didDeviceExist: boolean;
     }>;
@@ -113,12 +103,7 @@ export declare type RecipeInterface = {
               retryAfterMs: number;
           }
     >;
-    verifyTOTP: (input: {
-        tenantId: string;
-        userId: string;
-        totp: string;
-        userContext: UserContext;
-    }) => Promise<
+    verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: UserContext }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
           }
@@ -163,11 +148,7 @@ export declare type APIInterface = {
           >);
     listDevicesGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              session: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     devices: {

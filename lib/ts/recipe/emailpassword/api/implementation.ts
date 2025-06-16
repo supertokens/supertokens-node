@@ -53,12 +53,7 @@ export default function getAPIImplementation(): APIInterface {
                 exists: emailPasswordUserExists,
             };
         },
-        generatePasswordResetTokenPOST: async function ({
-            formFields,
-            tenantId,
-            options,
-            userContext,
-        }): Promise<
+        generatePasswordResetTokenPOST: async function ({ formFields, tenantId, options, userContext }): Promise<
             | {
                   status: "OK";
               }
@@ -261,8 +256,7 @@ export default function getAPIImplementation(): APIInterface {
             if (!emailVerified && hasOtherEmailOrPhone) {
                 return {
                     status: "PASSWORD_RESET_NOT_ALLOWED",
-                    reason:
-                        "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
+                    reason: "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
                 };
             }
 
@@ -288,18 +282,19 @@ export default function getAPIImplementation(): APIInterface {
             // is verified, and if not, we need to make sure that there is no other email / phone number
             // associated with the primary user account. If there is, then we do not proceed.
 
-            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                emailPasswordAccount !== undefined
-                    ? emailPasswordAccount
-                    : {
-                          recipeId: "emailpassword",
-                          email,
-                      },
-                linkingCandidate,
-                undefined,
-                tenantId,
-                userContext
-            );
+            let shouldDoAccountLinkingResponse =
+                await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                    emailPasswordAccount !== undefined
+                        ? emailPasswordAccount
+                        : {
+                              recipeId: "emailpassword",
+                              email,
+                          },
+                    linkingCandidate,
+                    undefined,
+                    tenantId,
+                    userContext
+                );
 
             // Now we need to check that if there exists any email password user at all
             // for the input email. If not, then it implies that when the token is consumed,
@@ -391,14 +386,13 @@ export default function getAPIImplementation(): APIInterface {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
+                    const tokenResponse =
+                        await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
                             tenantId,
                             recipeUserId,
                             email,
                             userContext,
-                        }
-                    );
+                        });
 
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
@@ -413,9 +407,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            async function doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
-                recipeUserId: RecipeUserId
-            ): Promise<
+            async function doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(recipeUserId: RecipeUserId): Promise<
                 | {
                       status: "OK";
                       user: User;

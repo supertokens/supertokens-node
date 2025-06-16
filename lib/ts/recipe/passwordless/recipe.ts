@@ -235,14 +235,12 @@ export default class Recipe extends RecipeModule {
                         // object.
                         let factorIdToEmailsMap: Record<string, string[]> = {};
                         if (allFactors.includes(FactorIds.OTP_EMAIL)) {
-                            factorIdToEmailsMap[
-                                FactorIds.OTP_EMAIL
-                            ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
+                            factorIdToEmailsMap[FactorIds.OTP_EMAIL] =
+                                nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
                         }
                         if (allFactors.includes(FactorIds.LINK_EMAIL)) {
-                            factorIdToEmailsMap[
-                                FactorIds.LINK_EMAIL
-                            ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
+                            factorIdToEmailsMap[FactorIds.LINK_EMAIL] =
+                                nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
                         }
                         return {
                             status: "OK",
@@ -367,14 +365,12 @@ export default class Recipe extends RecipeModule {
                         // object.
                         let factorIdToPhoneNumberMap: Record<string, string[]> = {};
                         if (allFactors.includes(FactorIds.OTP_PHONE)) {
-                            factorIdToPhoneNumberMap[
-                                FactorIds.OTP_PHONE
-                            ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
+                            factorIdToPhoneNumberMap[FactorIds.OTP_PHONE] =
+                                phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
                         }
                         if (allFactors.includes(FactorIds.LINK_PHONE)) {
-                            factorIdToPhoneNumberMap[
-                                FactorIds.LINK_PHONE
-                            ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
+                            factorIdToPhoneNumberMap[FactorIds.LINK_PHONE] =
+                                phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
                         }
                         return {
                             status: "OK",

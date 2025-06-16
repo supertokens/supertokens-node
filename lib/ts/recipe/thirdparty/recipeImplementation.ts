@@ -1,6 +1,5 @@
 import { RecipeInterface, ProviderInput } from "./types";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
 import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
@@ -54,7 +53,12 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 }
             }
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
+                {
+                    path: "/<tenantId>/recipe/signinup",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     thirdPartyId,
                     thirdPartyUserId,
@@ -67,24 +71,24 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 return response;
             }
 
-            response.user = new User(response.user);
-            response.recipeUserId = new RecipeUserId(response.recipeUserId);
+            let userAsObj = User.fromApi(response.user);
+            const recipeUserIdAsObj = new RecipeUserId(response.recipeUserId);
 
             await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                user: response.user,
-                recipeUserId: response.recipeUserId,
+                user: userAsObj,
+                recipeUserId: recipeUserIdAsObj,
                 userContext,
             });
 
             // we do this so that we get the updated user (in case the above
             // function updated the verification status) and can return that
-            response.user = (await getUser(response.recipeUserId.getAsString(), userContext))!;
+            userAsObj = (await getUser(recipeUserIdAsObj.getAsString(), userContext))!;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 shouldTryLinkingWithSessionUser,
-                inputUser: response.user,
-                recipeUserId: response.recipeUserId,
+                inputUser: userAsObj,
+                recipeUserId: recipeUserIdAsObj,
                 session,
                 userContext,
             });
@@ -97,7 +101,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 status: "OK",
                 createdNewRecipeUser: response.createdNewUser,
                 user: linkResult.user,
-                recipeUserId: response.recipeUserId,
+                recipeUserId: recipeUserIdAsObj,
             };
         },
 
