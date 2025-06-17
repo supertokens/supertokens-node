@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.1.7] - 2025-06-17
+
+-   Refactors internal logic of parsing cookies to check accessToken and optimizes it to avoid parsing unrelated cookies.
+
 ## [20.1.6] - 2024-11-26
 
 -   Fixes an issue where `removeDevice` API allowed removing verifiedTOTP devices without the user completing MFA.
