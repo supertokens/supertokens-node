@@ -18,6 +18,7 @@ export function validateAndNormalizeUserInput(appInfo, config) {
 export default class Recipe extends RecipeModule {
     static instance?: Recipe = undefined;
     static RECIPE_ID = "pluginTest";
+    static initCalls: string[] = [];
 
     config;
 
@@ -67,6 +68,7 @@ export default class Recipe extends RecipeModule {
 
     static reset() {
         Recipe.instance = undefined;
+        Recipe.initCalls = [];
     }
 
     getAPIsHandled() {

@@ -18,6 +18,7 @@ import assert from "assert";
 import SuperTokens from "../../lib/build/supertokens";
 import { PluginRouteHandler, UserContext } from "../../lib/build/types";
 import { DummyRequest, DummyResponse } from "./misc";
+import { PostSuperTokensInitCallbacks } from "../../lib/ts/postSuperTokensInitCallbacks";
 // let STExpress = require("../..");
 // let assert = require("assert");
 // let { ProcessState } = require("../../lib/build/processState");
@@ -47,6 +48,7 @@ describe("Plugin Tests", () => {
     beforeEach(() => {
         resetAll();
         PluginTestRecipe.reset();
+        PostSuperTokensInitCallbacks.postInitCallbacks = [];
     });
 
     describe("Overrides", () => {
@@ -168,33 +170,55 @@ describe("Plugin Tests", () => {
         );
     });
 
-    describe("Dependencies", () => {
-        const dependencyTestParams: [SuperTokensPlugin[], string[], string[], string][] = [
-            [[Plugin1, Plugin1], ["plugin1", "original"], ["original"], "1,1 => 1"],
-            [[Plugin1, Plugin2], ["plugin2", "plugin1", "original"], ["original"], "1,2 => 2,1"],
-            [[Plugin3Dep1], ["plugin3dep1", "plugin1", "original"], ["original"], "3->1 => 3,1"],
-            [[Plugin3Dep2_1], ["plugin3dep2_1", "plugin1", "plugin2", "original"], ["original"], "3->(2,1) => 3,2,1"],
+    describe("Dependencies and Init", () => {
+        // [Plugins, Function Order, API Order, Init Order, Test Name]
+        const dependencyTestParams: [SuperTokensPlugin[], string[], string[], string[], string][] = [
+            [[Plugin1, Plugin1], ["plugin1", "original"], ["original"], ["plugin1"], "1,1 => 1"],
+            [
+                [Plugin1, Plugin2],
+                ["plugin2", "plugin1", "original"],
+                ["original"],
+                ["plugin1", "plugin2"],
+                "1,2 => 2,1",
+            ],
+            [
+                [Plugin3Dep1],
+                ["plugin3dep1", "plugin1", "original"],
+                ["original"],
+                ["plugin1", "plugin3dep1"],
+                "3->1 => 3,1",
+            ],
+            [
+                [Plugin3Dep2_1],
+                ["plugin3dep2_1", "plugin1", "plugin2", "original"],
+                ["original"],
+                ["plugin2", "plugin1", "plugin3dep2_1"],
+                "3->(2,1) => 3,2,1",
+            ],
             [
                 [Plugin3Dep1, Plugin4Dep2],
                 ["plugin4dep2", "plugin2", "plugin3dep1", "plugin1", "original"],
                 ["original"],
+                ["plugin1", "plugin3dep1", "plugin2", "plugin4dep2"],
                 "3->1,4->2 => 4,2,3,1",
             ],
             [
                 [Plugin4Dep3__2_1],
                 ["plugin4dep3__2_1", "plugin3dep2_1", "plugin1", "plugin2", "original"],
                 ["original"],
+                ["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1"],
                 "4->3->(2,1) => 4,3,1,2",
             ],
             [
                 [Plugin3Dep1, Plugin4Dep1],
                 ["plugin4dep1", "plugin3dep1", "plugin1", "original"],
                 ["original"],
+                ["plugin1", "plugin3dep1", "plugin4dep1"],
                 "3->1,4->1 => 4,3,1",
             ],
         ];
 
-        dependencyTestParams.forEach(([plugins, expectedFnStack, expectedApiStack, testName]) => {
+        dependencyTestParams.forEach(([plugins, expectedFnOrder, expectedApiOrder, expectedInitOrder, testName]) => {
             it(testName, () => {
                 STExpress.init({
                     ...partialSupertokensConfig,
@@ -208,8 +232,9 @@ describe("Plugin Tests", () => {
                 const recipeOutput = recipe.recipeInterfaceImpl.signIn("msg", []);
                 const apiOutput = recipe.apiImpl.signInPOST("msg", []);
 
-                assert.deepEqual(recipeOutput.stack, expectedFnStack);
-                assert.deepEqual(apiOutput.stack, expectedApiStack);
+                assert.deepEqual(recipeOutput.stack, expectedFnOrder);
+                assert.deepEqual(apiOutput.stack, expectedApiOrder);
+                assert.deepEqual(PluginTestRecipe.initCalls, expectedInitOrder);
                 assert.deepEqual(recipeOutput.message, "msg");
                 assert.deepEqual(apiOutput.message, "msg");
             });

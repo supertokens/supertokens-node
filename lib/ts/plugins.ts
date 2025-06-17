@@ -180,8 +180,8 @@ export function loadPlugins({
 
         if (plugin.init) {
             PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                plugin.init!(publicConfig, this.pluginList, version);
-                this.pluginList[pluginIndex].initialized = true;
+                plugin.init!(publicConfig, processedPlugins, version);
+                processedPlugins[pluginIndex].initialized = true;
             });
         }
     }

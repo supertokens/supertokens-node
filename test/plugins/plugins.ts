@@ -23,7 +23,11 @@ export function apiOverrideFactory(identifier: string) {
     };
 }
 
-// export function initFactory()
+export function initFactory(identifier: string) {
+    return function init(config: SuperTokensPublicConfig, pluginsAbove: SuperTokensPublicPlugin[], sdkVersion: string) {
+        PluginTestRecipe.initCalls.push(identifier);
+    };
+}
 
 export function dependencyFactory(dependencies?: SuperTokensPlugin[]) {
     if (dependencies === undefined) {
@@ -49,11 +53,13 @@ export function pluginFactory({
     overrideFunctions = false,
     overrideApis = false,
     dependencies,
+    addInit = false,
 }: {
     identifier: string;
     overrideFunctions: boolean;
     overrideApis: boolean;
     dependencies?: SuperTokensPlugin[];
+    addInit?: boolean;
 }): SuperTokensPlugin {
     const overrideMap: Record<string, any> = {};
 
@@ -73,7 +79,7 @@ export function pluginFactory({
         id: identifier,
         compatibleSDKVersions: ["22.1.0-canary-plugins.0"],
         overrideMap,
-        // init
+        init: addInit ? initFactory(identifier) : undefined,
         dependencies: dependencyFactory(dependencies),
     };
 }
@@ -82,44 +88,46 @@ export const Plugin1 = pluginFactory({
     identifier: "plugin1",
     overrideFunctions: true,
     overrideApis: false,
+    addInit: true,
 });
 export const Plugin2 = pluginFactory({
     identifier: "plugin2",
     overrideFunctions: true,
     overrideApis: false,
+    addInit: true,
 });
 export const Plugin3Dep1 = pluginFactory({
     identifier: "plugin3dep1",
     overrideFunctions: true,
     overrideApis: false,
     dependencies: [Plugin1],
+    addInit: true,
 });
 export const Plugin3Dep2_1 = pluginFactory({
     identifier: "plugin3dep2_1",
     overrideFunctions: true,
     overrideApis: false,
     dependencies: [Plugin2, Plugin1],
+    addInit: true,
 });
-// Plugin4Dep1 = plugin_factory("plugin4dep1", override_functions=True, deps=[Plugin1])
-// Plugin4Dep2 = plugin_factory("plugin4dep2", override_functions=True, deps=[Plugin2])
-// Plugin4Dep3__2_1 = plugin_factory(
-//     "plugin4dep3__2_1", override_functions=True, deps=[Plugin3Dep2_1]
-// )
 export const Plugin4Dep1 = pluginFactory({
     identifier: "plugin4dep1",
     overrideFunctions: true,
     overrideApis: false,
     dependencies: [Plugin1],
+    addInit: true,
 });
 export const Plugin4Dep2 = pluginFactory({
     identifier: "plugin4dep2",
     overrideFunctions: true,
     overrideApis: false,
     dependencies: [Plugin2],
+    addInit: true,
 });
 export const Plugin4Dep3__2_1 = pluginFactory({
     identifier: "plugin4dep3__2_1",
     overrideFunctions: true,
     overrideApis: false,
     dependencies: [Plugin3Dep2_1],
+    addInit: true,
 });
