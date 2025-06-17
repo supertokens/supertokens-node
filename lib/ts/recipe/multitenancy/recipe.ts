@@ -30,7 +30,8 @@ import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

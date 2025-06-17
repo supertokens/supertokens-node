@@ -5,9 +5,6 @@ import type {
     HTTPMethod,
     JSONObject,
     UserContext,
-    SuperTokensPlugin,
-    AllRecipeConfigs,
-    SuperTokensPublicPlugin,
     TypeInput,
     SuperTokensPublicConfig,
 } from "./types";
@@ -83,16 +80,4 @@ export declare const isTestEnv: () => boolean;
 export declare const encodeBase64: (value: string) => string;
 export declare const decodeBase64: (value: string) => string;
 export declare const isBuffer: (obj: any) => boolean;
-export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
-    recipeId: T,
-    config: AllRecipeConfigs[T] | undefined,
-    plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
-): AllRecipeConfigs[T];
-export declare function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin;
 export declare function getPublicConfig(config: TypeInput): SuperTokensPublicConfig;
-export declare function getPluginDependencies(
-    plugin: SuperTokensPlugin,
-    publicConfig: SuperTokensPublicConfig,
-    pluginsAbove: SuperTokensPlugin[],
-    sdkVersion: string
-): SuperTokensPlugin[];

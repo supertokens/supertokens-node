@@ -4,7 +4,7 @@
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
-        "test": "TEST_MODE=testing npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000",
+        "test": "TEST_MODE=testing npx ts-mocha -p lib/tsconfig.json -n loader=ts-node/esm --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000",
         "test-exports": "./test/testExports.sh",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npm run build",
         "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npm run build && cd ../.. && npm run post-build",
@@ -157,6 +157,7 @@
         "@types/inflation": "^2.0.1",
         "@types/koa": "^2.13.4",
         "@types/koa-bodyparser": "^4.3.3",
+        "@types/mocha": "^10.0.10",
         "@types/nodemailer": "^6.4.4",
         "@types/pako": "^2.0.3",
         "@types/set-cookie-parser": "^2.4.9",
@@ -182,6 +183,9 @@
         "react": "^18.2.0",
         "sinon": "^14.0.0",
         "supertest": "4.0.2",
+        "ts-mocha": "^11.1.0",
+        "ts-node": "^10.9.2",
+        "tsconfig-paths": "^4.2.0",
         "typedoc": "^0.22.5",
         "typescript": "^5.7.3"
     },

@@ -20,7 +20,6 @@ import {
     SuperTokensInfo,
     UserContext,
     PluginRouteHandler,
-    SuperTokensPlugin,
     SuperTokensPublicPlugin,
 } from "./types";
 import {
@@ -30,10 +29,9 @@ import {
     sendNon200ResponseWithMessage,
     getRidFromHeader,
     isTestEnv,
-    getPublicPlugin,
     getPublicConfig,
-    getPluginDependencies,
 } from "./utils";
+import { loadPlugins } from "./plugins";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
@@ -45,7 +43,6 @@ import STError from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
-import { version } from "./version";
 import { SessionContainerInterface } from "./recipe/session/types";
 import Session from "./recipe/session/recipe";
 
@@ -69,55 +66,18 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
-        const inputPluginList = config.experimental?.plugins ?? [];
+        const { publicConfig, processedPlugins, pluginRouteHandlers, overrideMaps } = loadPlugins({
+            plugins: config.experimental?.plugins ?? [],
+            publicConfig: getPublicConfig(config),
+        });
 
-        // TODO: Move this to a function - `loadPlugins`
-        this.pluginRouteHandlers = [];
-        let finalPluginList: SuperTokensPlugin[] = [];
-        const seenPlugins: Set<string> = new Set();
-
-        for (const plugin of inputPluginList) {
-            const versionContraints = Array.isArray(plugin.compatibleSDKVersions)
-                ? plugin.compatibleSDKVersions
-                : [plugin.compatibleSDKVersions];
-            if (!versionContraints.includes(version)) {
-                // TODO: better checks
-                throw new Error("Plugin version mismatch");
-            }
-
-            const dependencies = getPluginDependencies(plugin, getPublicConfig(config), finalPluginList, version);
-            finalPluginList = [...finalPluginList, ...dependencies];
-            dependencies.map((p) => p.id).forEach((pluginId) => seenPlugins.add(pluginId));
-        }
-        this.pluginList = finalPluginList.map(getPublicPlugin);
-
-        for (const [pluginIndex, plugin] of finalPluginList.entries()) {
-            if (plugin.config) {
-                config = { ...config, ...plugin.config(getPublicConfig(config)) };
-            }
-
-            if (plugin.routeHandlers) {
-                let handlers: PluginRouteHandler[] = [];
-                if (typeof plugin.routeHandlers === "function") {
-                    const result = plugin.routeHandlers(getPublicConfig(config), this.pluginList, version);
-                    if (result.status === "ERROR") {
-                        throw new Error(result.message);
-                    }
-                    handlers = result.routeHandlers;
-                } else {
-                    handlers = plugin.routeHandlers;
-                }
-
-                this.pluginRouteHandlers.push(...handlers);
-            }
-
-            if (plugin.init) {
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    plugin.init!(config, this.pluginList, version);
-                    this.pluginList[pluginIndex].initialized = true;
-                });
-            }
-        }
+        this.pluginRouteHandlers = pluginRouteHandlers;
+        this.pluginList = processedPlugins;
+        config = {
+            ...publicConfig,
+            experimental: config.experimental,
+            recipeList: config.recipeList,
+        };
 
         if (config.debug === true) {
             enableDebugLogs();
@@ -157,6 +117,7 @@ export default class SuperTokens {
             config.supertokens?.networkInterceptor,
             config.supertokens?.disableCoreCallCache
         );
+
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
         }
@@ -187,10 +148,6 @@ export default class SuperTokens {
         let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
         let OpenIdRecipe = require("./recipe/openid/recipe").default;
         let jwtRecipe = require("./recipe/jwt/recipe").default;
-
-        const overrideMaps = finalPluginList
-            .filter((p) => p.overrideMap !== undefined)
-            .map((p) => p.overrideMap) as NonNullable<SuperTokensPlugin["overrideMap"]>[];
 
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv, overrideMaps);

@@ -6,9 +6,6 @@ import type {
     HTTPMethod,
     JSONObject,
     UserContext,
-    SuperTokensPlugin,
-    AllRecipeConfigs,
-    SuperTokensPublicPlugin,
     TypeInput,
     SuperTokensPublicConfig,
 } from "./types";
@@ -21,7 +18,6 @@ import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 import { ProcessState, PROCESS_STATE } from "./processState";
-import OverrideableBuilder from "supertokens-js-override";
 
 export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
     // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
@@ -526,108 +522,7 @@ export const isBuffer = (obj: any): boolean => {
     return getBuffer().isBuffer(obj);
 };
 
-export function applyPlugins<T extends keyof AllRecipeConfigs>(
-    recipeId: T,
-    config: AllRecipeConfigs[T] | undefined,
-    plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
-): AllRecipeConfigs[T] {
-    config = config ?? ({} as AllRecipeConfigs[T]);
-    let functionLayers = [];
-    let apiLayers = [];
-    for (const plugin of plugins) {
-        const overrides = plugin[recipeId];
-        if (overrides) {
-            config = overrides.config ? overrides.config(config) : config;
-            if (overrides.functions !== undefined) {
-                functionLayers.push(overrides.functions as any);
-            }
-            if (overrides.apis !== undefined) {
-                apiLayers.push(overrides.apis as any);
-            }
-        }
-    }
-    functionLayers.push(config.override?.functions);
-    apiLayers.push(config.override?.apis);
-
-    functionLayers = functionLayers.filter((layer) => layer !== undefined);
-    apiLayers = apiLayers.filter((layer) => layer !== undefined);
-    if (recipeId !== "accountlinking" && apiLayers.length > 0) {
-        config.override = {
-            ...config.override,
-            apis: (oI: any, builder: OverrideableBuilder<any>) => {
-                for (const layer of apiLayers) {
-                    builder.override(layer as any);
-                }
-                return oI as any;
-            },
-        } as any;
-    }
-    if (functionLayers.length > 0) {
-        config.override = {
-            ...config.override,
-            functions: (oI: any, builder: OverrideableBuilder<any>) => {
-                for (const layer of functionLayers) {
-                    builder.override(layer as any);
-                }
-                return oI as any;
-            },
-        };
-    }
-    return config;
-}
-
-export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin {
-    return {
-        id: plugin.id,
-        initialized: plugin.init ? false : true, // since the init method is optional, we default to true
-        version: plugin.version,
-        exports: plugin.exports,
-        compatibleSDKVersions: plugin.compatibleSDKVersions,
-    };
-}
-
 export function getPublicConfig(config: TypeInput): SuperTokensPublicConfig {
     const { experimental, recipeList, ...publicConfig } = config;
     return publicConfig;
-}
-
-export function getPluginDependencies(
-    plugin: SuperTokensPlugin,
-    publicConfig: SuperTokensPublicConfig,
-    pluginsAbove: SuperTokensPlugin[],
-    sdkVersion: string
-): SuperTokensPlugin[] {
-    function recurseDependencies(
-        plugin: SuperTokensPlugin,
-        dependencies?: SuperTokensPlugin[],
-        visited?: Set<string>
-    ): SuperTokensPlugin[] {
-        if (dependencies === undefined) {
-            dependencies = [];
-        }
-        if (visited === undefined) {
-            visited = new Set();
-        }
-        if (visited.has(plugin.id)) {
-            return dependencies;
-        }
-        visited.add(plugin.id);
-
-        if (plugin.dependencies) {
-            const result = plugin.dependencies(publicConfig, pluginsAbove.map(getPublicPlugin), sdkVersion);
-            if (result.status === "ERROR") {
-                throw new Error(result.message);
-            }
-            if (result.pluginsToAdd) {
-                for (const dep of result.pluginsToAdd) {
-                    recurseDependencies(dep, dependencies, visited);
-                }
-            }
-        }
-
-        dependencies.push(plugin);
-        return dependencies;
-    }
-
-    return recurseDependencies(plugin);
 }
