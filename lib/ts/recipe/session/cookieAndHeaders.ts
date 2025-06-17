@@ -303,16 +303,19 @@ function parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString: stri
     const cookiePairs = cookieString.split(";");
 
     for (const cookiePair of cookiePairs) {
-        const [name, value] = cookiePair
-            .trim()
-            .split("=")
-            .map((part) => decodeURIComponent(part));
+        const [name, value] = cookiePair.trim().split("=");
 
-        if (cookies.hasOwnProperty(name)) {
-            cookies[name].push(value);
-        } else {
-            cookies[name] = [value];
+        // Try to decode the name or fallback to the original name
+        let decodedName = name;
+        try {
+            decodedName = decodeURIComponent(name);
+        } catch (e) {
+            logDebugMessage(
+                `parseCookieStringFromRequestHeaderAllowingDuplicates: Error decoding cookie name: ${name}`
+            );
         }
+
+        cookies.hasOwnProperty(decodedName) ? cookies[decodedName].push(value) : (cookies[decodedName] = [value]);
     }
 
     return cookies;
