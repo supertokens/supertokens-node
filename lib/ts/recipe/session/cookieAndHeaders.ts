@@ -286,24 +286,8 @@ function parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString: stri
     const cookiePairs = cookieString.split(";");
 
     for (const cookiePair of cookiePairs) {
-        const [name, value] = cookiePair
-            .trim()
-            .split("=")
-            .map((part) => {
-                try {
-                    return decodeURIComponent(part);
-                } catch (e) {
-                    // this is there in case the cookie value is not encoded. This can happe
-                    // if the user has set their own cookie in a different format.
-                    return part;
-                }
-            });
-
-        if (cookies.hasOwnProperty(name)) {
-            cookies[name].push(value);
-        } else {
-            cookies[name] = [value];
-        }
+        const [name, value] = cookiePair.trim().split("=");
+        cookies.hasOwnProperty(name) ? cookies[name].push(value) : (cookies[name] = [value]);
     }
 
     return cookies;
