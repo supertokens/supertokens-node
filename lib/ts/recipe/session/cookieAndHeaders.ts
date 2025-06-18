@@ -273,33 +273,31 @@ export function hasMultipleCookiesForTokenType(
         return false;
     }
 
-    const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
+    const cookieNames = getCookieNamesFromRequestHeaderAllowingDuplicates(cookieString);
     const cookieName = config.getCookieNameForTokenType(req, tokenType, userContext);
-    return cookies[cookieName] !== undefined && cookies[cookieName].length > 1;
+    return cookieNames.filter((name) => name === cookieName).length > 1;
 }
 
 // This function is required because cookies library (and most of the popular libraries in npm)
 // does not support parsing multiple cookies with the same name.
-function parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString: string): Record<string, string[]> {
-    const cookies: Record<string, string[]> = {};
+function getCookieNamesFromRequestHeaderAllowingDuplicates(cookieString: string): string[] {
+    const cookieNames: string[] = [];
 
     const cookiePairs = cookieString.split(";");
 
     for (const cookiePair of cookiePairs) {
-        const [name, value] = cookiePair.trim().split("=");
+        const [name, _] = cookiePair.trim().split("=");
 
         // Try to decode the name or fallback to the original name
         let decodedName = name;
         try {
             decodedName = decodeURIComponent(name);
         } catch (e) {
-            logDebugMessage(
-                `parseCookieStringFromRequestHeaderAllowingDuplicates: Error decoding cookie name: ${name}`
-            );
+            logDebugMessage(`getCookieNamesFromRequestHeaderAllowingDuplicates: Error decoding cookie name: ${name}`);
         }
 
-        cookies.hasOwnProperty(decodedName) ? cookies[decodedName].push(value) : (cookies[decodedName] = [value]);
+        cookieNames.push(decodedName);
     }
 
-    return cookies;
+    return cookieNames;
 }
