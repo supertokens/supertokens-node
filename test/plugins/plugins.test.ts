@@ -1,4 +1,4 @@
-import { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } from "../utils";
+import { resetAll } from "../utils";
 import {
     apiOverrideFactory,
     functionOverrideFactory,
@@ -19,10 +19,6 @@ import SuperTokens from "../../lib/build/supertokens";
 import { PluginRouteHandler, UserContext } from "../../lib/build/types";
 import { DummyRequest, DummyResponse } from "./misc";
 import { PostSuperTokensInitCallbacks } from "../../lib/ts/postSuperTokensInitCallbacks";
-// let STExpress = require("../..");
-// let assert = require("assert");
-// let { ProcessState } = require("../../lib/build/processState");
-// let PluginTestRecipe = require("./plugins").default;
 
 function recipeFactory({ overrideFunctions, overrideApis }: { overrideFunctions: boolean; overrideApis: boolean }) {
     return PluginTestRecipe.init({
@@ -44,7 +40,7 @@ const partialSupertokensConfig = {
     },
 };
 
-describe("Plugin Tests", () => {
+describe("Plugins", () => {
     beforeEach(() => {
         resetAll();
         PluginTestRecipe.reset();
@@ -52,88 +48,105 @@ describe("Plugin Tests", () => {
     });
 
     describe("Overrides", () => {
-        const overrideTestParams: [
-            boolean,
-            boolean,
-            { identifier: string; overrideFunctions: boolean; overrideApis: boolean }[],
-            string[],
-            string[]
-        ][] = [
-            // [fnOverride, apiOverride, plugins, expectedFnStack, expectedApiStack]
+        const overrideTestParams: {
+            overrideFunctions: boolean;
+            overrideApis: boolean;
+            pluginFactortyConfigs: { identifier: string; overrideFunctions: boolean; overrideApis: boolean }[];
+            expectedFunctionOrder: string[];
+            expectedApiOrder: string[];
+        }[] = [
             // No plugins
-            [false, false, [], ["original"], ["original"]],
-            [true, false, [], ["override", "original"], ["original"]],
-            [false, true, [], ["original"], ["override", "original"]],
+            {
+                overrideFunctions: false,
+                overrideApis: false,
+                pluginFactortyConfigs: [],
+                expectedFunctionOrder: ["original"],
+                expectedApiOrder: ["original"],
+            },
+            {
+                overrideFunctions: true,
+                overrideApis: false,
+                pluginFactortyConfigs: [],
+                expectedFunctionOrder: ["override", "original"],
+                expectedApiOrder: ["original"],
+            },
+            {
+                overrideFunctions: false,
+                overrideApis: true,
+                pluginFactortyConfigs: [],
+                expectedFunctionOrder: ["original"],
+                expectedApiOrder: ["override", "original"],
+            },
             // Single plugin with overrides
-            [
-                true,
-                false,
-                [{ identifier: "plugin1", overrideFunctions: true, overrideApis: false }],
-                ["override", "plugin1", "original"],
-                ["original"],
-            ],
-            [
-                true,
-                false,
-                [{ identifier: "plugin1", overrideFunctions: false, overrideApis: true }],
-                ["override", "original"],
-                ["plugin1", "original"],
-            ],
-            [
-                false,
-                true,
-                [{ identifier: "plugin1", overrideFunctions: true, overrideApis: false }],
-                ["plugin1", "original"],
-                ["override", "original"],
-            ],
-            [
-                false,
-                true,
-                [{ identifier: "plugin1", overrideFunctions: false, overrideApis: true }],
-                ["original"],
-                ["override", "plugin1", "original"],
-            ],
+            {
+                overrideFunctions: true,
+                overrideApis: false,
+                pluginFactortyConfigs: [{ identifier: "plugin1", overrideFunctions: true, overrideApis: false }],
+                expectedFunctionOrder: ["override", "plugin1", "original"],
+                expectedApiOrder: ["original"],
+            },
+            {
+                overrideFunctions: true,
+                overrideApis: false,
+                pluginFactortyConfigs: [{ identifier: "plugin1", overrideFunctions: false, overrideApis: true }],
+                expectedFunctionOrder: ["override", "original"],
+                expectedApiOrder: ["plugin1", "original"],
+            },
+            {
+                overrideFunctions: false,
+                overrideApis: true,
+                pluginFactortyConfigs: [{ identifier: "plugin1", overrideFunctions: true, overrideApis: false }],
+                expectedFunctionOrder: ["plugin1", "original"],
+                expectedApiOrder: ["override", "original"],
+            },
+            {
+                overrideFunctions: false,
+                overrideApis: true,
+                pluginFactortyConfigs: [{ identifier: "plugin1", overrideFunctions: false, overrideApis: true }],
+                expectedFunctionOrder: ["original"],
+                expectedApiOrder: ["override", "plugin1", "original"],
+            },
             // Multiple plugins with overrides
-            [
-                true,
-                false,
-                [
+            {
+                overrideFunctions: true,
+                overrideApis: false,
+                pluginFactortyConfigs: [
                     { identifier: "plugin1", overrideFunctions: true, overrideApis: false },
                     { identifier: "plugin2", overrideFunctions: true, overrideApis: false },
                 ],
-                ["override", "plugin2", "plugin1", "original"],
-                ["original"],
-            ],
-            [
-                false,
-                true,
-                [
+                expectedFunctionOrder: ["override", "plugin2", "plugin1", "original"],
+                expectedApiOrder: ["original"],
+            },
+            {
+                overrideFunctions: false,
+                overrideApis: true,
+                pluginFactortyConfigs: [
                     { identifier: "plugin1", overrideFunctions: false, overrideApis: true },
                     { identifier: "plugin2", overrideFunctions: false, overrideApis: true },
                 ],
-                ["original"],
-                ["override", "plugin2", "plugin1", "original"],
-            ],
+                expectedFunctionOrder: ["original"],
+                expectedApiOrder: ["override", "plugin2", "plugin1", "original"],
+            },
             // Multiple plugins, all overrides
-            [
-                true,
-                true,
-                [
+            {
+                overrideFunctions: true,
+                overrideApis: true,
+                pluginFactortyConfigs: [
                     { identifier: "plugin1", overrideFunctions: true, overrideApis: true },
                     { identifier: "plugin2", overrideFunctions: true, overrideApis: true },
                 ],
-                ["override", "plugin2", "plugin1", "original"],
-                ["override", "plugin2", "plugin1", "original"],
-            ],
+                expectedFunctionOrder: ["override", "plugin2", "plugin1", "original"],
+                expectedApiOrder: ["override", "plugin2", "plugin1", "original"],
+            },
         ];
 
         overrideTestParams.forEach(
-            ([fnOverride, apiOverride, pluginFactortyConfigs, expectedFnStack, expectedApiStack]) => {
+            ({ overrideFunctions, overrideApis, pluginFactortyConfigs, expectedFunctionOrder, expectedApiOrder }) => {
                 const plugins = pluginFactortyConfigs.map((pfc) => pluginFactory(pfc));
 
                 const testNameList = [
-                    `fnOverride=${fnOverride}`,
-                    `apiOverride=${apiOverride}`,
+                    `fnOverride=${overrideFunctions}`,
+                    `apiOverride=${overrideApis}`,
                     `plugins=[${plugins.map((p) => p.id).join(",")}]`,
                     ...pluginFactortyConfigs.map((pfc) => {
                         const overrideList: string[] = [];
@@ -151,7 +164,9 @@ describe("Plugin Tests", () => {
                 it(testName, () => {
                     STExpress.init({
                         ...partialSupertokensConfig,
-                        recipeList: [recipeFactory({ overrideFunctions: fnOverride, overrideApis: apiOverride })],
+                        recipeList: [
+                            recipeFactory({ overrideFunctions: overrideFunctions, overrideApis: overrideApis }),
+                        ],
                         experimental: {
                             plugins,
                         },
@@ -161,8 +176,8 @@ describe("Plugin Tests", () => {
                     const recipeOutput = recipe.recipeInterfaceImpl.signIn("msg", []);
                     const apiOutput = recipe.apiImpl.signInPOST("msg", []);
 
-                    assert.deepEqual(recipeOutput.stack, expectedFnStack);
-                    assert.deepEqual(apiOutput.stack, expectedApiStack);
+                    assert.deepEqual(recipeOutput.stack, expectedFunctionOrder);
+                    assert.deepEqual(apiOutput.stack, expectedApiOrder);
                     assert.deepEqual(recipeOutput.message, "msg");
                     assert.deepEqual(apiOutput.message, "msg");
                 });
@@ -171,54 +186,65 @@ describe("Plugin Tests", () => {
     });
 
     describe("Dependencies and Init", () => {
-        // [Plugins, Function Order, API Order, Init Order, Test Name]
-        const dependencyTestParams: [SuperTokensPlugin[], string[], string[], string[], string][] = [
-            [[Plugin1, Plugin1], ["plugin1", "original"], ["original"], ["plugin1"], "1,1 => 1"],
-            [
-                [Plugin1, Plugin2],
-                ["plugin2", "plugin1", "original"],
-                ["original"],
-                ["plugin1", "plugin2"],
-                "1,2 => 2,1",
-            ],
-            [
-                [Plugin3Dep1],
-                ["plugin3dep1", "plugin1", "original"],
-                ["original"],
-                ["plugin1", "plugin3dep1"],
-                "3->1 => 3,1",
-            ],
-            [
-                [Plugin3Dep2_1],
-                ["plugin3dep2_1", "plugin1", "plugin2", "original"],
-                ["original"],
-                ["plugin2", "plugin1", "plugin3dep2_1"],
-                "3->(2,1) => 3,2,1",
-            ],
-            [
-                [Plugin3Dep1, Plugin4Dep2],
-                ["plugin4dep2", "plugin2", "plugin3dep1", "plugin1", "original"],
-                ["original"],
-                ["plugin1", "plugin3dep1", "plugin2", "plugin4dep2"],
-                "3->1,4->2 => 4,2,3,1",
-            ],
-            [
-                [Plugin4Dep3__2_1],
-                ["plugin4dep3__2_1", "plugin3dep2_1", "plugin1", "plugin2", "original"],
-                ["original"],
-                ["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1"],
-                "4->3->(2,1) => 4,3,1,2",
-            ],
-            [
-                [Plugin3Dep1, Plugin4Dep1],
-                ["plugin4dep1", "plugin3dep1", "plugin1", "original"],
-                ["original"],
-                ["plugin1", "plugin3dep1", "plugin4dep1"],
-                "3->1,4->1 => 4,3,1",
-            ],
+        const dependencyTestParams: {
+            plugins: SuperTokensPlugin[];
+            expectedFnOrder: string[];
+            expectedApiOrder: string[];
+            expectedInitOrder: string[];
+            testName: string;
+        }[] = [
+            {
+                plugins: [Plugin1, Plugin1],
+                expectedFnOrder: ["plugin1", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin1"],
+                testName: "1,1 => 1",
+            },
+            {
+                plugins: [Plugin1, Plugin2],
+                expectedFnOrder: ["plugin2", "plugin1", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin1", "plugin2"],
+                testName: "1,2 => 2,1",
+            },
+            {
+                plugins: [Plugin3Dep1],
+                expectedFnOrder: ["plugin3dep1", "plugin1", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin1", "plugin3dep1"],
+                testName: "3->1 => 3,1",
+            },
+            {
+                plugins: [Plugin3Dep2_1],
+                expectedFnOrder: ["plugin3dep2_1", "plugin1", "plugin2", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin2", "plugin1", "plugin3dep2_1"],
+                testName: "3->(2,1) => 3,2,1",
+            },
+            {
+                plugins: [Plugin3Dep1, Plugin4Dep2],
+                expectedFnOrder: ["plugin4dep2", "plugin2", "plugin3dep1", "plugin1", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin1", "plugin3dep1", "plugin2", "plugin4dep2"],
+                testName: "3->1,4->2 => 4,2,3,1",
+            },
+            {
+                plugins: [Plugin4Dep3__2_1],
+                expectedFnOrder: ["plugin4dep3__2_1", "plugin3dep2_1", "plugin1", "plugin2", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1"],
+                testName: "4->3->(2,1) => 4,3,1,2",
+            },
+            {
+                plugins: [Plugin3Dep1, Plugin4Dep1],
+                expectedFnOrder: ["plugin4dep1", "plugin3dep1", "plugin1", "original"],
+                expectedApiOrder: ["original"],
+                expectedInitOrder: ["plugin1", "plugin3dep1", "plugin4dep1"],
+                testName: "3->1,4->1 => 4,3,1",
+            },
         ];
 
-        dependencyTestParams.forEach(([plugins, expectedFnOrder, expectedApiOrder, expectedInitOrder, testName]) => {
+        dependencyTestParams.forEach(({ plugins, expectedFnOrder, expectedApiOrder, expectedInitOrder, testName }) => {
             it(testName, () => {
                 STExpress.init({
                     ...partialSupertokensConfig,
