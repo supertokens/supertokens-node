@@ -54,7 +54,7 @@ export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: Req
 };
 
 function isRunningInCloudflareWorker() {
-    return navigator.userAgent === "Cloudflare-Workers";
+    return typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
 }
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
