@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [21.1.2] - 2025-06-17
+
+-   Refactors internal logic of parsing cookies to check accessToken and optimizes it to avoid parsing unrelated cookies.
+
 ## [21.1.1] - 2025-03-18
 
 -   Fixes an issue where the response body was not being cloned when using cache
