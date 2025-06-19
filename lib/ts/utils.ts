@@ -17,37 +17,45 @@ export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: Req
     if (init === undefined) {
         ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
         init = {
-            cache: "no-cache",
+            cache: "no-store",
             redirect: "manual",
         };
     } else {
         if (init.cache === undefined) {
             ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
-            init.cache = "no-cache";
+            init.cache = "no-store";
             init.redirect = "manual";
         }
     }
+
+    // Remove the cache field if the runtime is Cloudflare Workers
+    //
+    // CF Workers did not support the cache field at all until Nov, 2024
+    // when they added support for the `cache` field but it only supports
+    // `no-store`.
+    //
+    // The following check is to ensure that this doesn't error out in
+    // Cloudflare Workers where compatibility flag is set to an older version.
+    //
+    // Since there is no way for us to determine which compatibility flags are
+    // enabled, we are disabling the cache functionality for CF Workers altogether.
+    // Ref issue: https://github.com/cloudflare/workerd/issues/698
+    if (isRunningInCloudflareWorker()) {
+        delete init.cache;
+    }
+
     const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
     try {
         return await fetchFunction(input, init);
     } catch (e) {
-        // Cloudflare Workers don't support the 'cache' field in RequestInit.
-        // To work around this, we delete the 'cache' field and retry the fetch if the error is due to the missing 'cache' field.
-        // Remove this workaround once the 'cache' field is supported.
-        // More info: https://github.com/cloudflare/workerd/issues/698
-        const unimplementedCacheError =
-            e &&
-            typeof e === "object" &&
-            "message" in e &&
-            e.message === "The 'cache' field on 'RequestInitializerDict' is not implemented.";
-        if (!unimplementedCacheError) throw e;
-
-        const newOpts = { ...init };
-        delete newOpts.cache;
-
-        return await fetchFunction(input, newOpts);
+        logDebugMessage("Error fetching: " + e);
+        throw e;
     }
 };
+
+function isRunningInCloudflareWorker() {
+    return navigator.userAgent === "Cloudflare-Workers";
+}
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
