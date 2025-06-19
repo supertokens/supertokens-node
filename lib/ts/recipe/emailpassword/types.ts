@@ -164,7 +164,11 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
-    consumePasswordResetToken(input: { token: string; tenantId: string; userContext: UserContext }): Promise<
+    consumePasswordResetToken(input: {
+        token: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
         | {
               status: "OK";
               email: string;
@@ -208,7 +212,12 @@ export type APIOptions = {
 export type APIInterface = {
     emailExistsGET:
         | undefined
-        | ((input: { email: string; tenantId: string; options: APIOptions; userContext: UserContext }) => Promise<
+        | ((input: {
+              email: string;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
               | {
                     status: "OK";
                     exists: boolean;

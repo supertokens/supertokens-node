@@ -14,18 +14,18 @@
  */
 
 import { RecipeInterface } from ".";
+import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
-import { JSONObject } from "../../types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
         getUserMetadata: function ({ userId, userContext }) {
-            return querier.sendGetRequest("/recipe/user/metadata", { userId }, userContext);
+            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId }, userContext);
         },
 
-        updateUserMetadata: async function ({ userId, metadataUpdate, userContext }) {
-            const response = await querier.sendPutRequest(
-                "/recipe/user/metadata",
+        updateUserMetadata: function ({ userId, metadataUpdate, userContext }) {
+            return querier.sendPutRequest(
+                new NormalisedURLPath("/recipe/user/metadata"),
                 {
                     userId,
                     metadataUpdate,
@@ -33,16 +33,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {},
                 userContext
             );
-
-            return {
-                ...response,
-                metadata: response.metadata as JSONObject,
-            };
         },
 
         clearUserMetadata: function ({ userId, userContext }) {
             return querier.sendPostRequest(
-                "/recipe/user/metadata/remove",
+                new NormalisedURLPath("/recipe/user/metadata/remove"),
                 {
                     userId,
                 },

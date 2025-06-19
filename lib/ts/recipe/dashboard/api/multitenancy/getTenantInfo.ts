@@ -21,6 +21,7 @@ import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
+import NormalisedURLPath from "../../../../normalisedURLPath";
 import { Querier } from "../../../../querier";
 import { UserContext } from "../../../../types";
 import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
@@ -81,12 +82,7 @@ export default async function getTenantInfo(
 
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
     let coreConfig = await querier.sendGetRequest(
-        {
-            path: "/<tenantId>/recipe/dashboard/tenant/core-config",
-            params: {
-                tenantId,
-            },
-        },
+        new NormalisedURLPath(`/${tenantId}/recipe/dashboard/tenant/core-config`),
         {},
         userContext
     );

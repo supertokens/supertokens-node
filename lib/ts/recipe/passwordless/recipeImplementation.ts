@@ -2,6 +2,7 @@ import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import AccountLinking from "../accountlinking/recipe";
 import EmailVerification from "../emailverification/recipe";
+import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
 import { getUser } from "../..";
@@ -25,12 +26,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
         consumeCode: async function (this: RecipeInterface, input) {
             const response = await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/code/consume",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -41,16 +37,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             logDebugMessage("Passwordless.consumeCode code consumed OK");
 
-            const userAsObj = User.fromApi(response.user);
-            const recipeUserIdAsObj = new RecipeUserId(response.recipeUserId);
+            response.user = new User(response.user);
+            response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
             // Attempt account linking (this is a sign up)
-            let updatedUser = userAsObj;
+            let updatedUser = response.user;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId: input.tenantId,
-                inputUser: userAsObj,
-                recipeUserId: recipeUserIdAsObj,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
                 session: input.session,
                 shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                 userContext: input.userContext,
@@ -61,23 +57,20 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
             updatedUser = linkResult.user;
 
+            response.user = updatedUser;
+
             return {
                 ...response,
                 consumedDevice: response.consumedDevice,
                 createdNewRecipeUser: response.createdNewUser,
-                user: updatedUser,
-                recipeUserId: recipeUserIdAsObj,
+                user: response.user!,
+                recipeUserId: response.recipeUserId!,
             };
         },
 
         checkCode: async function (this: RecipeInterface, input) {
             let response = await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/code/check",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/check`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -93,12 +86,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         createCode: async function (input) {
             let response = await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/code",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -106,12 +94,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         createNewCodeForDevice: async function (input) {
             let response = await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/code",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -119,12 +102,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         listCodesByDeviceId: async function (input) {
             let response = await querier.sendGetRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/codes",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -132,12 +110,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         listCodesByEmail: async function (input) {
             let response = await querier.sendGetRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/codes",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -145,12 +118,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         listCodesByPhoneNumber: async function (input) {
             let response = await querier.sendGetRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/codes",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -158,12 +126,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         listCodesByPreAuthSessionId: async function (input) {
             let response = await querier.sendGetRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/codes",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -171,12 +134,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         revokeAllCodes: async function (input) {
             await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/codes/remove",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes/remove`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -186,12 +144,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         revokeCode: async function (input) {
             await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/signinup/code/remove",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/remove`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -234,7 +187,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 }
             }
             let response = await querier.sendPutRequest(
-                "/recipe/user",
+                new NormalisedURLPath(`/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input),
                 {},
                 input.userContext

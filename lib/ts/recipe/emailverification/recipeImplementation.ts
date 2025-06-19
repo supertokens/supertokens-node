@@ -1,5 +1,6 @@
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
+import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
 import { getUser } from "../..";
@@ -29,12 +30,7 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
             let response = await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/user/email/verify/token",
-                    params: {
-                        tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
                 {
                     userId: recipeUserId.getAsString(),
                     email,
@@ -60,12 +56,7 @@ export default function getRecipeInterface(
             userContext,
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/user/email/verify",
-                    params: {
-                        tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
                 {
                     method: "token",
                     token,
@@ -87,8 +78,7 @@ export default function getRecipeInterface(
                         if (emailInfo.status === "OK" && emailInfo.email === response.email) {
                             // we do this here to prevent cyclic dependencies.
                             // TODO: Fix this.
-                            let AccountLinking =
-                                require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
+                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
                             await AccountLinking.tryLinkingByAccountInfoOrCreatePrimaryUser({
                                 tenantId,
                                 inputUser: updatedUser,
@@ -123,7 +113,7 @@ export default function getRecipeInterface(
             userContext: UserContext;
         }): Promise<boolean> {
             let response = await querier.sendGetRequest(
-                "/recipe/user/email/verify",
+                new NormalisedURLPath("/recipe/user/email/verify"),
                 {
                     userId: recipeUserId.getAsString(),
                     email,
@@ -140,12 +130,7 @@ export default function getRecipeInterface(
             userContext: UserContext;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
-                {
-                    path: "/<tenantId>/recipe/user/email/verify/token/remove",
-                    params: {
-                        tenantId: input.tenantId,
-                    },
-                },
+                new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
                 {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,
@@ -161,7 +146,7 @@ export default function getRecipeInterface(
             userContext: UserContext;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
-                "/recipe/user/email/verify/remove",
+                new NormalisedURLPath("/recipe/user/email/verify/remove"),
                 {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,

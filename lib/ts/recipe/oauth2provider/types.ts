@@ -187,7 +187,7 @@ export type RecipeInterface = {
         body: Record<string, string | undefined>;
         userContext: UserContext;
     }): Promise<TokenInfo | ErrorOAuth2>;
-    getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest | ErrorOAuth2>;
+    getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
     acceptConsentRequest(input: {
         challenge: string;
 
@@ -207,13 +207,13 @@ export type RecipeInterface = {
         initialIdTokenPayload: JSONObject | undefined;
 
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string }>;
 
     rejectConsentRequest(input: {
         challenge: string;
         error: ErrorOAuth2;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string }>;
 
     getLoginRequest(input: {
         challenge: string;
@@ -242,14 +242,17 @@ export type RecipeInterface = {
         // Subject is the user ID of the end-user that authenticated.
         subject: string;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string }>;
     rejectLoginRequest(input: {
         challenge: string;
         error: ErrorOAuth2;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string }>;
 
-    getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
+    getOAuth2Client(input: {
+        clientId: string;
+        userContext: UserContext;
+    }): Promise<
         | {
               status: "OK";
               client: OAuth2Client;
@@ -402,7 +405,7 @@ export type RecipeInterface = {
         token: string;
         scopes?: string[];
         userContext: UserContext;
-    }): Promise<(InstrospectTokenResponse & { status: "OK" }) | ErrorOAuth2>;
+    }): Promise<InstrospectTokenResponse>;
     endSession(input: {
         params: Record<string, string>;
         session?: SessionContainerInterface;
@@ -478,7 +481,7 @@ export type APIInterface = {
               scopes?: string[];
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse | ErrorOAuth2>);
+          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
     endSessionGET:
         | undefined
         | ((input: {

@@ -50,17 +50,25 @@ export declare type RecipeInterface = {
         status: "OK";
         createdNew: boolean;
     }>;
-    deleteTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<{
+    deleteTenant: (input: {
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<{
         status: "OK";
         didExist: boolean;
     }>;
-    getTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<
+    getTenant: (input: {
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<
         | ({
               status: "OK";
           } & TenantConfig)
         | undefined
     >;
-    listAllTenants: (input: { userContext: UserContext }) => Promise<{
+    listAllTenants: (input: {
+        userContext: UserContext;
+    }) => Promise<{
         status: "OK";
         tenants: (TenantConfig & {
             tenantId: string;
@@ -75,7 +83,11 @@ export declare type RecipeInterface = {
         status: "OK";
         createdNew: boolean;
     }>;
-    deleteThirdPartyConfig: (input: { tenantId: string; thirdPartyId: string; userContext: UserContext }) => Promise<{
+    deleteThirdPartyConfig: (input: {
+        tenantId: string;
+        thirdPartyId: string;
+        userContext: UserContext;
+    }) => Promise<{
         status: "OK";
         didConfigExist: boolean;
     }>;

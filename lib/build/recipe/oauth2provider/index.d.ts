@@ -128,12 +128,7 @@ export default class Wrapper {
         token: string,
         scopes?: string[],
         userContext?: Record<string, any>
-    ): Promise<
-        | import("./types").ErrorOAuth2
-        | (import("./types").InstrospectTokenResponse & {
-              status: "OK";
-          })
-    >;
+    ): Promise<import("./types").InstrospectTokenResponse>;
 }
 export declare let init: typeof Recipe.init;
 export declare let getOAuth2Client: typeof Wrapper.getOAuth2Client;

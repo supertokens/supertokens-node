@@ -303,7 +303,11 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<boolean>;
 
-    getClaimValue<T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext: UserContext }): Promise<
+    getClaimValue<T>(input: {
+        sessionHandle: string;
+        claim: SessionClaim<T>;
+        userContext: UserContext;
+    }): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
           }

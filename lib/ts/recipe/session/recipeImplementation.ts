@@ -13,6 +13,7 @@ import { buildFrontToken } from "./cookieAndHeaders";
 import { validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
+import NormalisedURLPath from "../../normalisedURLPath";
 import { JSONObject, NormalisedAppinfo, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
@@ -344,7 +345,7 @@ export default function getRecipeInterface(
                     : input.newAccessTokenPayload;
 
             let response = await querier.sendPostRequest(
-                "/recipe/session/regenerate",
+                new NormalisedURLPath("/recipe/session/regenerate"),
                 {
                     accessToken: input.accessToken,
                     userDataInJWT: newAccessTokenPayload,

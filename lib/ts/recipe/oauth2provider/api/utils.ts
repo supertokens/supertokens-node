@@ -58,11 +58,6 @@ export async function loginGET({
                     },
                     userContext,
                 });
-
-                if ("error" in reject) {
-                    return reject;
-                }
-
                 return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
             }
 
@@ -76,11 +71,6 @@ export async function loginGET({
                     },
                     userContext,
                 });
-
-                if ("error" in reject) {
-                    return reject;
-                }
-
                 return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
             }
         } catch {
@@ -93,11 +83,6 @@ export async function loginGET({
                 },
                 userContext,
             });
-
-            if (reject.status === "ERROR") {
-                return reject;
-            }
-
             return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
         }
     }
@@ -117,11 +102,6 @@ export async function loginGET({
             identityProviderSessionId: session.getHandle(),
             userContext,
         });
-
-        if (accept.status === "ERROR") {
-            return accept;
-        }
-
         return { status: "REDIRECT", redirectTo: accept.redirectTo, cookies: cookies };
     }
 
@@ -146,11 +126,6 @@ export async function loginGET({
             },
             userContext,
         });
-
-        if (reject.status === "ERROR") {
-            return reject;
-        }
-
         return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
     }
 

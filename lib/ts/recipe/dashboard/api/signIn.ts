@@ -17,7 +17,13 @@ import { APIInterface, APIOptions } from "../types";
 import { send200Response } from "../../../utils";
 import STError from "../../../error";
 import { Querier } from "../../../querier";
+import NormalisedURLPath from "../../../normalisedURLPath";
 import { UserContext } from "../../../types";
+
+type SignInResponse =
+    | { status: "OK"; sessionId: string }
+    | { status: "INVALID_CREDENTIALS_ERROR" }
+    | { status: "USER_SUSPENDED_ERROR" };
 
 export default async function signIn(_: APIInterface, options: APIOptions, userContext: UserContext): Promise<boolean> {
     const { email, password } = await options.req.getJSONBody();
@@ -37,8 +43,8 @@ export default async function signIn(_: APIInterface, options: APIOptions, userC
     }
 
     let querier = Querier.getNewInstanceOrThrowError(undefined);
-    const signInResponse = await querier.sendPostRequest(
-        "/recipe/dashboard/signin",
+    const signInResponse = await querier.sendPostRequest<SignInResponse>(
+        new NormalisedURLPath("/recipe/dashboard/signin"),
         {
             email,
             password,

@@ -16,6 +16,7 @@
 import { APIInterface, APIOptions } from "../types";
 import SuperTokens from "../../../supertokens";
 import { Querier } from "../../../querier";
+import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
 import { doFetch } from "../../../utils";
@@ -58,7 +59,7 @@ export default async function analyticsPost(
     let numberOfUsers: number;
     try {
         let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-        let response = await querier.sendGetRequest("/telemetry", {}, userContext);
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {}, userContext);
         if (response.exists) {
             telemetryId = response.telemetryId;
         }

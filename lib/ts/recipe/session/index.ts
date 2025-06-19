@@ -152,8 +152,7 @@ export default class SessionWrapper {
             };
         }
 
-        const claimValidatorsAddedByOtherRecipes =
-            Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
+        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
             userId: sessionInfo.userId,
             recipeUserId: sessionInfo.recipeUserId,

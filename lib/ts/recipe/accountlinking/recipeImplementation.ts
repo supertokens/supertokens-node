@@ -15,6 +15,7 @@
 
 import { AccountInfoInput, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
+import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import type AccountLinkingRecipe from "./recipe";
 import { User } from "../../user";
@@ -54,12 +55,7 @@ export default function getRecipeImplementation(
                 includeRecipeIdsStr = includeRecipeIds.join(",");
             }
             let response = await querier.sendGetRequest(
-                {
-                    path: "/<tenantId>/users",
-                    params: {
-                        tenantId: tenantId ?? "public",
-                    },
-                },
+                new NormalisedURLPath(`${tenantId ?? "public"}/users`),
                 {
                     includeRecipeIds: includeRecipeIdsStr,
                     timeJoinedOrder: timeJoinedOrder,
@@ -97,7 +93,7 @@ export default function getRecipeImplementation(
               }
         > {
             return await querier.sendGetRequest(
-                "/recipe/accountlinking/user/primary/check",
+                new NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
@@ -131,17 +127,14 @@ export default function getRecipeImplementation(
               }
         > {
             let response = await querier.sendPostRequest(
-                "/recipe/accountlinking/user/primary",
+                new NormalisedURLPath("/recipe/accountlinking/user/primary"),
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
                 userContext
             );
             if (response.status === "OK") {
-                return {
-                    ...response,
-                    user: User.fromApi(response.user),
-                };
+                response.user = new User(response.user);
             }
             return response;
         },
@@ -177,7 +170,7 @@ export default function getRecipeImplementation(
               }
         > {
             let result = await querier.sendGetRequest(
-                "/recipe/accountlinking/user/link/check",
+                new NormalisedURLPath("/recipe/accountlinking/user/link/check"),
                 {
                     recipeUserId: recipeUserId.getAsString(),
                     primaryUserId,
@@ -220,7 +213,7 @@ export default function getRecipeImplementation(
               }
         > {
             const accountsLinkingResult = await querier.sendPostRequest(
-                "/recipe/accountlinking/user/link",
+                new NormalisedURLPath("/recipe/accountlinking/user/link"),
                 {
                     recipeUserId: recipeUserId.getAsString(),
                     primaryUserId,
@@ -228,15 +221,16 @@ export default function getRecipeImplementation(
                 userContext
             );
 
-            if (accountsLinkingResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-                return {
-                    ...accountsLinkingResult,
-                    user: User.fromApi(accountsLinkingResult.user),
-                };
+            if (
+                ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
+                    accountsLinkingResult.status
+                )
+            ) {
+                accountsLinkingResult.user = new User(accountsLinkingResult.user);
             }
 
             if (accountsLinkingResult.status === "OK") {
-                let user: UserType = User.fromApi(accountsLinkingResult.user);
+                let user: UserType = accountsLinkingResult.user;
                 if (!accountsLinkingResult.accountsAlreadyLinked) {
                     await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                         user: user,
@@ -261,10 +255,7 @@ export default function getRecipeImplementation(
 
                     await config.onAccountLinked(user, loginMethodInfo, userContext);
                 }
-                return {
-                    ...accountsLinkingResult,
-                    user,
-                };
+                accountsLinkingResult.user = user;
             }
 
             return accountsLinkingResult;
@@ -285,7 +276,7 @@ export default function getRecipeImplementation(
             wasLinked: boolean;
         }> {
             let accountsUnlinkingResult = await querier.sendPostRequest(
-                "/recipe/accountlinking/user/unlink",
+                new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
@@ -296,7 +287,7 @@ export default function getRecipeImplementation(
 
         getUser: async function (this: RecipeInterface, { userId, userContext }): Promise<User | undefined> {
             let result = await querier.sendGetRequest(
-                "/user/id",
+                new NormalisedURLPath("/user/id"),
                 {
                     userId,
                 },
@@ -323,12 +314,7 @@ export default function getRecipeImplementation(
             }
         ): Promise<UserType[]> {
             let result = await querier.sendGetRequest(
-                {
-                    path: "/<tenantId>/users/by-accountinfo",
-                    params: {
-                        tenantId: tenantId ?? "public",
-                    },
-                },
+                new NormalisedURLPath(`${tenantId ?? "public"}/users/by-accountinfo`),
                 {
                     email: accountInfo.email,
                     phoneNumber: accountInfo.phoneNumber,
@@ -357,7 +343,7 @@ export default function getRecipeImplementation(
             status: "OK";
         }> {
             return await querier.sendPostRequest(
-                "/user/remove",
+                new NormalisedURLPath("/user/remove"),
                 {
                     userId,
                     removeAllLinkedAccounts,

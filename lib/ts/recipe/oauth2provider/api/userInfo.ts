@@ -41,13 +41,13 @@ export default async function userInfoGET(
     let accessTokenPayload: JSONObject;
 
     try {
-        const validateTokenResponse =
-            await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
-                token: accessToken,
-                userContext,
-            });
-
-        accessTokenPayload = validateTokenResponse.payload;
+        const {
+            payload,
+        } = await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
+            token: accessToken,
+            userContext,
+        });
+        accessTokenPayload = payload;
     } catch (error) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
         options.res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate", true);

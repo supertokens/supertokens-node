@@ -1239,8 +1239,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
-                                                    recipeUserId:
-                                                        response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };

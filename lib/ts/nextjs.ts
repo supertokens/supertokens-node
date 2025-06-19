@@ -89,7 +89,9 @@ export default class NextJS {
         return handleAuthAPIRequest();
     }
 
-    static async getSSRSession(cookies: Array<{ name: string; value: string }>): Promise<{
+    static async getSSRSession(
+        cookies: Array<{ name: string; value: string }>
+    ): Promise<{
         accessTokenPayload: JWTPayload | undefined;
         hasToken: boolean;
         error: Error | undefined;

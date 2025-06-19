@@ -16,6 +16,7 @@
 import { APIInterface, APIOptions } from "../types";
 import { send200Response } from "../../../utils";
 import { Querier } from "../../../querier";
+import NormalisedURLPath from "../../../normalisedURLPath";
 import { UserContext } from "../../../types";
 
 export default async function signOut(
@@ -30,8 +31,8 @@ export default async function signOut(
         const sessionIdFormAuthHeader = options.req.getHeaderValue("authorization")?.split(" ")[1];
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         const sessionDeleteResponse = await querier.sendDeleteRequest(
-            "/recipe/dashboard/session",
-            undefined,
+            new NormalisedURLPath("/recipe/dashboard/session"),
+            {},
             { sessionId: sessionIdFormAuthHeader },
             userContext
         );

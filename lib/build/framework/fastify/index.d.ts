@@ -1,8 +1,10 @@
 // @ts-nocheck
 export type { SessionRequest } from "./framework";
-export declare const plugin: import("./types").FastifyPluginCallback<
-    import("./types").FastifyInstance<unknown, import("./types").FastifyRequest, import("./types").FastifyReply>
->;
+export declare const plugin: import("./types").FastifyPluginCallback<import("./types").FastifyInstance<
+    unknown,
+    import("./types").FastifyRequest,
+    import("./types").FastifyReply
+>>;
 export declare const errorHandler: () => (
     err: any,
     req: import("./types").FastifyRequest,

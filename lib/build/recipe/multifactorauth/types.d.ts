@@ -89,7 +89,11 @@ export declare type APIOptions = {
 export declare type APIInterface = {
     resyncSessionAndFetchMFAInfoPUT:
         | undefined
-        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
               | {
                     status: "OK";
                     factors: {

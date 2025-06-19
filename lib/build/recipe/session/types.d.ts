@@ -254,7 +254,11 @@ export declare type RecipeInterface = {
         value: T;
         userContext: UserContext;
     }): Promise<boolean>;
-    getClaimValue<T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext: UserContext }): Promise<
+    getClaimValue<T>(input: {
+        sessionHandle: string;
+        claim: SessionClaim<T>;
+        userContext: UserContext;
+    }): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
           }
@@ -311,7 +315,11 @@ export declare type APIInterface = {
         | ((input: { options: APIOptions; userContext: UserContext }) => Promise<SessionContainerInterface>);
     signOutPOST:
         | undefined
-        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
               | {
                     status: "OK";
                 }

@@ -3,8 +3,6 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
-import { PathParam, RequestBody, ResponseBody } from "./core/types";
-import { paths } from "./core/paths";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -31,65 +29,34 @@ export declare class Querier {
         networkInterceptor?: NetworkInterceptor,
         disableCache?: boolean
     ): void;
-    private getPath;
-    sendPostRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "post">,
-        userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "post"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "post">>
-            : never
-    >;
-    sendDeleteRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "delete">,
+    sendPostRequest: <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<T>;
+    sendDeleteRequest: (
+        path: NormalisedURLPath,
+        body: any,
         params: any | undefined,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "delete"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "delete">>
-            : never
-    >;
-    sendGetRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
+    ) => Promise<any>;
+    sendGetRequest: (
+        path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "get"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
-            : never
-    >;
-    sendGetRequestWithResponseHeaders: <P extends keyof paths>(
-        templatePath: PathParam<P>,
+    ) => Promise<any>;
+    sendGetRequestWithResponseHeaders: (
+        path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ) => Promise<{
-        body: import("./core/types").UncleanedResponseBody<P, "get"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
-            : never;
+        body: any;
         headers: Headers;
     }>;
-    sendPutRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "put">,
+    sendPutRequest: (
+        path: NormalisedURLPath,
+        body: any,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "put"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "put">>
-            : never
-    >;
-    sendPatchRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "patch">,
-        userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "patch"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "patch">>
-            : never
-    >;
+    ) => Promise<any>;
+    sendPatchRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
     invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;

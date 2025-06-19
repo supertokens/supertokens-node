@@ -95,7 +95,9 @@ export default class Wrapper {
         status: "OK";
         didRoleExist: boolean;
     }>;
-    static getAllRoles(userContext?: Record<string, any>): Promise<{
+    static getAllRoles(
+        userContext?: Record<string, any>
+    ): Promise<{
         status: "OK";
         roles: string[];
     }>;

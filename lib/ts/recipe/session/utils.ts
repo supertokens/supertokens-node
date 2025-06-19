@@ -375,16 +375,16 @@ export async function getRequiredClaimValidators(
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
     userContext: UserContext
 ) {
-    const claimValidatorsAddedByOtherRecipes =
-        SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
-    const globalClaimValidators: SessionClaimValidator[] =
-        await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators({
+    const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
+    const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
+        {
             userId: session.getUserId(userContext),
             recipeUserId: session.getRecipeUserId(userContext),
             tenantId: session.getTenantId(userContext),
             claimValidatorsAddedByOtherRecipes,
             userContext,
-        });
+        }
+    );
 
     return overrideGlobalClaimValidators !== undefined
         ? await overrideGlobalClaimValidators(globalClaimValidators, session, userContext)
