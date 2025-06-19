@@ -126,12 +126,7 @@ export declare type RecipeInterface = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
-    verifyCredentials(input: {
-        email: string;
-        password: string;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
+    verifyCredentials(input: { email: string; password: string; tenantId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
               user: User;
@@ -160,11 +155,7 @@ export declare type RecipeInterface = {
               status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
-    consumePasswordResetToken(input: {
-        token: string;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
+    consumePasswordResetToken(input: { token: string; tenantId: string; userContext: UserContext }): Promise<
         | {
               status: "OK";
               email: string;
@@ -208,12 +199,7 @@ export declare type APIOptions = {
 export declare type APIInterface = {
     emailExistsGET:
         | undefined
-        | ((input: {
-              email: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { email: string; tenantId: string; options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     exists: boolean;

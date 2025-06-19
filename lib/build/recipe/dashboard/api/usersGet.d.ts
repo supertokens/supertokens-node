@@ -12,8 +12,6 @@ export default function usersGet(
     options: APIOptions,
     userContext: UserContext
 ): Promise<Response>;
-export declare function getSearchParamsFromURL(
-    path: string
-): {
+export declare function getSearchParamsFromURL(path: string): {
     [key: string]: string;
 };

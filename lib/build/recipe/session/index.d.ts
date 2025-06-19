@@ -166,14 +166,10 @@ export default class SessionWrapper {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    static getJWKS(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getJWKS(userContext?: Record<string, any>): Promise<{
         keys: import("../jwt").JsonWebKey[];
     }>;
-    static getOpenIdDiscoveryConfiguration(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getOpenIdDiscoveryConfiguration(userContext?: Record<string, any>): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;

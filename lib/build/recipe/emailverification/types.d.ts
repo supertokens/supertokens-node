@@ -100,11 +100,7 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
     }>;
-    unverifyEmail(input: {
-        recipeUserId: RecipeUserId;
-        email: string;
-        userContext: UserContext;
-    }): Promise<{
+    unverifyEmail(input: { recipeUserId: RecipeUserId; email: string; userContext: UserContext }): Promise<{
         status: "OK";
     }>;
 };
@@ -140,11 +136,7 @@ export declare type APIInterface = {
           >);
     isEmailVerifiedGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-              session: SessionContainerInterface;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext; session: SessionContainerInterface }) => Promise<
               | {
                     status: "OK";
                     isVerified: boolean;
@@ -154,11 +146,7 @@ export declare type APIInterface = {
           >);
     generateEmailVerifyTokenPOST:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-              session: SessionContainerInterface;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext; session: SessionContainerInterface }) => Promise<
               | {
                     status: "OK";
                 }

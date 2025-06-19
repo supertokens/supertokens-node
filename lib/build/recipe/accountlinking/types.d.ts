@@ -70,10 +70,7 @@ export declare type RecipeInterface = {
         users: User[];
         nextPaginationToken?: string;
     }>;
-    canCreatePrimaryUser: (input: {
-        recipeUserId: RecipeUserId;
-        userContext: UserContext;
-    }) => Promise<
+    canCreatePrimaryUser: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               wasAlreadyAPrimaryUser: boolean;
@@ -86,10 +83,7 @@ export declare type RecipeInterface = {
               description: string;
           }
     >;
-    createPrimaryUser: (input: {
-        recipeUserId: RecipeUserId;
-        userContext: UserContext;
-    }) => Promise<
+    createPrimaryUser: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               user: User;
@@ -128,11 +122,7 @@ export declare type RecipeInterface = {
               status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
-    linkAccounts: (input: {
-        recipeUserId: RecipeUserId;
-        primaryUserId: string;
-        userContext: UserContext;
-    }) => Promise<
+    linkAccounts: (input: { recipeUserId: RecipeUserId; primaryUserId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               accountsAlreadyLinked: boolean;
@@ -152,10 +142,7 @@ export declare type RecipeInterface = {
               status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
-    unlinkAccount: (input: {
-        recipeUserId: RecipeUserId;
-        userContext: UserContext;
-    }) => Promise<{
+    unlinkAccount: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<{
         status: "OK";
         wasRecipeUserDeleted: boolean;
         wasLinked: boolean;
@@ -167,11 +154,7 @@ export declare type RecipeInterface = {
         doUnionOfAccountInfo: boolean;
         userContext: UserContext;
     }) => Promise<User[]>;
-    deleteUser: (input: {
-        userId: string;
-        removeAllLinkedAccounts: boolean;
-        userContext: UserContext;
-    }) => Promise<{
+    deleteUser: (input: { userId: string; removeAllLinkedAccounts: boolean; userContext: UserContext }) => Promise<{
         status: "OK";
     }>;
 };
