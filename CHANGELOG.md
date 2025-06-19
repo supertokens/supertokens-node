@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [23.0.0] - 2025-06-10
 
+-   Refactors internal logic of parsing cookies to check accessToken and optimizes it to avoid parsing unrelated cookies.
 -   The `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `acceptLoginRequest`, `rejectLoginRequest` and `introspectToken` can now possibly return an `ErrorOAuth2`.
 -   The `/oauth/introspect` can now possibly return an `ErrorAuth2`.
 -   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
