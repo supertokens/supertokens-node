@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
 -   Refactors querier to use dynamic request body and response body types inference.
 -   Refactor internal network calls made with querier to use the new dynamic types.
+-   Fixes an issue with fetch not supporting `cache: no-cache` in Cloudflare Workers.
 
 ## [22.1.0] - 2025-04-04
 
