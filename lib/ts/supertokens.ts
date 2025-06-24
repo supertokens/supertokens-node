@@ -30,6 +30,7 @@ import {
     getRidFromHeader,
     isTestEnv,
     getPublicConfig,
+    getNonPublicConfig,
 } from "./utils";
 import { loadPlugins } from "./plugins";
 import { Querier } from "./querier";
@@ -73,10 +74,10 @@ export default class SuperTokens {
 
         this.pluginRouteHandlers = pluginRouteHandlers;
         this.pluginList = processedPlugins;
+
         config = {
             ...publicConfig,
-            experimental: config.experimental,
-            recipeList: config.recipeList,
+            ...getNonPublicConfig(config),
         };
 
         if (config.debug === true) {

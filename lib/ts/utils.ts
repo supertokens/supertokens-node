@@ -1,13 +1,16 @@
 import { parse } from "tldts";
 
-import type {
-    AppInfo,
-    NormalisedAppinfo,
-    HTTPMethod,
-    JSONObject,
-    UserContext,
-    TypeInput,
-    SuperTokensPublicConfig,
+import {
+    type AppInfo,
+    type NormalisedAppinfo,
+    type HTTPMethod,
+    type JSONObject,
+    type UserContext,
+    type TypeInput,
+    type SuperTokensPublicConfig,
+    nonPublicConfigProperties,
+    NonPublicConfigPropertiesType,
+    Entries,
 } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -523,6 +526,21 @@ export const isBuffer = (obj: any): boolean => {
 };
 
 export function getPublicConfig(config: TypeInput): SuperTokensPublicConfig {
-    const { experimental, recipeList, ...publicConfig } = config;
+    // `Entries<T>` will work fine assuming there are no extra properties in `TypeInput`.
+    const configEntries: Entries<TypeInput> = Object.entries(config) as Entries<TypeInput>;
+    const publicConfig: SuperTokensPublicConfig = Object.fromEntries(
+        configEntries.filter(([key, _]) => !nonPublicConfigProperties.includes(key as NonPublicConfigPropertiesType))
+    );
+
+    return publicConfig;
+}
+
+export function getNonPublicConfig(config: TypeInput): Pick<TypeInput, NonPublicConfigPropertiesType> {
+    // `Entries<T>` will work fine assuming there are no extra properties in `TypeInput`.
+    const configEntries: Entries<TypeInput> = Object.entries(config) as Entries<TypeInput>;
+    const publicConfig: Pick<TypeInput, NonPublicConfigPropertiesType> = Object.fromEntries(
+        configEntries.filter(([key, _]) => nonPublicConfigProperties.includes(key as NonPublicConfigPropertiesType))
+    );
+
     return publicConfig;
 }

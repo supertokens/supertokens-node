@@ -56,6 +56,7 @@ export default class Recipe extends RecipeModule {
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
+                    // @ts-ignore - Custom recipe, not part of the SDK
                     applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? [])
                 );
 
