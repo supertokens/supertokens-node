@@ -20,7 +20,8 @@ import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 import RecipeImplementation from "./recipeImplementation";
 import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";

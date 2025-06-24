@@ -49,6 +49,10 @@ export type NonNullableProperties<T> = {
     [P in keyof T]: NonNullable<T[P]>;
 };
 
+export type Entries<T> = {
+    [K in keyof T]-?: [K, T[K]];
+}[keyof T][];
+
 // Record<string,any> is still quite generic and we would like to ensure type safety for the userContext
 // so we use the concept of branded type, which enables catching of issues at compile time.
 // Detailed explanation about branded types is available here - https://egghead.io/blog/using-branded-types-in-typescript
@@ -152,7 +156,12 @@ export type SuperTokensPublicPlugin = Pick<
     "id" | "version" | "compatibleSDKVersions" | "exports"
 > & { initialized: boolean };
 
-export type SuperTokensPublicConfig = Omit<TypeInput, "recipeList" | "experimental">;
+
+export const nonPublicConfigProperties = ["recipeList", "experimental"] as const;
+
+export type NonPublicConfigPropertiesType = typeof nonPublicConfigProperties[number];
+
+export type SuperTokensPublicConfig = Omit<TypeInput, NonPublicConfigPropertiesType>;
 
 export type TypeInput = {
     supertokens?: SuperTokensInfo;

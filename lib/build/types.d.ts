@@ -32,6 +32,9 @@ type Branded<T, B> = T & Brand<B>;
 export type NonNullableProperties<T> = {
     [P in keyof T]: NonNullable<T[P]>;
 };
+export type Entries<T> = {
+    [K in keyof T]-?: [K, T[K]];
+}[keyof T][];
 export type UserContext = Branded<Record<string, any>, "UserContext">;
 export type AppInfo = {
     appName: string;
@@ -145,7 +148,9 @@ export type SuperTokensPublicPlugin = Pick<
 > & {
     initialized: boolean;
 };
-export type SuperTokensPublicConfig = Omit<TypeInput, "recipeList" | "experimental">;
+export declare const nonPublicConfigProperties: readonly ["recipeList", "experimental"];
+export type NonPublicConfigPropertiesType = typeof nonPublicConfigProperties[number];
+export type SuperTokensPublicConfig = Omit<TypeInput, NonPublicConfigPropertiesType>;
 export type TypeInput = {
     supertokens?: SuperTokensInfo;
     framework?: TypeFramework;

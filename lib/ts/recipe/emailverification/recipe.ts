@@ -38,7 +38,8 @@ import Session from "../session";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { logDebugMessage } from "../../logger";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

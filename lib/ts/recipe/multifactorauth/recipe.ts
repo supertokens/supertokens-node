@@ -42,7 +42,8 @@ import RecipeUserId from "../../recipeUserId";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

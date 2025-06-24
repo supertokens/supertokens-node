@@ -42,7 +42,8 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {

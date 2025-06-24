@@ -94,7 +94,8 @@ import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor"
 import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
 import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
 import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

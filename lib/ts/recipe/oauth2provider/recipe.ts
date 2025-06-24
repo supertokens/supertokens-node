@@ -55,7 +55,7 @@ import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
 import { endSessionGET, endSessionPOST } from "./api/endSession";
 import { logoutPOST } from "./api/logout";
-import { applyPlugins } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider" as const;

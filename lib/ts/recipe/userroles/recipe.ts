@@ -32,7 +32,8 @@ import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
 import { User } from "../../user";
 import { getSessionInformation } from "../session";
-import { applyPlugins, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "userroles" as const;
