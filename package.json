@@ -158,8 +158,7 @@
         "@types/inflation": "^2.0.1",
         "@types/koa": "^2.13.4",
         "@types/koa-bodyparser": "^4.3.3",
-        "@types/mocha": "^10.0.10",
-        "@types/nodemailer": "^6.4.4",
+         "@types/nodemailer": "^6.4.4",
         "@types/pako": "^2.0.3",
         "@types/set-cookie-parser": "^2.4.9",
         "@types/validator": "10.11.0",
@@ -188,7 +187,7 @@
         "ts-mocha": "^11.1.0",
         "ts-node": "^10.9.2",
         "tsconfig-paths": "^4.2.0",
-        "typedoc": "^0.22.5",
+        "typedoc": "0.28.2",
         "typescript": "^5.7.3"
     },
     "browser": {

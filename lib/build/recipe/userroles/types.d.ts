@@ -1,30 +1,30 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import { UserContext } from "../../types";
-export declare type TypeInput = {
+export type TypeInput = {
     skipAddingRolesToAccessToken?: boolean;
     skipAddingPermissionsToAccessToken?: boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     skipAddingRolesToAccessToken: boolean;
     skipAddingPermissionsToAccessToken: boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type APIInterface = {};
-export declare type RecipeInterface = {
+export type APIInterface = {};
+export type RecipeInterface = {
     addRoleToUser: (input: { userId: string; role: string; tenantId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";

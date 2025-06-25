@@ -121,7 +121,7 @@ export default class Wrapper {
               userVerification: UserVerification;
               userPresence: boolean;
               origin: string;
-              email?: string | undefined;
+              email?: string;
               timeout: number;
               challenge: string;
               createdAt: number;
@@ -382,7 +382,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
-              recipeUserId?: import("../..").RecipeUserId | undefined;
+              recipeUserId?: import("../..").RecipeUserId;
           }
     >;
     static removeGeneratedOptions(input: {

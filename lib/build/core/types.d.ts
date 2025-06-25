@@ -7,16 +7,16 @@
  * useful for providing type inference for the core related method calls.
  */
 import { paths } from "./paths";
-export declare type Method = "get" | "post" | "put" | "delete" | "patch";
-declare type ExtractMethodTypeWithUndefined<P extends keyof paths, M extends Method> = M extends keyof paths[P]
+export type Method = "get" | "post" | "put" | "delete" | "patch";
+type ExtractMethodTypeWithUndefined<P extends keyof paths, M extends Method> = M extends keyof paths[P]
     ? paths[P][M]
     : never;
-export declare type ExtractMethodType<P extends keyof paths, M extends Method> = Exclude<
+export type ExtractMethodType<P extends keyof paths, M extends Method> = Exclude<
     ExtractMethodTypeWithUndefined<P, M>,
     undefined
 >;
-declare type DeepRequireAllFields<T> = T extends any ? Required<T> : never;
-export declare type RequestBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
+type DeepRequireAllFields<T> = T extends any ? Required<T> : never;
+export type RequestBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
     requestBody?: infer ReqBody;
 }
     ? ReqBody extends {
@@ -27,7 +27,7 @@ export declare type RequestBody<P extends keyof paths, M extends Method> = Extra
         ? R | undefined
         : undefined
     : undefined;
-export declare type UncleanedResponseBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
+export type UncleanedResponseBody<P extends keyof paths, M extends Method> = ExtractMethodType<P, M> extends {
     responses: {
         200: {
             content: {
@@ -38,18 +38,16 @@ export declare type UncleanedResponseBody<P extends keyof paths, M extends Metho
 }
     ? R
     : unknown;
-export declare type ResponseBody<P extends keyof paths, M extends Method> = DeepRequireAllFields<
-    UncleanedResponseBody<P, M>
->;
-declare type ExtractPathParams<T extends string> = T extends `${string}<${infer Param}>${infer Rest}`
+export type ResponseBody<P extends keyof paths, M extends Method> = DeepRequireAllFields<UncleanedResponseBody<P, M>>;
+type ExtractPathParams<T extends string> = T extends `${string}<${infer Param}>${infer Rest}`
     ? Param | ExtractPathParams<Rest>
     : never;
-declare type PathParamsObject<T extends string> = ExtractPathParams<T> extends never
+type PathParamsObject<T extends string> = ExtractPathParams<T> extends never
     ? undefined
     : {
           [K in ExtractPathParams<T>]: string;
       };
-export declare type PathParam<P extends keyof paths> =
+export type PathParam<P extends keyof paths> =
     | P
     | {
           path: P;
