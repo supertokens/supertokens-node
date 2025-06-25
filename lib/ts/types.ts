@@ -38,6 +38,7 @@ import type { TypeInput as ThirdPartyTypeInput } from "./recipe/thirdparty/types
 import type { TypeInput as TotpTypeInput } from "./recipe/totp/types";
 import type { TypeInput as UserMetadataTypeInput } from "./recipe/usermetadata/types";
 import type { TypeInput as UserRolesTypeInput } from "./recipe/userroles/types";
+import type { TypeInput as WebauthnTypeInput } from "./recipe/webauthn/types";
 
 declare const __brand: unique symbol;
 type Brand<B> = { [__brand]: B };
@@ -102,6 +103,7 @@ export type AllRecipeConfigs = {
     totp: TotpTypeInput;
     usermetadata: UserMetadataTypeInput;
     userroles: UserRolesTypeInput;
+    webauthn: WebauthnTypeInput;
 };
 
 export type RecipePluginOverride<T extends keyof AllRecipeConfigs> = {
@@ -155,7 +157,6 @@ export type SuperTokensPublicPlugin = Pick<
     SuperTokensPlugin,
     "id" | "version" | "compatibleSDKVersions" | "exports"
 > & { initialized: boolean };
-
 
 export const nonPublicConfigProperties = ["recipeList", "experimental"] as const;
 
