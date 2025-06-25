@@ -88,7 +88,7 @@ export default class Recipe extends RecipeModule {
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
-                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? [])
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? [])
                 );
 
                 if (Recipe.instance.getAllowedDomainsForTenantId !== undefined) {

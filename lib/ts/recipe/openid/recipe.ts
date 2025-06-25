@@ -62,7 +62,7 @@ export default class OpenIdRecipe extends RecipeModule {
                 OpenIdRecipe.instance = new OpenIdRecipe(
                     OpenIdRecipe.RECIPE_ID,
                     appInfo,
-                    applyPlugins(OpenIdRecipe.RECIPE_ID, config as any, plugins ?? [])
+                    applyPlugins(OpenIdRecipe.RECIPE_ID, config, plugins ?? [])
                 );
                 return OpenIdRecipe.instance;
             } else {

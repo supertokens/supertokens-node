@@ -113,7 +113,7 @@ export default class SessionRecipe extends RecipeModule {
                     SessionRecipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
-                    applyPlugins(SessionRecipe.RECIPE_ID, config as any, plugins ?? [])
+                    applyPlugins(SessionRecipe.RECIPE_ID, config, plugins ?? [])
                 );
                 return SessionRecipe.instance;
             } else {

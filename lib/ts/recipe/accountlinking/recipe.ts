@@ -67,7 +67,7 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(
                     Recipe.RECIPE_ID,
                     appInfo,
-                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? []),
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? []),
                     {},
                     {
                         emailDelivery: undefined,
