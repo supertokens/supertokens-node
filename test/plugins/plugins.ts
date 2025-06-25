@@ -77,7 +77,7 @@ export function pluginFactory({
 
     return {
         id: identifier,
-        compatibleSDKVersions: ["22.1.0-canary-plugins.0"],
+        compatibleSDKVersions: ["23.0"],
         overrideMap,
         init: addInit ? initFactory(identifier) : undefined,
         dependencies: dependencyFactory(dependencies),
