@@ -2,38 +2,35 @@
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { GeneralErrorResponse, UserContext } from "../../types";
-export type TypeInput = {
+export declare type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type TypeNormalisedInput = {
+export declare type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type APIOptions = {
+export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     req: BaseRequest;
     res: BaseResponse;
 };
-export type APIInterface = {
+export declare type APIInterface = {
     getOpenIdDiscoveryConfigurationGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     issuer: string;
@@ -51,10 +48,8 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-export type RecipeInterface = {
-    getOpenIdDiscoveryConfiguration(input: {
-        userContext: UserContext;
-    }): Promise<{
+export declare type RecipeInterface = {
+    getOpenIdDiscoveryConfiguration(input: { userContext: UserContext }): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;

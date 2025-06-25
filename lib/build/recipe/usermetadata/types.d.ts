@@ -1,30 +1,27 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import { JSONObject, UserContext } from "../../types";
-export type TypeInput = {
+export declare type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type TypeNormalisedInput = {
+export declare type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type APIInterface = {};
-export type RecipeInterface = {
-    getUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+export declare type APIInterface = {};
+export declare type RecipeInterface = {
+    getUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         metadata: any;
     }>;
@@ -36,18 +33,11 @@ export type RecipeInterface = {
      *   - update: `{ "notifications": { "sms": true }, "todos": null }`
      *   - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
      */
-    updateUserMetadata: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: UserContext;
-    }) => Promise<{
+    updateUserMetadata: (input: { userId: string; metadataUpdate: JSONObject; userContext: UserContext }) => Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
-    clearUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    clearUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
     }>;
 };

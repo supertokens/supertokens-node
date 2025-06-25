@@ -6,8 +6,6 @@ export type Response = {
     users: UserWithFirstAndLastName[];
 };
 export default function usersGet(_: APIInterface, tenantId: string, options: APIOptions): Promise<Response>;
-export declare function getSearchParamsFromURL(
-    path: string
-): {
+export declare function getSearchParamsFromURL(path: string): {
     [key: string]: string;
 };

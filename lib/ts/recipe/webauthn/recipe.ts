@@ -137,9 +137,8 @@ export default class Recipe extends RecipeModule {
                         return a.timeJoined - b.timeJoined;
                     });
                     // Then we take the ones that belong to this recipe
-                    const recipeLoginMethodsOrderedByTimeJoinedOldestFirst = orderedLoginMethodsByTimeJoinedOldestFirst.filter(
-                        (lm) => lm.recipeId === Recipe.RECIPE_ID
-                    );
+                    const recipeLoginMethodsOrderedByTimeJoinedOldestFirst =
+                        orderedLoginMethodsByTimeJoinedOldestFirst.filter((lm) => lm.recipeId === Recipe.RECIPE_ID);
 
                     let result: string[];
                     if (recipeLoginMethodsOrderedByTimeJoinedOldestFirst.length !== 0) {

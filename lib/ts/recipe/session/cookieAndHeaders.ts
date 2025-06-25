@@ -273,38 +273,31 @@ export function hasMultipleCookiesForTokenType(
         return false;
     }
 
-    const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
+    const cookieNames = getCookieNamesFromRequestHeaderAllowingDuplicates(cookieString);
     const cookieName = config.getCookieNameForTokenType(req, tokenType, userContext);
-    return cookies[cookieName] !== undefined && cookies[cookieName].length > 1;
+    return cookieNames.filter((name) => name === cookieName).length > 1;
 }
 
 // This function is required because cookies library (and most of the popular libraries in npm)
 // does not support parsing multiple cookies with the same name.
-function parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString: string): Record<string, string[]> {
-    const cookies: Record<string, string[]> = {};
+function getCookieNamesFromRequestHeaderAllowingDuplicates(cookieString: string): string[] {
+    const cookieNames: string[] = [];
 
     const cookiePairs = cookieString.split(";");
 
     for (const cookiePair of cookiePairs) {
-        const [name, value] = cookiePair
-            .trim()
-            .split("=")
-            .map((part) => {
-                try {
-                    return decodeURIComponent(part);
-                } catch (e) {
-                    // this is there in case the cookie value is not encoded. This can happe
-                    // if the user has set their own cookie in a different format.
-                    return part;
-                }
-            });
+        const [name, _] = cookiePair.trim().split("=");
 
-        if (cookies.hasOwnProperty(name)) {
-            cookies[name].push(value);
-        } else {
-            cookies[name] = [value];
+        // Try to decode the name or fallback to the original name
+        let decodedName = name;
+        try {
+            decodedName = decodeURIComponent(name);
+        } catch (e) {
+            logDebugMessage(`getCookieNamesFromRequestHeaderAllowingDuplicates: Error decoding cookie name: ${name}`);
         }
+
+        cookieNames.push(decodedName);
     }
 
-    return cookies;
+    return cookieNames;
 }

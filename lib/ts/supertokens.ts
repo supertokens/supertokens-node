@@ -281,7 +281,12 @@ export default class SuperTokens {
         }
 
         let response = await querier.sendGetRequest(
-            new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/users/count`),
+            {
+                path: "/<tenantId>/users/count",
+                params: {
+                    tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                },
+            },
             {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
@@ -312,7 +317,7 @@ export default class SuperTokens {
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
             return await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/userid/map"),
+                "/recipe/userid/map",
                 {
                     superTokensUserId: input.superTokensUserId,
                     externalUserId: input.externalUserId,
@@ -346,7 +351,7 @@ export default class SuperTokens {
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
             let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/userid/map"),
+                "/recipe/userid/map",
                 {
                     userId: input.userId,
                     userIdType: input.userIdType,
@@ -372,7 +377,7 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             return await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/userid/map/remove"),
+                "/recipe/userid/map/remove",
                 {
                     userId: input.userId,
                     userIdType: input.userIdType,
@@ -397,11 +402,11 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             return await querier.sendPutRequest(
-                new NormalisedURLPath("/recipe/userid/external-user-id-info"),
+                "/recipe/userid/external-user-id-info",
                 {
                     userId: input.userId,
                     userIdType: input.userIdType,
-                    externalUserIdInfo: input.externalUserIdInfo,
+                    externalUserIdInfo: input.externalUserIdInfo || null,
                 },
                 {},
                 input.userContext

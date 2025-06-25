@@ -3,35 +3,32 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
-export type TypeInput = {
+export declare type TypeInput = {
     issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type TypeNormalisedInput = {
+export declare type TypeNormalisedInput = {
     issuer: string;
     defaultSkew: number;
     defaultPeriod: number;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export type RecipeInterface = {
-    getUserIdentifierInfoForUserId: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<
+export declare type RecipeInterface = {
+    getUserIdentifierInfoForUserId: (input: { userId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               info: string;
@@ -69,10 +66,7 @@ export type RecipeInterface = {
     }) => Promise<{
         status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
     }>;
-    listDevices: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    listDevices: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         devices: {
             name: string;
@@ -81,11 +75,7 @@ export type RecipeInterface = {
             verified: boolean;
         }[];
     }>;
-    removeDevice: (input: {
-        userId: string;
-        deviceName: string;
-        userContext: UserContext;
-    }) => Promise<{
+    removeDevice: (input: { userId: string; deviceName: string; userContext: UserContext }) => Promise<{
         status: "OK";
         didDeviceExist: boolean;
     }>;
@@ -113,12 +103,7 @@ export type RecipeInterface = {
               retryAfterMs: number;
           }
     >;
-    verifyTOTP: (input: {
-        tenantId: string;
-        userId: string;
-        totp: string;
-        userContext: UserContext;
-    }) => Promise<
+    verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: UserContext }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
           }
@@ -133,7 +118,7 @@ export type RecipeInterface = {
           }
     >;
 };
-export type APIOptions = {
+export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -141,7 +126,7 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export type APIInterface = {
+export declare type APIInterface = {
     createDevicePOST:
         | undefined
         | ((input: {
@@ -163,11 +148,7 @@ export type APIInterface = {
           >);
     listDevicesGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              session: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     devices: {

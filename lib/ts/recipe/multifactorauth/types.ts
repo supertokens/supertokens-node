@@ -118,11 +118,7 @@ export type APIOptions = {
 export type APIInterface = {
     resyncSessionAndFetchMFAInfoPUT:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              session: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     factors: {

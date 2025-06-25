@@ -52,8 +52,8 @@ export default class Wrapper {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               rp: {
                   id: string;
                   name: string;
@@ -98,8 +98,8 @@ export default class Wrapper {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
-              createdAt: string;
-              expiresAt: string;
+              createdAt: number;
+              expiresAt: number;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
@@ -121,8 +121,8 @@ export default class Wrapper {
               userVerification: UserVerification;
               userPresence: boolean;
               origin: string;
-              email: string;
-              timeout: string;
+              email?: string | undefined;
+              timeout: number;
               challenge: string;
               createdAt: number;
               expiresAt: number;
@@ -382,7 +382,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
-              recipeUserId: import("../..").RecipeUserId;
+              recipeUserId?: import("../..").RecipeUserId | undefined;
           }
     >;
     static removeGeneratedOptions(input: {
@@ -425,10 +425,7 @@ export default class Wrapper {
               createdAt: number;
           }
     >;
-    static listCredentials(input: {
-        recipeUserId: string;
-        userContext?: Record<string, any>;
-    }): Promise<{
+    static listCredentials(input: { recipeUserId: string; userContext?: Record<string, any> }): Promise<{
         status: "OK";
         credentials: {
             webauthnCredentialId: string;

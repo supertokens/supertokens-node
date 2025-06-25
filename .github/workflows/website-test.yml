@@ -1,0 +1,89 @@
+name: "Website Tests"
+
+on:
+    pull_request:
+        types:
+            - opened
+            - reopened
+            - synchronize
+    push:
+        branches:
+            - master
+            - "v[0-9]+.[0-9]+"
+        tags:
+            - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+    define-versions:
+        runs-on: ubuntu-latest
+        outputs:
+            fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+            cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+            nodeVersions: '["20"]'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: supertokens/get-supported-versions-action@main
+              id: versions
+              with:
+                  has-fdi: true
+                  has-cdi: true
+
+    test:
+        runs-on: ubuntu-latest
+        needs: define-versions
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: ${{ fromJSON(needs.define-versions.outputs.nodeVersions) }}
+                fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
+
+        steps:
+            - name: Setup ENVs
+              id: envs
+              run: |
+                  APP_SERVER_LOG_DIR=${{ github.workspace }}/logs
+                  echo "APP_SERVER_LOG_DIR=$APP_SERVER_LOG_DIR" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+                  mkdir -p $APP_SERVER_LOG_DIR
+
+            - uses: actions/checkout@v4
+              with:
+                  path: supertokens-node
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - uses: supertokens/get-versions-action@main
+              id: versions
+              with:
+                  driver-name: python
+                  fdi-version: ${{ matrix.fdi-version }}
+              env:
+                  SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+
+            - name: Start core
+              working-directory: supertokens-node
+              run: docker compose up --wait
+
+            - name: Install SDK dependencies
+              working-directory: supertokens-node
+              run: npm i
+
+            - name: Start test server
+              working-directory: supertokens-node/test/frontendIntegration
+              env:
+                  TEST_MODE: testing
+              run: |
+                  npm i
+
+                  NODE_PORT=8080 node . &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+                  NODE_PORT=8082 node . &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
+
+            - uses: supertokens/website-testing-action@main
+              with:
+                  version: ${{ steps.versions.outputs.frontendVersionXy }}
+                  node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
+                  path: supertokens-website
+                  check-name-suffix: "[Node=${{ matrix.node-version }}][FDI=${{ matrix.fdi-version }}]"
+                  app-server-logs: ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}

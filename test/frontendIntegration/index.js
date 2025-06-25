@@ -19,6 +19,9 @@ let SessionRecipeRaw = require("../../lib/build/recipe/session/recipe").default;
 let DashboardRecipeRaw = require("../../lib/build/recipe/dashboard/recipe").default;
 let MultitenancyRecipeRaw = require("../../lib/build/recipe/multitenancy/recipe").default;
 let UserMetaDataRecipeRaw = require("../../lib/build/recipe/usermetadata/recipe").default;
+let OpenIdRecipeRaw = require("../../lib/build/recipe/openid/recipe").default;
+let OAuth2ProviderRecipeRaw = require("../../lib/build/recipe/oauth2provider/recipe").default;
+let JWTRecipeRaw = require("../../lib/build/recipe/jwt/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -62,16 +65,16 @@ const maxVersion = function (version1, version2) {
     return version2;
 };
 
-function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
+function getConfig(coreUrl, enableAntiCsrf, enableJWT, jwtPropertyName) {
     if (enableJWT && maxVersion(supertokens_node_version, "14.0") === supertokens_node_version) {
         return {
             appInfo: {
                 appName: "SuperTokens",
                 apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
-                websiteDomain: "http://localhost.org:8080",
+                websiteDomain: "http://localhost:8080",
             },
             supertokens: {
-                connectionURI: "http://localhost:9000",
+                connectionURI: coreUrl,
             },
             recipeList: [
                 Session.init({
@@ -115,10 +118,10 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
             appInfo: {
                 appName: "SuperTokens",
                 apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
-                websiteDomain: "http://localhost.org:8080",
+                websiteDomain: "http://localhost:8080",
             },
             supertokens: {
-                connectionURI: "http://localhost:9000",
+                connectionURI: coreUrl,
             },
             recipeList: [
                 Session.init({
@@ -164,10 +167,10 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
         appInfo: {
             appName: "SuperTokens",
             apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
-            websiteDomain: "http://localhost.org:8080",
+            websiteDomain: "http://localhost:8080",
         },
         supertokens: {
-            connectionURI: "http://localhost:9000",
+            connectionURI: coreUrl,
         },
         recipeList: [
             Session.init({
@@ -192,11 +195,13 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
     };
 }
 
-SuperTokens.init(getConfig(true));
+const coreHost = process.env?.SUPERTOKENS_CORE_HOST ?? "localhost";
+const corePort = process.env?.SUPERTOKENS_CORE_PORT ?? "3567";
+SuperTokens.init(getConfig(`http://${coreHost}:${corePort}`, true));
 
 app.use(
     cors({
-        origin: "http://localhost.org:8080",
+        origin: "http://localhost:8080",
         allowedHeaders: ["content-type", ...SuperTokens.getAllCORSHeaders()],
         methods: ["GET", "PUT", "POST", "DELETE"],
         credentials: true,
@@ -207,36 +212,6 @@ app.use(jsonParser);
 app.use(cookieParser());
 
 app.use(middleware());
-
-app.post("/setAntiCsrf", async (req, res) => {
-    let enableAntiCsrf = req.body.enableAntiCsrf === undefined ? true : req.body.enableAntiCsrf;
-    lastSetEnableAntiCSRF = enableAntiCsrf;
-
-    if (enableAntiCsrf !== undefined) {
-        SuperTokensRaw.reset();
-        SessionRecipeRaw.reset();
-        DashboardRecipeRaw.reset();
-        MultitenancyRecipeRaw.reset();
-        UserMetaDataRecipeRaw.reset();
-        SuperTokens.init(getConfig(enableAntiCsrf));
-    }
-    res.send("success");
-});
-
-app.post("/setEnableJWT", async (req, res) => {
-    let enableJWT = req.body.enableJWT === undefined ? false : req.body.enableJWT;
-    lastSetEnableJWT = enableJWT;
-
-    if (enableJWT !== undefined) {
-        SuperTokensRaw.reset();
-        SessionRecipeRaw.reset();
-        DashboardRecipeRaw.reset();
-        MultitenancyRecipeRaw.reset();
-        UserMetaDataRecipeRaw.reset();
-        SuperTokens.init(getConfig(lastSetEnableAntiCSRF, enableJWT));
-    }
-    res.send("success");
-});
 
 app.get("/featureFlags", async (req, res) => {
     let currentEnableJWT = lastSetEnableJWT;
@@ -259,9 +234,32 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
     DashboardRecipeRaw.reset();
     MultitenancyRecipeRaw.reset();
     UserMetaDataRecipeRaw.reset();
-    SuperTokens.init(getConfig(lastSetEnableAntiCSRF, currentEnableJWT, jwtPropertyName));
+    OpenIdRecipeRaw.reset();
+    OAuth2ProviderRecipeRaw.reset();
+    JWTRecipeRaw.reset();
+    SuperTokens.init(getConfig(req.body.coreUrl, lastSetEnableAntiCSRF, currentEnableJWT, jwtPropertyName));
 
     res.send("");
+});
+
+app.post("/test/setup/st", async (req, res) => {
+    SuperTokensRaw.reset();
+    SessionRecipeRaw.reset();
+    DashboardRecipeRaw.reset();
+    MultitenancyRecipeRaw.reset();
+    UserMetaDataRecipeRaw.reset();
+    OpenIdRecipeRaw.reset();
+    OAuth2ProviderRecipeRaw.reset();
+    JWTRecipeRaw.reset();
+
+    SuperTokens.init(
+        getConfig(req.body.coreUrl, req.body.enableAntiCsrf, req.body.enableJWT, req.body.jwtPropertyName)
+    );
+
+    lastSetEnableAntiCSRF = req.body.enableAntiCsrf;
+    lastSetEnableJWT = req.body.enableJWT;
+
+    res.send();
 });
 
 app.post("/login", async (req, res) => {
@@ -277,7 +275,7 @@ app.post("/login-2.18", async (req, res) => {
     const payload = req.body.payload || {};
     const userId = req.body.userId;
     const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-        new NormalisedURLPath("/recipe/session"),
+        "/recipe/session",
         {
             userId,
             enableAntiCsrf: false,
@@ -310,6 +308,10 @@ app.post("/beforeeach", async (req, res) => {
     noOfTimesRefreshCalledDuringTest = 0;
     noOfTimesGetSessionCalledDuringTest = 0;
     noOfTimesRefreshAttemptedDuringTest = 0;
+    res.send();
+});
+
+app.post("/after", async (req, res) => {
     res.send();
 });
 

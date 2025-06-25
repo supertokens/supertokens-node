@@ -17,7 +17,6 @@ import { ParsedJWTInfo } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation, TypeNormalisedInput } from "./types";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
@@ -51,7 +50,12 @@ export async function createNewSession(
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN",
     };
     let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath(`/${tenantId}/recipe/session`),
+        {
+            path: "/<tenantId>/recipe/session",
+            params: {
+                tenantId: tenantId,
+            },
+        },
         requestBody,
         userContext
     );
@@ -241,16 +245,11 @@ export async function getSession(
         checkDatabase: alwaysCheckCore,
     };
 
-    let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath("/recipe/session/verify"),
-        requestBody,
-        userContext
-    );
+    let response = await helpers.querier.sendPostRequest("/recipe/session/verify", requestBody, userContext);
 
     if (response.status === "OK") {
-        delete response.status;
         return {
-            ...response,
+            accessToken: response.accessToken,
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
@@ -293,7 +292,7 @@ export async function getSessionInformation(
         throw new Error("Please use core version >= 3.5 to call this function.");
     }
     let response = await helpers.querier.sendGetRequest(
-        new NormalisedURLPath(`/recipe/session`),
+        "/recipe/session",
         {
             sessionHandle,
         },
@@ -346,11 +345,7 @@ export async function refreshSession(
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
     }
 
-    let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath("/recipe/session/refresh"),
-        requestBody,
-        userContext
-    );
+    let response = await helpers.querier.sendPostRequest("/recipe/session/refresh", requestBody, userContext);
 
     if (response.status === "OK") {
         return {
@@ -409,13 +404,25 @@ export async function revokeAllSessionsForUser(
         tenantId = DEFAULT_TENANT_ID;
     }
 
-    let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath(revokeAcrossAllTenants ? `/recipe/session/remove` : `/${tenantId}/recipe/session/remove`),
+    const body = {
+        userId,
+        revokeSessionsForLinkedAccounts,
+        revokeAcrossAllTenants,
+    };
+
+    if (revokeAcrossAllTenants) {
+        const response = await helpers.querier.sendPostRequest("/recipe/session/remove", body, userContext);
+        return response.sessionHandlesRevoked;
+    }
+
+    const response = await helpers.querier.sendPostRequest(
         {
-            userId,
-            revokeSessionsForLinkedAccounts,
-            revokeAcrossAllTenants,
+            path: "/<tenantId>/recipe/session/remove",
+            params: {
+                tenantId: tenantId,
+            },
         },
+        body,
         userContext
     );
     return response.sessionHandlesRevoked;
@@ -436,7 +443,14 @@ export async function getAllSessionHandlesForUser(
         tenantId = DEFAULT_TENANT_ID;
     }
     let response = await helpers.querier.sendGetRequest(
-        new NormalisedURLPath(fetchAcrossAllTenants ? `/recipe/session/user` : `/${tenantId}/recipe/session/user`),
+        fetchAcrossAllTenants
+            ? "/recipe/session/user"
+            : {
+                  path: "/<tenantId>/recipe/session/user",
+                  params: {
+                      tenantId: tenantId,
+                  },
+              },
         {
             userId,
             fetchSessionsForAllLinkedAccounts,
@@ -457,7 +471,7 @@ export async function revokeSession(
     userContext: UserContext
 ): Promise<boolean> {
     let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath("/recipe/session/remove"),
+        "/recipe/session/remove",
         {
             sessionHandles: [sessionHandle],
         },
@@ -476,7 +490,7 @@ export async function revokeMultipleSessions(
     userContext: UserContext
 ): Promise<string[]> {
     let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath(`/recipe/session/remove`),
+        "/recipe/session/remove",
         {
             sessionHandles,
         },
@@ -496,7 +510,7 @@ export async function updateSessionDataInDatabase(
 ): Promise<boolean> {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await helpers.querier.sendPutRequest(
-        new NormalisedURLPath(`/recipe/session/data`),
+        "/recipe/session/data",
         {
             sessionHandle,
             userDataInDatabase: newSessionData,
@@ -519,7 +533,7 @@ export async function updateAccessTokenPayload(
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
     let response = await helpers.querier.sendPutRequest(
-        new NormalisedURLPath("/recipe/jwt/data"),
+        "/recipe/jwt/data",
         {
             sessionHandle,
             userDataInJWT: newAccessTokenPayload,

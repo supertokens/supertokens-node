@@ -35,9 +35,7 @@ export declare function getSessionForSSR<RequestType extends ParsableRequest = R
     hasToken: boolean;
     error: Error | undefined;
 }>;
-export declare function getSessionForSSRUsingAccessToken(
-    accessToken: string | undefined
-): Promise<{
+export declare function getSessionForSSRUsingAccessToken(accessToken: string | undefined): Promise<{
     accessTokenPayload: JWTPayload | undefined;
     hasToken: boolean;
     error: Error | undefined;

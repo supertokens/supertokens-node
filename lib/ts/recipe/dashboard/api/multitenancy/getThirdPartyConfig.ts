@@ -214,15 +214,8 @@ export default async function getThirdPartyConfig(
                         client.clientType,
                         userContext
                     );
-                    const {
-                        clientId,
-                        clientSecret,
-                        clientType,
-                        scope,
-                        additionalConfig,
-                        forcePKCE,
-                        ...commonConfig
-                    } = providerInstance!.config;
+                    const { clientId, clientSecret, clientType, scope, additionalConfig, forcePKCE, ...commonConfig } =
+                        providerInstance!.config;
 
                     clients.push({
                         clientId,

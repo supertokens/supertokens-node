@@ -15,7 +15,6 @@
 
 import RecipeError from "./error";
 import { logDebugMessage } from "../../logger";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { normaliseHttpMethod } from "../../utils";
 import { dashboardVersion } from "../../version";
@@ -35,7 +34,7 @@ export default function getRecipeImplementation(): RecipeInterface {
                 let querier = Querier.getNewInstanceOrThrowError(undefined);
                 const authHeaderValue = input.req.getHeaderValue("authorization")?.split(" ")[1];
                 const sessionVerificationResponse = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/dashboard/session/verify"),
+                    "/recipe/dashboard/session/verify",
                     {
                         sessionId: authHeaderValue,
                     },
