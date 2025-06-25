@@ -87,7 +87,7 @@ export type SuperTokensInfo = {
 };
 
 export type AllRecipeConfigs = {
-    accountlinking: AccountLinkingTypeInput & { override?: { apis: never } };
+    accountlinking: AccountLinkingTypeInput & { override?: { apis?: never } };
     dashboard: DashboardTypeInput;
     emailpassword: EmailPasswordTypeInput;
     emailverification: EmailVerificationTypeInput;
