@@ -7,6 +7,7 @@ import {
     UserContext,
     PluginRouteHandler,
     SuperTokensPublicPlugin,
+    SuperTokensPlugin,
 } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -20,6 +21,7 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
     pluginRouteHandlers: PluginRouteHandler[];
     pluginList: SuperTokensPublicPlugin[];
+    pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
     supertokens: undefined | SuperTokensInfo;
     telemetryEnabled: boolean;
     constructor(config: TypeInput);

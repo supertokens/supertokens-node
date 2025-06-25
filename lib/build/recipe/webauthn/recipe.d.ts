@@ -9,7 +9,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeWebauthnEmailDeliveryInput } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "webauthn";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
