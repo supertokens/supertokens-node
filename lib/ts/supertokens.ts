@@ -21,6 +21,7 @@ import {
     UserContext,
     PluginRouteHandler,
     SuperTokensPublicPlugin,
+    SuperTokensPlugin,
 } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
@@ -62,6 +63,9 @@ export default class SuperTokens {
 
     pluginList: SuperTokensPublicPlugin[];
 
+    // needed for auto-initialization of recipes (see accountlinking recipe)
+    pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
+
     supertokens: undefined | SuperTokensInfo;
 
     telemetryEnabled: boolean;
@@ -73,6 +77,7 @@ export default class SuperTokens {
         });
 
         this.pluginRouteHandlers = pluginRouteHandlers;
+        this.pluginOverrideMaps = overrideMaps;
         this.pluginList = processedPlugins;
 
         config = {
@@ -151,7 +156,7 @@ export default class SuperTokens {
         let jwtRecipe = require("./recipe/jwt/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
-            const recipeModule = func(this.appInfo, this.isInServerlessEnv, overrideMaps);
+            const recipeModule = func(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
             } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
