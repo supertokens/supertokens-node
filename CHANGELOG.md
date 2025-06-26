@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
 -   Refactors querier to use dynamic request body and response body types inference.
 -   Refactor internal network calls made with querier to use the new dynamic types.
+-   Added experimental support for plugins. Please note that the experimental nature of this feature means that we might break the interface in non-major version updates.
 
 ## [22.1.1] - 2025-06-20
 
