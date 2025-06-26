@@ -2,7 +2,6 @@ import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import EmailVerification from "../emailverification/recipe";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import RecipeUserId from "../../recipeUserId";
@@ -82,9 +81,12 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             const resp = await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/signup`
-                ),
+                {
+                    path: "/<tenantId>/recipe/signup",
+                    params: {
+                        tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
+                    },
+                },
                 {
                     email: input.email,
                     password: input.password,
@@ -154,12 +156,7 @@ export default function getRecipeInterface(
             return response;
         },
 
-        verifyCredentials: async function ({
-            email,
-            password,
-            tenantId,
-            userContext,
-        }): Promise<
+        verifyCredentials: async function ({ email, password, tenantId, userContext }): Promise<
             | {
                   status: "OK";
                   user: User;
@@ -168,7 +165,12 @@ export default function getRecipeInterface(
             | { status: "WRONG_CREDENTIALS_ERROR" }
         > {
             const response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
+                {
+                    path: "/<tenantId>/recipe/signin",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
                 {
                     email,
                     password,
@@ -202,9 +204,12 @@ export default function getRecipeInterface(
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token`
-                ),
+                {
+                    path: "/<tenantId>/recipe/user/password/reset/token",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
                 {
                     userId,
                     email,
@@ -230,11 +235,13 @@ export default function getRecipeInterface(
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
             return await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token/consume`
-                ),
                 {
-                    method: "token",
+                    path: "/<tenantId>/recipe/user/password/reset/token/consume",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
                     token,
                 },
                 userContext
@@ -319,7 +326,7 @@ export default function getRecipeInterface(
             // an update email API (post login update).
 
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/user`),
+                "/recipe/user",
                 {
                     recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,

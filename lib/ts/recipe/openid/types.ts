@@ -47,10 +47,7 @@ export type APIOptions = {
 export type APIInterface = {
     getOpenIdDiscoveryConfigurationGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     issuer: string;
@@ -70,9 +67,7 @@ export type APIInterface = {
 };
 
 export type RecipeInterface = {
-    getOpenIdDiscoveryConfiguration(input: {
-        userContext: UserContext;
-    }): Promise<{
+    getOpenIdDiscoveryConfiguration(input: { userContext: UserContext }): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;

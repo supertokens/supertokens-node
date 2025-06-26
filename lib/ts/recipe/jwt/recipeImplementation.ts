@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
@@ -51,7 +50,7 @@ export default function getRecipeInterface(
             }
 
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/jwt"),
+                "/recipe/jwt",
                 {
                     payload: payload ?? {},
                     validity: validitySeconds,
@@ -76,7 +75,7 @@ export default function getRecipeInterface(
 
         getJWKS: async function ({ userContext }): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
             const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath("/.well-known/jwks.json"),
+                "/.well-known/jwks.json",
                 {},
                 undefined,
                 userContext

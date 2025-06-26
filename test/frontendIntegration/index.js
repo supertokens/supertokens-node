@@ -275,7 +275,7 @@ app.post("/login-2.18", async (req, res) => {
     const payload = req.body.payload || {};
     const userId = req.body.userId;
     const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-        new NormalisedURLPath("/recipe/session"),
+        "/recipe/session",
         {
             userId,
             enableAntiCsrf: false,

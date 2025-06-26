@@ -16,10 +16,8 @@
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 
@@ -88,9 +86,12 @@ export default function getRecipeInterface(
             }
 
             return await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/register`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/options/register",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     email,
                     displayName,
@@ -119,9 +120,12 @@ export default function getRecipeInterface(
             userContext,
         }) {
             return await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/signin`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/options/signin",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     userVerification,
                     userPresence,
@@ -215,9 +219,12 @@ export default function getRecipeInterface(
 
         verifyCredentials: async function ({ credential, webauthnGeneratedOptionsId, tenantId, userContext }) {
             const response = await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/signin`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/signin",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     credential,
                     webauthnGeneratedOptionsId,
@@ -238,9 +245,12 @@ export default function getRecipeInterface(
 
         createNewRecipeUser: async function (input) {
             const resp = await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/webauthn/signup`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/signup",
+                    params: {
+                        tenantId: input.tenantId,
+                    },
+                },
                 {
                     webauthnGeneratedOptionsId: input.webauthnGeneratedOptionsId,
                     credential: input.credential,
@@ -261,9 +271,12 @@ export default function getRecipeInterface(
 
         generateRecoverAccountToken: async function ({ userId, email, tenantId, userContext }) {
             return await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/recover/token`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/user/recover/token",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     userId,
                     email,
@@ -274,11 +287,12 @@ export default function getRecipeInterface(
 
         consumeRecoverAccountToken: async function ({ token, tenantId, userContext }) {
             return await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${
-                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
-                    }/recipe/webauthn/user/recover/token/consume`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/user/recover/token/consume",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 {
                     token,
                 },
@@ -288,7 +302,7 @@ export default function getRecipeInterface(
 
         registerCredential: async function ({ webauthnGeneratedOptionsId, credential, userContext, recipeUserId }) {
             return await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/credential/register`),
+                "/recipe/webauthn/user/credential/register",
                 {
                     recipeUserId,
                     webauthnGeneratedOptionsId,
@@ -300,9 +314,12 @@ export default function getRecipeInterface(
 
         getUserFromRecoverAccountToken: async function ({ token, tenantId, userContext }) {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/recover`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/user/recover",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 { token },
                 userContext
             );
@@ -311,7 +328,7 @@ export default function getRecipeInterface(
                 return {
                     ...resp,
                     user: new User(resp.user),
-                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                    recipeUserId: resp.recipeUserId ? new RecipeUserId(resp.recipeUserId) : undefined,
                 };
             }
 
@@ -320,8 +337,8 @@ export default function getRecipeInterface(
 
         removeCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
             return await querier.sendDeleteRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/credential/remove`),
-                {},
+                "/recipe/webauthn/user/credential/remove",
+                undefined,
                 { recipeUserId, webauthnCredentialId },
                 userContext
             );
@@ -329,7 +346,7 @@ export default function getRecipeInterface(
 
         getCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/credential`),
+                "/recipe/webauthn/user/credential",
                 { webauthnCredentialId, recipeUserId },
                 userContext
             );
@@ -345,19 +362,18 @@ export default function getRecipeInterface(
         },
 
         listCredentials: async function ({ recipeUserId, userContext }) {
-            return await querier.sendGetRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/credential/list`),
-                { recipeUserId },
-                userContext
-            );
+            return await querier.sendGetRequest("/recipe/webauthn/user/credential/list", { recipeUserId }, userContext);
         },
 
         removeGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {
             return await querier.sendDeleteRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/remove`
-                ),
-                {},
+                {
+                    path: "/<tenantId>/recipe/webauthn/options/remove",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
+                undefined,
                 { webauthnGeneratedOptionsId },
                 userContext
             );
@@ -365,9 +381,12 @@ export default function getRecipeInterface(
 
         getGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {
             return await querier.sendGetRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/options",
+                    params: {
+                        tenantId: tenantId || "public",
+                    },
+                },
                 { webauthnGeneratedOptionsId },
                 userContext
             );
@@ -375,9 +394,12 @@ export default function getRecipeInterface(
 
         updateUserEmail: async function ({ email, recipeUserId, tenantId, userContext }) {
             return await querier.sendPutRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/email`
-                ),
+                {
+                    path: "/<tenantId>/recipe/webauthn/user/email",
+                    params: {
+                        tenantId: tenantId,
+                    },
+                },
                 { email, recipeUserId },
                 {},
                 userContext

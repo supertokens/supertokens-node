@@ -53,9 +53,7 @@ export declare type RecipeInterface = {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    getJWKS(input: {
-        userContext: UserContext;
-    }): Promise<{
+    getJWKS(input: { userContext: UserContext }): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number;
     }>;
@@ -63,10 +61,7 @@ export declare type RecipeInterface = {
 export declare type APIInterface = {
     getJWKSGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     keys: JsonWebKey[];
                 }
