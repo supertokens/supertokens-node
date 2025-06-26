@@ -6,25 +6,25 @@ import { SessionContainerInterface } from "../session/types";
 import { OAuth2Client } from "./OAuth2Client";
 import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
-export declare type TypeInput = {
+export type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -32,13 +32,13 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export declare type ErrorOAuth2 = {
+export type ErrorOAuth2 = {
     status: "ERROR";
     error: string;
     errorDescription: string;
     statusCode?: number;
 };
-export declare type ConsentRequest = {
+export type ConsentRequest = {
     acr?: string;
     amr?: string[];
     challenge: string;
@@ -52,7 +52,7 @@ export declare type ConsentRequest = {
     skip?: boolean;
     subject?: string;
 };
-export declare type LoginRequest = {
+export type LoginRequest = {
     challenge: string;
     client: OAuth2Client;
     oidcContext?: any;
@@ -63,7 +63,7 @@ export declare type LoginRequest = {
     skip: boolean;
     subject: string;
 };
-export declare type TokenInfo = {
+export type TokenInfo = {
     access_token?: string;
     expires_in: number;
     id_token?: string;
@@ -71,7 +71,7 @@ export declare type TokenInfo = {
     scope: string;
     token_type: string;
 };
-export declare type LoginInfo = {
+export type LoginInfo = {
     clientId: string;
     clientName: string;
     tosUri?: string;
@@ -80,7 +80,7 @@ export declare type LoginInfo = {
     clientUri?: string;
     metadata?: Record<string, any> | null;
 };
-export declare type UserInfo = {
+export type UserInfo = {
     sub: string;
     email?: string;
     email_verified?: boolean;
@@ -88,14 +88,14 @@ export declare type UserInfo = {
     phoneNumber_verified?: boolean;
     [key: string]: JSONValue;
 };
-export declare type InstrospectTokenResponse =
+export type InstrospectTokenResponse =
     | {
           active: false;
       }
     | ({
           active: true;
       } & JSONObject);
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     authorization(input: {
         params: Record<string, string>;
         cookies: string | undefined;
@@ -358,7 +358,7 @@ export declare type RecipeInterface = {
         status: "OK";
     }>;
 };
-export declare type APIInterface = {
+export type APIInterface = {
     loginGET:
         | undefined
         | ((input: {
@@ -496,7 +496,7 @@ export declare type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-export declare type OAuth2ClientOptions = {
+export type OAuth2ClientOptions = {
     clientId: string;
     clientSecret?: string;
     createdAt: string;
@@ -525,7 +525,7 @@ export declare type OAuth2ClientOptions = {
     metadata?: Record<string, any>;
     enableRefreshTokenRotation?: boolean;
 };
-export declare type GetOAuth2ClientsInput = {
+export type GetOAuth2ClientsInput = {
     /**
      * Items per Page. Defaults to 250.
      */
@@ -539,8 +539,8 @@ export declare type GetOAuth2ClientsInput = {
      */
     clientName?: string;
 };
-export declare type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
-export declare type UpdateOAuth2ClientInput = NonNullableProperties<
+export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
+export type UpdateOAuth2ClientInput = NonNullableProperties<
     Omit<CreateOAuth2ClientInput, "redirectUris" | "grantTypes" | "responseTypes" | "metadata">
 > & {
     clientId: string;
@@ -549,16 +549,16 @@ export declare type UpdateOAuth2ClientInput = NonNullableProperties<
     responseTypes?: string[] | null;
     metadata?: Record<string, any> | null;
 };
-export declare type DeleteOAuth2ClientInput = {
+export type DeleteOAuth2ClientInput = {
     clientId: string;
 };
-export declare type PayloadBuilderFunction = (
+export type PayloadBuilderFunction = (
     user: User,
     scopes: string[],
     sessionHandle: string,
     userContext: UserContext
 ) => Promise<JSONObject>;
-export declare type UserInfoBuilderFunction = (
+export type UserInfoBuilderFunction = (
     user: User,
     accessTokenPayload: JSONObject,
     scopes: string[],

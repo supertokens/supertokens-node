@@ -16,7 +16,8 @@
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "lib": ["ES2017"],
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "useUnknownInCatchVariables": false
     },
     "include": ["ts/**/*"],
     "exclude": ["build"],

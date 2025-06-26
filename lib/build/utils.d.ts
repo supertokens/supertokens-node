@@ -1,5 +1,14 @@
 // @ts-nocheck
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
+import type {
+    AppInfo,
+    NormalisedAppinfo,
+    HTTPMethod,
+    JSONObject,
+    UserContext,
+    TypeInput,
+    SuperTokensPublicConfig,
+} from "./types";
+import { NonPublicConfigPropertiesType } from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { User } from "./user";
 import { SessionContainer } from "./recipe/session";
@@ -72,3 +81,5 @@ export declare const isTestEnv: () => boolean;
 export declare const encodeBase64: (value: string) => string;
 export declare const decodeBase64: (value: string) => string;
 export declare const isBuffer: (obj: any) => boolean;
+export declare function getPublicConfig(config: TypeInput): SuperTokensPublicConfig;
+export declare function getNonPublicConfig(config: TypeInput): Pick<TypeInput, NonPublicConfigPropertiesType>;

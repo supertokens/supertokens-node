@@ -10,7 +10,7 @@ import { UserContext } from "../../../types";
  * if none of "from" and "messagingServiceSid" is passed, error
  * should be thrown.
  */
-export declare type TwilioServiceConfig =
+export type TwilioServiceConfig =
     | {
           accountSid: string;
           authToken: string;
@@ -27,7 +27,7 @@ export interface GetContentResult {
     body: string;
     toPhoneNumber: string;
 }
-export declare type TypeInputSendRawSms = GetContentResult & {
+export type TypeInputSendRawSms = GetContentResult & {
     userContext: UserContext;
 } & (
         | {
@@ -37,7 +37,7 @@ export declare type TypeInputSendRawSms = GetContentResult & {
               messagingServiceSid: string;
           }
     );
-export declare type ServiceInterface<T> = {
+export type ServiceInterface<T> = {
     sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
     getContent: (
         input: T & {
@@ -45,7 +45,7 @@ export declare type ServiceInterface<T> = {
         }
     ) => Promise<GetContentResult>;
 };
-export declare type TypeInput<T> = {
+export type TypeInput<T> = {
     twilioSettings: TwilioServiceConfig;
     override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
 };

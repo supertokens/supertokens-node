@@ -41,9 +41,9 @@ export type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -65,9 +65,9 @@ export type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -141,11 +141,7 @@ export type APIInterface = {
 
     isEmailVerifiedGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-              session: SessionContainerInterface;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext; session: SessionContainerInterface }) => Promise<
               | {
                     status: "OK";
                     isVerified: boolean;

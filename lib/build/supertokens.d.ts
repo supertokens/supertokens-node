@@ -1,5 +1,14 @@
 // @ts-nocheck
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
+import {
+    TypeInput,
+    NormalisedAppinfo,
+    HTTPMethod,
+    SuperTokensInfo,
+    UserContext,
+    PluginRouteHandler,
+    SuperTokensPublicPlugin,
+    SuperTokensPlugin,
+} from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -10,6 +19,9 @@ export default class SuperTokens {
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
+    pluginRouteHandlers: PluginRouteHandler[];
+    pluginList: SuperTokensPublicPlugin[];
+    pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
     supertokens: undefined | SuperTokensInfo;
     telemetryEnabled: boolean;
     constructor(config: TypeInput);

@@ -32,11 +32,12 @@ import EmailVerificationRecipe from "../emailverification/recipe";
 import { LoginMethod } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
 
-    static RECIPE_ID = "accountlinking";
+    static RECIPE_ID = "accountlinking" as const;
 
     config: TypeNormalisedInput;
 
@@ -61,12 +62,12 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, _isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
                     Recipe.RECIPE_ID,
                     appInfo,
-                    config,
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? []),
                     {},
                     {
                         emailDelivery: undefined,
@@ -88,7 +89,8 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance === undefined) {
             Recipe.init()(
                 supertokens.getInstanceOrThrowError().appInfo,
-                supertokens.getInstanceOrThrowError().isInServerlessEnv
+                supertokens.getInstanceOrThrowError().isInServerlessEnv,
+                supertokens.getInstanceOrThrowError().pluginOverrideMaps
             );
         }
         return Recipe.instance!;

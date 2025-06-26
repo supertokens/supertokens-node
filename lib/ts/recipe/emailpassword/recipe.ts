@@ -32,6 +32,7 @@ import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
 import { isTestEnv, send200Response } from "../../utils";
+import { applyPlugins } from "../../plugins";
 import emailExistsAPI from "./api/emailExists";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -49,7 +50,7 @@ import { FactorIds } from "../multifactorauth";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "emailpassword";
+    static RECIPE_ID = "emailpassword" as const;
 
     config: TypeNormalisedInput;
 
@@ -134,9 +135,8 @@ export default class Recipe extends RecipeModule {
                         return a.timeJoined - b.timeJoined;
                     });
                     // Then we take the ones that belong to this recipe
-                    const recipeLoginMethodsOrderedByTimeJoinedOldestFirst = orderedLoginMethodsByTimeJoinedOldestFirst.filter(
-                        (lm) => lm.recipeId === Recipe.RECIPE_ID
-                    );
+                    const recipeLoginMethodsOrderedByTimeJoinedOldestFirst =
+                        orderedLoginMethodsByTimeJoinedOldestFirst.filter((lm) => lm.recipeId === Recipe.RECIPE_ID);
 
                     let result: string[];
                     if (recipeLoginMethodsOrderedByTimeJoinedOldestFirst.length !== 0) {
@@ -230,11 +230,17 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
-                    emailDelivery: undefined,
-                });
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? []),
+                    {
+                        emailDelivery: undefined,
+                    }
+                );
 
                 return Recipe.instance;
             } else {

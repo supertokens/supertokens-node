@@ -8,7 +8,7 @@ import { SessionContainerInterface } from "../session/types";
 import Recipe from "./recipe";
 import { TenantConfig } from "../multitenancy/types";
 import RecipeUserId from "../../recipeUserId";
-export declare type MFARequirementList = (
+export type MFARequirementList = (
     | {
           oneOf: string[];
       }
@@ -17,31 +17,31 @@ export declare type MFARequirementList = (
       }
     | string
 )[];
-export declare type MFAClaimValue = {
+export type MFAClaimValue = {
     c: Record<string, number | undefined>;
     v: boolean;
 };
-export declare type TypeInput = {
+export type TypeInput = {
     firstFactors?: string[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     firstFactors?: string[];
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     assertAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
         session: SessionContainer;
         factorId: string;
@@ -77,7 +77,7 @@ export declare type RecipeInterface = {
         userContext: UserContext;
     }) => Promise<void>;
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     recipeInstance: Recipe;
     config: TypeNormalisedInput;
@@ -86,7 +86,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export declare type APIInterface = {
+export type APIInterface = {
     resyncSessionAndFetchMFAInfoPUT:
         | undefined
         | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
@@ -103,12 +103,9 @@ export declare type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
-    user: User,
-    userContext: UserContext
-) => Promise<string[]>;
-export declare type GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
-export declare type GetEmailsForFactorFromOtherRecipesFunc = (
+export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
+export type GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
+export type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
 ) =>
@@ -119,7 +116,7 @@ export declare type GetEmailsForFactorFromOtherRecipesFunc = (
     | {
           status: "UNKNOWN_SESSION_RECIPE_USER_ID";
       };
-export declare type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
+export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
 ) =>

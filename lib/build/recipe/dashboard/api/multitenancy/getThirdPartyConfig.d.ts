@@ -2,7 +2,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import { ProviderConfig } from "../../../thirdparty/types";
 import { UserContext } from "../../../../types";
-export declare type Response =
+export type Response =
     | {
           status: "OK";
           providerConfig: ProviderConfig & {

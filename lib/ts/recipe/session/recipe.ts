@@ -43,11 +43,12 @@ import { APIOptions } from ".";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { isTestEnv } from "../../utils";
+import { applyPlugins } from "../../plugins";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
     private static instance: SessionRecipe | undefined = undefined;
-    static RECIPE_ID = "session";
+    static RECIPE_ID = "session" as const;
 
     private claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
     private claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
@@ -106,9 +107,14 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (SessionRecipe.instance === undefined) {
-                SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                SessionRecipe.instance = new SessionRecipe(
+                    SessionRecipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(SessionRecipe.RECIPE_ID, config, plugins ?? [])
+                );
                 return SessionRecipe.instance;
             } else {
                 throw new Error("Session recipe has already been initialised. Please check your code for bugs.");

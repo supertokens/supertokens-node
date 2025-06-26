@@ -2,7 +2,7 @@
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, UserContext } from "../../types";
-export declare type JsonWebKey = {
+export type JsonWebKey = {
     kty: string;
     kid: string;
     n: string;
@@ -10,27 +10,27 @@ export declare type JsonWebKey = {
     alg: string;
     use: string;
 };
-export declare type TypeInput = {
+export type TypeInput = {
     jwtValiditySeconds?: number;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     jwtValiditySeconds: number;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -38,7 +38,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
@@ -58,7 +58,7 @@ export declare type RecipeInterface = {
         validityInSeconds?: number;
     }>;
 };
-export declare type APIInterface = {
+export type APIInterface = {
     getJWKSGET:
         | undefined
         | ((input: { options: APIOptions; userContext: UserContext }) => Promise<

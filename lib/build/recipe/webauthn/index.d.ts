@@ -121,7 +121,7 @@ export default class Wrapper {
               userVerification: UserVerification;
               userPresence: boolean;
               origin: string;
-              email?: string | undefined;
+              email?: string;
               timeout: number;
               challenge: string;
               createdAt: number;
@@ -158,9 +158,9 @@ export default class Wrapper {
               | {
                     status: "LINKING_TO_SESSION_USER_FAILED";
                     reason:
-                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                         | "EMAIL_VERIFICATION_REQUIRED"
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                         | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                 }
           )
@@ -202,9 +202,9 @@ export default class Wrapper {
               | {
                     status: "LINKING_TO_SESSION_USER_FAILED";
                     reason:
-                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                         | "EMAIL_VERIFICATION_REQUIRED"
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                         | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                 }
           )
@@ -382,7 +382,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
-              recipeUserId?: import("../..").RecipeUserId | undefined;
+              recipeUserId?: import("../..").RecipeUserId;
           }
     >;
     static removeGeneratedOptions(input: {

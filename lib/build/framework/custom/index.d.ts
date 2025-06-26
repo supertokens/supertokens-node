@@ -6,7 +6,7 @@ export declare const middleware: <OrigReqType = import("..").BaseRequest, OrigRe
 ) => (
     request: OrigReqType,
     response: OrigRespType,
-    next?: import("./framework").NextFunction | undefined
+    next?: import("./framework").NextFunction
 ) => Promise<
     | {
           handled: boolean;

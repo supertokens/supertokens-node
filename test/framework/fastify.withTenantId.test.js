@@ -175,7 +175,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
                 Session.init({
                     errorHandlers: {
                         onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
-                            debugger;
                             response.sendJSONResponse({
                                 success: true,
                             });

@@ -26,9 +26,9 @@ export type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -40,9 +40,9 @@ export type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -84,10 +84,7 @@ export type RecipeInterface = {
     }) => Promise<{
         status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
     }>;
-    listDevices: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    listDevices: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         devices: {
             name: string;
@@ -96,11 +93,7 @@ export type RecipeInterface = {
             verified: boolean;
         }[];
     }>;
-    removeDevice: (input: {
-        userId: string;
-        deviceName: string;
-        userContext: UserContext;
-    }) => Promise<{
+    removeDevice: (input: { userId: string; deviceName: string; userContext: UserContext }) => Promise<{
         status: "OK";
         didDeviceExist: boolean;
     }>;
@@ -128,12 +121,7 @@ export type RecipeInterface = {
               retryAfterMs: number;
           }
     >;
-    verifyTOTP: (input: {
-        tenantId: string;
-        userId: string;
-        totp: string;
-        userContext: UserContext;
-    }) => Promise<
+    verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: UserContext }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
           }
@@ -181,11 +169,7 @@ export type APIInterface = {
 
     listDevicesGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              session: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<
+        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                     devices: {

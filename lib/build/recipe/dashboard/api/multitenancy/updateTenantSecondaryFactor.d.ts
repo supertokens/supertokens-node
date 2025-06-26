@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
 import { UserContext } from "../../../../types";
-export declare type Response =
+export type Response =
     | {
           status: "OK";
           isMFARequirementsForAuthOverridden: boolean;

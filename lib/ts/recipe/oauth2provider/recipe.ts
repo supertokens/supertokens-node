@@ -55,9 +55,10 @@ import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
 import { endSessionGET, endSessionPOST } from "./api/endSession";
 import { logoutPOST } from "./api/logout";
+import { applyPlugins } from "../../plugins";
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "oauth2provider";
+    static RECIPE_ID = "oauth2provider" as const;
     private static instance: Recipe | undefined = undefined;
     private accessTokenBuilders: PayloadBuilderFunction[] = [];
     private idTokenBuilders: PayloadBuilderFunction[] = [];
@@ -105,9 +106,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? [])
+                );
                 return Recipe.instance;
             } else {
                 throw new Error("OAuth2Provider recipe has already been initialised. Please check your code for bugs.");

@@ -18,10 +18,10 @@ export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends Sessio
     getValueFromPayload(payload: any, _userContext: UserContext): T[] | undefined;
     getLastRefetchTime(payload: any, _userContext: UserContext): number | undefined;
     validators: {
-        includes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
-        excludes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
-        includesAll: (val: T[], maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
-        includesAny: (val: T[], maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
-        excludesAll: (val: T[], maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
+        includes: (val: T, maxAgeInSeconds?: number | undefined, id?: string) => SessionClaimValidator;
+        excludes: (val: T, maxAgeInSeconds?: number | undefined, id?: string) => SessionClaimValidator;
+        includesAll: (val: T[], maxAgeInSeconds?: number | undefined, id?: string) => SessionClaimValidator;
+        includesAny: (val: T[], maxAgeInSeconds?: number | undefined, id?: string) => SessionClaimValidator;
+        excludesAll: (val: T[], maxAgeInSeconds?: number | undefined, id?: string) => SessionClaimValidator;
     };
 }

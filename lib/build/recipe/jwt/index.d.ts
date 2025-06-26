@@ -19,7 +19,7 @@ export default class Wrapper {
     >;
     static getJWKS(userContext?: Record<string, any>): Promise<{
         keys: JsonWebKey[];
-        validityInSeconds?: number | undefined;
+        validityInSeconds?: number;
     }>;
 }
 export declare let init: typeof Recipe.init;

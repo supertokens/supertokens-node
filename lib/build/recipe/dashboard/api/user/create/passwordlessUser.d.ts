@@ -2,7 +2,7 @@
 import { APIInterface, APIOptions } from "../../../types";
 import { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
-declare type Response =
+type Response =
     | {
           status: string;
           createdNewRecipeUser: boolean;

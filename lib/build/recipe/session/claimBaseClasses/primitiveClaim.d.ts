@@ -18,6 +18,6 @@ export declare class PrimitiveClaim<T extends JSONPrimitive> extends SessionClai
     getValueFromPayload(payload: any, _userContext: UserContext): T | undefined;
     getLastRefetchTime(payload: any, _userContext: UserContext): number | undefined;
     validators: {
-        hasValue: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
+        hasValue: (val: T, maxAgeInSeconds?: number | undefined, id?: string) => SessionClaimValidator;
     };
 }

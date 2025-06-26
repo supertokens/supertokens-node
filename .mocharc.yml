@@ -1,4 +1,5 @@
-spec: test/**/*.test.js
+spec: test/**/*.test.*
+extension: [ts, js]
 exit: true
 slow: 10000
 timeout: 20000

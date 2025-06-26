@@ -18,10 +18,10 @@ export interface GetContentResult {
     subject: string;
     toEmail: string;
 }
-export declare type TypeInputSendRawEmail = GetContentResult & {
+export type TypeInputSendRawEmail = GetContentResult & {
     userContext: UserContext;
 };
-export declare type ServiceInterface<T> = {
+export type ServiceInterface<T> = {
     sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
     getContent: (
         input: T & {
@@ -29,7 +29,7 @@ export declare type ServiceInterface<T> = {
         }
     ) => Promise<GetContentResult>;
 };
-export declare type TypeInput<T> = {
+export type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;
     override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
 };

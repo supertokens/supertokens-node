@@ -13,7 +13,16 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
+import {
+    TypeInput,
+    NormalisedAppinfo,
+    HTTPMethod,
+    SuperTokensInfo,
+    UserContext,
+    PluginRouteHandler,
+    SuperTokensPublicPlugin,
+    SuperTokensPlugin,
+} from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -21,7 +30,10 @@ import {
     sendNon200ResponseWithMessage,
     getRidFromHeader,
     isTestEnv,
+    getPublicConfig,
+    getNonPublicConfig,
 } from "./utils";
+import { loadPlugins } from "./plugins";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
@@ -33,6 +45,8 @@ import STError from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
+import { SessionContainerInterface } from "./recipe/session/types";
+import Session from "./recipe/session/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -45,11 +59,32 @@ export default class SuperTokens {
 
     recipeModules: RecipeModule[];
 
+    pluginRouteHandlers: PluginRouteHandler[];
+
+    pluginList: SuperTokensPublicPlugin[];
+
+    // needed for auto-initialization of recipes (see accountlinking recipe)
+    pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
+
     supertokens: undefined | SuperTokensInfo;
 
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
+        const { publicConfig, processedPlugins, pluginRouteHandlers, overrideMaps } = loadPlugins({
+            plugins: config.experimental?.plugins ?? [],
+            publicConfig: getPublicConfig(config),
+        });
+
+        this.pluginRouteHandlers = pluginRouteHandlers;
+        this.pluginOverrideMaps = overrideMaps;
+        this.pluginList = processedPlugins;
+
+        config = {
+            ...publicConfig,
+            ...getNonPublicConfig(config),
+        };
+
         if (config.debug === true) {
             enableDebugLogs();
         }
@@ -88,6 +123,7 @@ export default class SuperTokens {
             config.supertokens?.networkInterceptor,
             config.supertokens?.disableCoreCallCache
         );
+
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
         }
@@ -120,7 +156,7 @@ export default class SuperTokens {
         let jwtRecipe = require("./recipe/jwt/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
-            const recipeModule = func(this.appInfo, this.isInServerlessEnv);
+            const recipeModule = func(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
             } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
@@ -239,7 +275,7 @@ export default class SuperTokens {
                 "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())"
             );
         }
-        let includeRecipeIdsStr = undefined;
+        let includeRecipeIdsStr: string | undefined = undefined;
         if (includeRecipeIds !== undefined) {
             includeRecipeIdsStr = includeRecipeIds.join(",");
         }
@@ -384,6 +420,23 @@ export default class SuperTokens {
         logDebugMessage("middleware: Started");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
+
+        const handlerFromApis = this.pluginRouteHandlers.find(
+            (handler) => handler.path === path.getAsStringDangerous() && handler.method === method
+        );
+        if (handlerFromApis) {
+            let session: SessionContainerInterface | undefined = undefined;
+            if (handlerFromApis.verifySessionOptions !== undefined) {
+                session = await Session.getInstanceOrThrowError().verifySession(
+                    handlerFromApis.verifySessionOptions,
+                    request,
+                    response,
+                    userContext
+                );
+            }
+            handlerFromApis.handler(request, response, session, userContext);
+            return true;
+        }
 
         // if the prefix of the URL doesn't match the base path, we skip
         if (!path.startsWith(this.appInfo.apiBasePath)) {

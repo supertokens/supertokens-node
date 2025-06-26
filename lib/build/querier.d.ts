@@ -36,39 +36,25 @@ export declare class Querier {
         templatePath: PathParam<P>,
         body: RequestBody<P, "post">,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "post"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "post">>
-            : never
-    >;
+    ) => Promise<ResponseBody<P, "post">>;
     sendDeleteRequest: <P extends keyof paths>(
         templatePath: PathParam<P>,
         body: RequestBody<P, "delete">,
         params: any | undefined,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "delete"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "delete">>
-            : never
-    >;
+    ) => Promise<ResponseBody<P, "delete">>;
     sendGetRequest: <P extends keyof paths>(
         templatePath: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "get"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
-            : never
-    >;
+    ) => Promise<ResponseBody<P, "get">>;
     sendGetRequestWithResponseHeaders: <P extends keyof paths>(
         templatePath: PathParam<P>,
         params: Record<string, boolean | number | string | undefined>,
         inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ) => Promise<{
-        body: import("./core/types").UncleanedResponseBody<P, "get"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "get">>
-            : never;
+        body: ResponseBody<P, "get">;
         headers: Headers;
     }>;
     sendPutRequest: <P extends keyof paths>(
@@ -76,20 +62,12 @@ export declare class Querier {
         body: RequestBody<P, "put">,
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "put"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "put">>
-            : never
-    >;
+    ) => Promise<ResponseBody<P, "put">>;
     sendPatchRequest: <P extends keyof paths>(
         templatePath: PathParam<P>,
         body: RequestBody<P, "patch">,
         userContext: UserContext
-    ) => Promise<
-        import("./core/types").UncleanedResponseBody<P, "patch"> extends any
-            ? Required<import("./core/types").UncleanedResponseBody<P, "patch">>
-            : never
-    >;
+    ) => Promise<ResponseBody<P, "patch">>;
     invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;

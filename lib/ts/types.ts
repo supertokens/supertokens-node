@@ -18,7 +18,28 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
-import { BaseRequest } from "./framework";
+import { BaseRequest, BaseResponse } from "./framework";
+import type { TypeInput as AccountLinkingTypeInput } from "./recipe/accountlinking/types";
+import type { TypeInput as DashboardTypeInput } from "./recipe/dashboard/types";
+import type { TypeInput as EmailPasswordTypeInput } from "./recipe/emailpassword/types";
+import type { TypeInput as EmailVerificationTypeInput } from "./recipe/emailverification/types";
+import type { TypeInput as JWTTypeInput } from "./recipe/jwt/types";
+import type { TypeInput as MultifactorAuthTypeInput } from "./recipe/multifactorauth/types";
+import type { TypeInput as MultitenancyTypeInput } from "./recipe/multitenancy/types";
+import type { TypeInput as OAuth2ProviderTypeInput } from "./recipe/oauth2provider/types";
+import type { TypeInput as OpenIdTypeInput } from "./recipe/openid/types";
+import type { TypeInput as PasswordlessTypeInput } from "./recipe/passwordless/types";
+import type {
+    SessionContainerInterface,
+    TypeInput as SessionTypeInput,
+    VerifySessionOptions,
+} from "./recipe/session/types";
+import type { TypeInput as ThirdPartyTypeInput } from "./recipe/thirdparty/types";
+import type { TypeInput as TotpTypeInput } from "./recipe/totp/types";
+import type { TypeInput as UserMetadataTypeInput } from "./recipe/usermetadata/types";
+import type { TypeInput as UserRolesTypeInput } from "./recipe/userroles/types";
+import type { TypeInput as WebauthnTypeInput } from "./recipe/webauthn/types";
+
 declare const __brand: unique symbol;
 type Brand<B> = { [__brand]: B };
 
@@ -28,6 +49,10 @@ type Branded<T, B> = T & Brand<B>;
 export type NonNullableProperties<T> = {
     [P in keyof T]: NonNullable<T[P]>;
 };
+
+export type Entries<T> = {
+    [K in keyof T]-?: [K, T[K]];
+}[keyof T][];
 
 // Record<string,any> is still quite generic and we would like to ensure type safety for the userContext
 // so we use the concept of branded type, which enables catching of issues at compile time.
@@ -62,6 +87,83 @@ export type SuperTokensInfo = {
     disableCoreCallCache?: boolean;
 };
 
+export type AllRecipeConfigs = {
+    accountlinking: AccountLinkingTypeInput & { override?: { apis?: never } };
+    dashboard: DashboardTypeInput;
+    emailpassword: EmailPasswordTypeInput;
+    emailverification: EmailVerificationTypeInput;
+    jwt: JWTTypeInput;
+    multifactorauth: MultifactorAuthTypeInput;
+    multitenancy: MultitenancyTypeInput;
+    oauth2provider: OAuth2ProviderTypeInput;
+    openid: OpenIdTypeInput;
+    passwordless: PasswordlessTypeInput;
+    session: SessionTypeInput;
+    thirdparty: ThirdPartyTypeInput;
+    totp: TotpTypeInput;
+    usermetadata: UserMetadataTypeInput;
+    userroles: UserRolesTypeInput;
+    webauthn: WebauthnTypeInput;
+};
+
+export type RecipePluginOverride<T extends keyof AllRecipeConfigs> = {
+    functions?: NonNullable<AllRecipeConfigs[T]["override"]>["functions"];
+    apis?: NonNullable<AllRecipeConfigs[T]["override"]>["apis"];
+    config?: (config: AllRecipeConfigs[T]) => AllRecipeConfigs[T];
+};
+
+export type PluginRouteHandler = {
+    method: HTTPMethod;
+    path: string; // this is appended to apiBasePath
+    verifySessionOptions?: VerifySessionOptions;
+    handler: (
+        req: BaseRequest,
+        res: BaseResponse,
+        session: SessionContainerInterface | undefined,
+        userContext: UserContext
+    ) => Promise<{
+        status: number;
+        body: JSONObject;
+    } | null>;
+};
+
+export type SuperTokensPlugin = {
+    id: string; // TODO: validate that no two plugins have the same id
+    version?: string;
+    compatibleSDKVersions?: string | string[]; // match the syntax of the engines field in package.json
+    init?: (config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => void;
+    dependencies?: (
+        config: SuperTokensPublicConfig,
+        pluginsAbove: SuperTokensPublicPlugin[],
+        sdkVersion: string
+    ) => { status: "OK"; pluginsToAdd?: SuperTokensPlugin[] } | { status: "ERROR"; message: string };
+    overrideMap?: {
+        [recipeId in keyof AllRecipeConfigs]?: RecipePluginOverride<recipeId> & {
+            recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
+        };
+    };
+    routeHandlers?:
+        | ((
+              config: SuperTokensPublicConfig,
+              allPlugins: SuperTokensPublicPlugin[],
+              sdkVersion: string
+          ) => { status: "OK"; routeHandlers: PluginRouteHandler[] } | { status: "ERROR"; message: string })
+        | PluginRouteHandler[];
+    config?: (config: SuperTokensPublicConfig) => SuperTokensPublicConfig | undefined;
+    exports?: Record<string, any>;
+};
+
+export type SuperTokensPublicPlugin = Pick<
+    SuperTokensPlugin,
+    "id" | "version" | "compatibleSDKVersions" | "exports"
+> & { initialized: boolean };
+
+export const nonPublicConfigProperties = ["recipeList", "experimental"] as const;
+
+export type NonPublicConfigPropertiesType = typeof nonPublicConfigProperties[number];
+
+export type SuperTokensPublicConfig = Omit<TypeInput, NonPublicConfigPropertiesType>;
+
 export type TypeInput = {
     supertokens?: SuperTokensInfo;
     framework?: TypeFramework;
@@ -70,6 +172,18 @@ export type TypeInput = {
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
     debug?: boolean;
+    /**
+     *
+     * Our experimental features are not yet stable and are subject to change. In practical terms, this means that their interface is subject to change without a major version update.
+     * They are also not tested as much as our "normal" features.
+     *
+     * If you want to use these features, or if you have any feedback please let us know at:
+     * https://supertokens.com/discord
+     *
+     */
+    experimental?: {
+        plugins?: SuperTokensPlugin[];
+    };
 };
 
 export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;
@@ -82,7 +196,11 @@ export interface HttpRequest {
     body?: any;
 }
 
-export type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
+export type RecipeListFunction = (
+    appInfo: NormalisedAppinfo,
+    isInServerlessEnv: boolean,
+    overrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[]
+) => RecipeModule;
 
 export type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;

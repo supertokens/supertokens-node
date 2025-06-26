@@ -22,6 +22,13 @@ import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
 import { getUserContext } from "./utils";
 
+export type {
+    TypeInput as SuperTokensConfig,
+    SuperTokensPublicConfig,
+    SuperTokensPlugin,
+    SuperTokensPublicPlugin,
+} from "./types";
+
 // For Express
 export default class SuperTokensWrapper {
     static init = SuperTokens.init;

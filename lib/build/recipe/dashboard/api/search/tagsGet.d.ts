@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
 import { UserContext } from "../../../../types";
-declare type TagsResponse = {
+type TagsResponse = {
     status: "OK";
     tags: string[];
 };
