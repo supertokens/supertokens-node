@@ -43,12 +43,7 @@ export type TypeNormalisedInput = {
 export type APIInterface = {};
 
 export type RecipeInterface = {
-    addRoleToUser: (input: {
-        userId: string;
-        role: string;
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<
+    addRoleToUser: (input: { userId: string; role: string; tenantId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               didUserAlreadyHaveRole: boolean;
@@ -58,12 +53,7 @@ export type RecipeInterface = {
           }
     >;
 
-    removeUserRole: (input: {
-        userId: string;
-        role: string;
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<
+    removeUserRole: (input: { userId: string; role: string; tenantId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               didUserHaveRole: boolean;
@@ -73,20 +63,12 @@ export type RecipeInterface = {
           }
     >;
 
-    getRolesForUser: (input: {
-        userId: string;
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    getRolesForUser: (input: { userId: string; tenantId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         roles: string[];
     }>;
 
-    getUsersThatHaveRole: (input: {
-        role: string;
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<
+    getUsersThatHaveRole: (input: { role: string; tenantId: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               users: string[];
@@ -105,10 +87,7 @@ export type RecipeInterface = {
         createdNewRole: boolean;
     }>;
 
-    getPermissionsForRole: (input: {
-        role: string;
-        userContext: UserContext;
-    }) => Promise<
+    getPermissionsForRole: (input: { role: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
               permissions: string[];
@@ -118,33 +97,21 @@ export type RecipeInterface = {
           }
     >;
 
-    removePermissionsFromRole: (input: {
-        role: string;
-        permissions: string[];
-        userContext: UserContext;
-    }) => Promise<{
+    removePermissionsFromRole: (input: { role: string; permissions: string[]; userContext: UserContext }) => Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
 
-    getRolesThatHavePermission: (input: {
-        permission: string;
-        userContext: UserContext;
-    }) => Promise<{
+    getRolesThatHavePermission: (input: { permission: string; userContext: UserContext }) => Promise<{
         status: "OK";
         roles: string[];
     }>;
 
-    deleteRole: (input: {
-        role: string;
-        userContext: UserContext;
-    }) => Promise<{
+    deleteRole: (input: { role: string; userContext: UserContext }) => Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
 
-    getAllRoles: (input: {
-        userContext: UserContext;
-    }) => Promise<{
+    getAllRoles: (input: { userContext: UserContext }) => Promise<{
         status: "OK";
         roles: string[];
     }>;
