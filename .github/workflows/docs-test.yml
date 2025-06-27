@@ -1,0 +1,97 @@
+name: "Update Docs - Test"
+on:
+    pull_request:
+        types:
+            - synchronize
+permissions:
+    contents: write
+jobs:
+    setup:
+        runs-on: ubuntu-latest
+        outputs:
+            constantsVersion: ${{ steps.versions.outputs.constantsVersion }}
+            constantsVersionXy: ${{ steps.versions.outputs.constantsVersionXy }}
+            setupVersion: ${{ steps.versions.outputs.setupVersion }}
+            setupVersionXy: ${{ steps.versions.outputs.setupVersionXy }}
+            newestVersion: ${{ steps.versions.outputs.newestVersion }}
+            targetBranch: ${{ steps.versions.outputs.targetBranch }}
+            devTag: ${{ steps.versions.outputs.devTag }}
+            releaseTag: ${{ steps.versions.outputs.releaseTag }}
+            versionFolder: ${{ steps.versions.outputs.versionFolder }}
+            artifactName: ${{ steps.versions.outputs.artifactName }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # ref: ${{ inputs.branch }}
+                  fetch-tags: true
+                  token: ${{ secrets.ALL_REPO_PAT }}
+            - name: Populate variables
+              id: versions
+              run: |
+                  . ./hooks/populate-hook-constants.sh
+                  echo "constantsVersion=$constantsVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "constantsVersionXy=$constantsVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "setupVersion=$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "setupVersionXy=$setupVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "versionFolder=$setupVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "artifactName=python-docs-$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+    publish-docs:
+        runs-on: ubuntu-latest
+        needs: setup
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.setup.outputs.releaseTag }}
+                  fetch-tags: true
+                  path: supertokens-node
+            - uses: actions/checkout@v4
+              with:
+                  repository: supertokens/supertokens-backend-website
+                  token: ${{ secrets.ALL_REPO_PAT }}
+                  path: supertokens-backend-website
+            - run: |
+                  shopt -s extglob # Enable extended globbing
+                  nodeDocDir=supertokens-backend-website/app/docs/sdk/docs/nodejs/
+                  # Delete the current version folder if it exists
+                  rm -rf $nodeDocDir/${{ needs.setup.outputs.versionFolder }}
+                  # Copy the current docs
+                  mkdir -p $nodeDocDir/${{ needs.setup.outputs.versionFolder }}
+                  cp -r supertokens-node/docs* $nodeDocDir/${{ needs.setup.outputs.versionFolder }}
+                  if [[ "true" == "true" ]]
+                  then
+                      # Delete everything except the version folders
+                      rm -rf $nodeDocDir/!(*.*.X)
+                      # Copy files to the root dir
+                      cp -r supertokens-node/docs/* $nodeDocDir/
+                  fi
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ needs.setup.outputs.artifactName }}
+                  path: supertokens-backend-website/app/docs/sdk/docs/nodejs
+            # - uses: actions/upload-artifact@v4
+            #   with:
+            #     name: ${{ needs.setup.outputs.artifactName }}
+            #     path: html/supertokens_python
+            - name: Trigger the backend website CI
+              uses: actions/github-script@v7
+              with:
+                  # NOTE: We should use a better scoped PAT here.
+                  github-token: ${{ secrets.ALL_REPO_PAT }}
+                  script: |
+                      github.rest.actions.createWorkflowDispatch({
+                          owner: 'supertokens',
+                          repo: 'supertokens-backend-website',
+                          workflow_id: 'release-node-documentation-changes.yml',
+                          ref: 'master',
+                          inputs: {
+                            "version": `${{ needs.setup.outputs.setupVersion }}`,
+                            "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
+                            "version-folder": `app/docs/sdk/docs/nodejs`,
+                            "run-id": `${{ github.run_id }}`,
+                            "stage":  "preview",
+                          }
+                      })
