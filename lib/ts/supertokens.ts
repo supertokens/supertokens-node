@@ -20,7 +20,6 @@ import {
     SuperTokensInfo,
     UserContext,
     PluginRouteHandler,
-    SuperTokensPublicPlugin,
     SuperTokensPlugin,
 } from "./types";
 import {
