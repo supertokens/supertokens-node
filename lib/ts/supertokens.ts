@@ -248,6 +248,7 @@ export default class SuperTokens {
         }
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
+
     handleAPI = async (
         matchedRecipe: RecipeModule,
         id: string,
