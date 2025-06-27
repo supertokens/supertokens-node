@@ -33,10 +33,10 @@ jobs:
                   echo "packageLockVersionXy=$packageLockVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "versionFolder=$setupVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "artifactName=node-docs-$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "devTag=dev-v$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "releaseTag=v$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "versionFolder=$packageVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "artifactName=node-docs-$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
     publish-docs:
         runs-on: ubuntu-latest
         needs: setup
