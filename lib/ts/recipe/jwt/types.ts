@@ -73,9 +73,7 @@ export type RecipeInterface = {
           }
     >;
 
-    getJWKS(input: {
-        userContext: UserContext;
-    }): Promise<{
+    getJWKS(input: { userContext: UserContext }): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number;
     }>;

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [23.0.0] - 2025-06-27
+
+-   The `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `acceptLoginRequest`, `rejectLoginRequest` and `introspectToken` can now possibly return an `ErrorOAuth2`.
+-   The `/oauth/introspect` can now possibly return an `ErrorAuth2`.
+-   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
+-   Refactors querier to use dynamic request body and response body types inference.
+-   Refactor internal network calls made with querier to use the new dynamic types.
+-   Added experimental support for plugins. Please note that the experimental nature of this feature means that we might break the interface in non-major version updates.
+
+## [22.1.1] - 2025-06-20
+
 -   Migrates backend-sdk-testing test to use a containerized core
     -   Migrates from CircleCI to Github Actions
 -   Adds workflow to test supertokens-website
@@ -14,17 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Fixes broken workflows (Example Tests, AWS Edge function compatibility)
 -   Sets up workflow to run auth-react tests
     -   Updates test-servers to work with updated tests
--   Fixes wrong types types from `string` to `number` on `createdAt`, `expiresAt` and `timeout` from the WebAuthn recipe
--   Fixed `email` property by making it optional on `getGeneratedOptions` recipe implementation method
-
-## [23.0.0] - 2025-06-10
-
 -   Refactors internal logic of parsing cookies to check accessToken and optimizes it to avoid parsing unrelated cookies.
--   The `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `acceptLoginRequest`, `rejectLoginRequest` and `introspectToken` can now possibly return an `ErrorOAuth2`.
--   The `/oauth/introspect` can now possibly return an `ErrorAuth2`.
--   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
--   Refactors querier to use dynamic request body and response body types inference.
--   Refactor internal network calls made with querier to use the new dynamic types.
 -   Fixes an issue with fetch not supporting `cache: no-cache` in Cloudflare Workers.
 
 ## [22.1.0] - 2025-04-04

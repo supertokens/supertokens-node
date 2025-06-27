@@ -1,0 +1,373 @@
+name: "Release Pipeline"
+
+on:
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: The branch to create the release tag on
+                type: string
+                required: true
+
+            skip-test-checks:
+                description: Skip tests passed checks
+                type: boolean
+                default: false
+                required: false
+
+            skip-other-version-checks:
+                description: Skip server checks for core and frontend versions
+                type: boolean
+                default: false
+                required: false
+
+permissions:
+    contents: write
+
+jobs:
+    setup:
+        runs-on: ubuntu-latest
+
+        outputs:
+            packageVersion: ${{ steps.versions.outputs.packageVersion }}
+            packageVersionXy: ${{ steps.versions.outputs.packageVersionXy }}
+            packageLockVersion: ${{ steps.versions.outputs.packageLockVersion }}
+            packageLockVersionXy: ${{ steps.versions.outputs.packageLockVersionXy }}
+            newestVersion: ${{ steps.versions.outputs.newestVersion }}
+            targetBranch: ${{ steps.versions.outputs.targetBranch }}
+            devTag: ${{ steps.versions.outputs.devTag }}
+            releaseTag: ${{ steps.versions.outputs.releaseTag }}
+            versionFolder: ${{ steps.versions.outputs.versionFolder }}
+            artifactName: ${{ steps.versions.outputs.artifactName }}
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.branch }}
+                  fetch-tags: true
+                  token: ${{ secrets.ALL_REPO_PAT }}
+
+            - name: Populate variables
+              id: versions
+              run: |
+                  . ./hooks/populate-hook-constants.sh
+
+                  echo "packageVersion=$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageVersionXy=$packageVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageLockVersion=$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageLockVersionXy=$packageLockVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+                  echo "devTag=dev-v$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "releaseTag=v$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+                  echo "versionFolder=$packageVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "artifactName=node-docs-$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+    mark-as-success:
+        runs-on: ubuntu-latest
+
+        needs:
+            - setup
+
+        steps:
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+
+            - name: Install dependencies
+              run: |
+                  pip install httpx
+
+            - if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
+              name: Get commit status
+              run: |
+                  python3 -c "$(cat << EOF
+
+                  from collections import defaultdict
+                  import httpx
+                  import sys
+
+                  check_runs_url = "https://api.github.com/repos/${{ github.repository }}/commits/tags/${{ needs.setup.outputs.devTag }}/check-runs?per_page=100&page={page}"
+                  jobs_url="https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs"
+
+                  current_jobs_response = httpx.get(jobs_url).json()
+                  current_job_ids = [job["id"] for job in current_jobs_response["jobs"]]
+
+                  page = 1
+                  total = 0
+
+                  status_map = defaultdict(int)
+                  conclusion_map = defaultdict(int)
+                  failures = []
+
+                  while True:
+                      response = httpx.get(check_runs_url.format(page=page)).json()
+
+                      if len(response["check_runs"]) == 0:
+                          break
+
+                      for run_info in response["check_runs"]:
+                          # Release pipeline jobs also show up in check-runs
+                          # We skip them from the checks to avoid pipeline failures
+                          if run_info["id"] in current_job_ids:
+                              continue
+
+                          if run_info["conclusion"] == "failure":
+                              failures.append(run_info["html_url"])
+
+                          status_map[run_info["status"]] += 1
+                          conclusion_map[run_info["conclusion"]] += 1
+                          total += 1
+
+                      page += 1
+
+                  print(f"{page=}")
+                  print(f"{total=}")
+                  print("Status Map =", dict(status_map))
+                  print("Conclusion Map =", dict(conclusion_map))
+                  print()
+
+                  # Possible values (from docs):
+                  # [completed, action_required, cancelled, failure, neutral, skipped, stale, success,
+                  # timed_out, in_progress, queued, requested, waiting, pending]
+                  if status_map["completed"] < total:
+                      print("Some checks not completed.")
+                      print(failures)
+                      sys.exit(1)
+
+                  # Possible values (from testing):
+                  # None, success, skipped, failure
+                  if conclusion_map.get("failure", 0) > 0:
+                      print("Some checks not successful.")
+                      print(failures)
+                      sys.exit(1)
+
+                  EOF
+                  )"
+
+            - run: |
+                  curl --fail-with-body -X PATCH \
+                      https://api.supertokens.io/0/driver \
+                      -H 'Content-Type: application/json' \
+                      -H 'api-version: 0' \
+                      -d "{
+                        \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+                        \"version\":\"${{ needs.setup.outputs.packageVersion }}\",
+                        \"name\": \"node\",
+                        \"testPassed\": true
+                      }"
+
+    release:
+        runs-on: ubuntu-latest
+
+        # This job marks the version as a release version and creates tags.
+        # Binding this to the publish env to require approvals before run.
+        # Further jobs are follow-ups to the release and are not required to be approved once release is approved.
+        environment: publish
+
+        needs:
+            - setup
+            - mark-as-success
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.branch }}
+                  fetch-tags: true
+                  token: ${{ secrets.ALL_REPO_PAT }}
+
+            - name: Setup git
+              run: |
+                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            - name: Check tests passed
+              run: |
+                  testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
+
+                  if [[ $(echo $testsPassed | jq .testPassed) != "true" ]]
+                  then
+                      echo "All tests have not passed. Exiting."
+                      exit 1
+                  fi
+
+            - if: ${{ inputs.skip-other-version-checks == 'false' || inputs.skip-other-version-checks == false }}
+              name: Check if core and frontend released
+              run: |
+                  canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
+
+                  if [[ $(echo $canReleaseSafelyResponse | jq .canRelease) != "true" ]]
+                  then
+                      echo "Cannot release. Have you released corresponding core and frontend?"
+                      exit 1
+                  fi
+
+            - name: Check if current commit is dev-tagged
+              run: |
+                  currentCommit=$(git log --format="%H" -n 1)
+                  currentTag=`git tag -l --points-at $currentCommit`
+                  expectedTag="${{ needs.setup.outputs.devTag }}"
+
+                  if [[ "$currentTag" != "$expectedTag" ]]
+                  then
+                      echo "Commit does not have the correct dev tag for this release"
+                      echo "Current: $currentTag"
+                      echo "Expected: $expectedTag"
+                      exit 1
+                  fi
+
+            - name: Mark for release
+              run: |
+                  curl --fail-with-body -X PATCH \
+                      https://api.supertokens.io/0/driver \
+                      -H 'Content-Type: application/json' \
+                      -H 'api-version: 0' \
+                      -d "{
+                          \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
+                          \"name\":\"node\",
+                          \"version\":\"${{ needs.setup.outputs.packageVersion }}\",
+                          \"release\": true
+                      }"
+
+            - name: Create release tag, delete dev tag
+              run: |
+                  # Add new release tag
+                  git tag ${{ needs.setup.outputs.releaseTag }}
+                  git push --tags
+
+                  # Delete current dev tag
+                  git tag --delete ${{ needs.setup.outputs.devTag }}
+                  git push --delete origin ${{ needs.setup.outputs.devTag }}
+
+    merge:
+        runs-on: ubuntu-latest
+        needs:
+            - setup
+            - release
+
+        outputs:
+            isLatest: ${{ steps.merge-check.outputs.isLatest }}
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.branch }}
+                  # Need a complete fetch to make the master merge work
+                  fetch-depth: 0
+                  fetch-tags: true
+                  token: ${{ secrets.ALL_REPO_PAT }}
+
+            - name: Setup git
+              run: |
+                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            - name: Check API and merge to master
+              id: merge-check
+              run: |
+                  response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
+                  isLatest=$(echo $response | jq .isLatest)
+
+                  echo "isLatest=$isLatest" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+                  if [[ $isLatest == "true" ]]
+                  then
+                      git checkout master
+                      git checkout ${{ inputs.branch }}
+
+                      git merge master
+                      git checkout master
+                      git merge ${{ inputs.branch }}
+                      git push
+                      git checkout ${{ inputs.branch }}
+                  fi
+
+    publish-docs:
+        runs-on: ubuntu-latest
+        needs:
+            - setup
+            - release
+            - merge
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.setup.outputs.releaseTag }}
+                  fetch-tags: true
+                  path: supertokens-node
+
+            - uses: actions/checkout@v4
+              with:
+                  repository: supertokens/supertokens-backend-website
+                  token: ${{ secrets.ALL_REPO_PAT }}
+                  path: supertokens-backend-website
+
+            - run: |
+                  shopt -s extglob # Enable extended globbing
+
+                  if [[ "${{ needs.merge.outputs.isLatest }}" == "true" ]]
+                  then
+                      # Delete everything except the version folders
+                      rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/!(*.*.X)
+                      # Copy files to the root dir
+                      cp -r supertokens-node/docs/* supertokens-backend-website/app/docs/sdk/docs/nodejs/
+                  fi
+
+                  # Delete the current version folder if it exists
+                  rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.setup.outputs.versionFolder }}
+                  # Copy the current docs
+                  mkdir -p supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.setup.outputs.versionFolder }}
+                  cp -r supertokens-node/docs/* supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.setup.outputs.versionFolder }}
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ needs.setup.outputs.artifactName }}
+                  path: supertokens-backend-website/app/docs/sdk/docs/nodejs
+
+            - name: Trigger the backend website CI
+              uses: actions/github-script@v7
+              with:
+                  # NOTE: We should use a better scoped PAT here.
+                  github-token: ${{ secrets.ALL_REPO_PAT }}
+                  script: |
+                      github.rest.actions.createWorkflowDispatch({
+                          owner: 'supertokens',
+                          repo: 'supertokens-backend-website',
+                          workflow_id: 'release-node-documentation-changes.yml',
+                          ref: 'master',
+                          inputs: {
+                              "version": `${{ needs.setup.outputs.packageVersion }}`,
+                              "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
+                              "version-folder": `app/docs/sdk/docs/nodejs`,
+                              "run-id": `${{ github.run_id }}`,
+                              "stage":  "production",
+                          }
+                      })
+
+    publish:
+        runs-on: ubuntu-latest
+        needs:
+            - setup
+            - release
+            - merge
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.setup.outputs.releaseTag }}
+                  fetch-tags: true
+
+            - run: |
+                  echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+                  if [[ "${{ needs.merge.outputs.isLatest }}" == "true" ]]
+                  then
+                      npm publish --tag latest
+                  else
+                      npm publish --tag version-${{ needs.setup.outputs.packageVersion }}
+                  fi

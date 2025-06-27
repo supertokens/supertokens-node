@@ -1,17 +1,15 @@
 import { parse } from "tldts";
 
-import {
-    type AppInfo,
-    type NormalisedAppinfo,
-    type HTTPMethod,
-    type JSONObject,
-    type UserContext,
-    type TypeInput,
-    type SuperTokensPublicConfig,
-    nonPublicConfigProperties,
-    NonPublicConfigPropertiesType,
-    Entries,
+import type {
+    AppInfo,
+    NormalisedAppinfo,
+    HTTPMethod,
+    JSONObject,
+    UserContext,
+    TypeInput,
+    SuperTokensPublicConfig,
 } from "./types";
+import { nonPublicConfigProperties, NonPublicConfigPropertiesType, Entries } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";

@@ -141,11 +141,7 @@ export type APIInterface = {
 
     isEmailVerifiedGET:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-              session: SessionContainerInterface;
-          }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext; session: SessionContainerInterface }) => Promise<
               | {
                     status: "OK";
                     isVerified: boolean;
