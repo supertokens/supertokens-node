@@ -211,7 +211,7 @@ jobs:
                   currentTag=`git tag -l --points-at $currentCommit`
                   expectedTag="${{ needs.setup.outputs.devTag }}"
 
-                  if [[ $currentTag != $expectedTag ]]
+                  if [[ "$currentTag" != "$expectedTag" ]]
                   then
                       echo "Commit does not have the correct dev tag for this release"
                       echo "Current: $currentTag"

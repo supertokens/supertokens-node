@@ -67,7 +67,7 @@ jobs:
 
             - name: Check tag and branch correctness
               run: |
-                  if [[ "${{ steps.versions.outputs.packageVersion }} != "${{ steps.versions.outputs.packageLockVersion }}" ]]
+                  if [[ "${{ steps.versions.outputs.packageVersion }}" != "${{ steps.versions.outputs.packageLockVersion }}" ]]
                   then
                       echo "The package version and package lock version do not match."
                       exit 1
