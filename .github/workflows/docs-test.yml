@@ -1,4 +1,5 @@
 name: "Update Docs - Test"
+
 on:
     pull_request:
         types:
@@ -45,7 +46,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.setup.outputs.releaseTag }}
+                  # ref: ${{ needs.setup.outputs.releaseTag }}
                   fetch-tags: true
                   path: supertokens-node
             - uses: actions/checkout@v4
