@@ -71,14 +71,13 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
-        const { publicConfig, processedPlugins, pluginRouteHandlers, overrideMaps } = loadPlugins({
+        const { publicConfig, pluginRouteHandlers, overrideMaps } = loadPlugins({
             plugins: config.experimental?.plugins ?? [],
             publicConfig: getPublicConfig(config),
         });
 
         this.pluginRouteHandlers = pluginRouteHandlers;
         this.pluginOverrideMaps = overrideMaps;
-        this.pluginList = processedPlugins;
 
         config = {
             ...publicConfig,
@@ -176,13 +175,15 @@ export default class SuperTokens {
         });
 
         if (!jwtFound) {
-            this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
         }
         if (!openIdFound) {
-            this.recipeModules.push(OpenIdRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(OpenIdRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
         }
         if (!multitenancyFound) {
-            this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(
+                MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps),
+            );
         }
         if (totpFound && !multiFactorAuthFound) {
             throw new Error("Please initialize the MultiFactorAuth recipe to use TOTP.");
@@ -190,7 +191,9 @@ export default class SuperTokens {
         if (!userMetadataFound) {
             // Initializing the user metadata recipe shouldn't cause any issues/side effects and it doesn't expose any APIs,
             // so we can just always initialize it
-            this.recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(
+                UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps),
+            );
         }
         // While for many usecases account linking recipe also has to be initialized for MFA to function well,
         // the app doesn't have to do that if they only use TOTP (which shouldn't be that uncommon)
@@ -199,7 +202,9 @@ export default class SuperTokens {
 
         // We've decided to always initialize the OAuth2Provider recipe
         if (!oauth2Found) {
-            this.recipeModules.push(OAuth2ProviderRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(
+                OAuth2ProviderRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps),
+            );
         }
         this.telemetryEnabled = config.telemetry === undefined ? !isTestEnv() : config.telemetry;
     }
