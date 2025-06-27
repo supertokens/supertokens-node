@@ -1,16 +1,19 @@
 name: "Update Docs - Test"
 
-on: push
+on:
+    pull_request:
+        types:
+            - synchronize
 permissions:
     contents: write
 jobs:
     setup:
         runs-on: ubuntu-latest
         outputs:
-            constantsVersion: ${{ steps.versions.outputs.constantsVersion }}
-            constantsVersionXy: ${{ steps.versions.outputs.constantsVersionXy }}
-            setupVersion: ${{ steps.versions.outputs.setupVersion }}
-            setupVersionXy: ${{ steps.versions.outputs.setupVersionXy }}
+            packageVersion: ${{ steps.versions.outputs.packageVersion }}
+            packageVersionXy: ${{ steps.versions.outputs.packageVersionXy }}
+            packageLockVersion: ${{ steps.versions.outputs.packageLockVersion }}
+            packageLockVersionXy: ${{ steps.versions.outputs.packageLockVersionXy }}
             newestVersion: ${{ steps.versions.outputs.newestVersion }}
             targetBranch: ${{ steps.versions.outputs.targetBranch }}
             devTag: ${{ steps.versions.outputs.devTag }}
@@ -27,10 +30,10 @@ jobs:
               id: versions
               run: |
                   . ./hooks/populate-hook-constants.sh
-                  echo "constantsVersion=$constantsVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "constantsVersionXy=$constantsVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "setupVersion=$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "setupVersionXy=$setupVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageVersion=$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageVersionXy=$packageVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageLockVersion=$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageLockVersionXy=$packageLockVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
@@ -43,7 +46,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  # ref: ${{ needs.setup.outputs.releaseTag }}
+                  ref: ${{ needs.setup.outputs.releaseTag }}
                   fetch-tags: true
                   path: supertokens-node
             - uses: actions/checkout@v4
@@ -86,7 +89,7 @@ jobs:
                           workflow_id: 'release-node-documentation-changes.yml',
                           ref: 'master',
                           inputs: {
-                            "version": `${{ needs.setup.outputs.setupVersion }}`,
+                            "version": `${{ needs.setup.outputs.packageVersion }}`,
                             "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
                             "version-folder": `app/docs/sdk/docs/nodejs`,
                             "run-id": `${{ github.run_id }}`,
