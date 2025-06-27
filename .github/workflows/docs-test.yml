@@ -84,7 +84,7 @@ jobs:
                           owner: 'supertokens',
                           repo: 'supertokens-backend-website',
                           workflow_id: 'release-node-documentation-changes.yml',
-                          ref: 'feat/add-version-selector-for-new-node-docs',
+                          ref: 'add-version-selector-for-new-node-docs',
                           inputs: {
                             "version": `${{ needs.setup.outputs.packageVersion }}`,
                             "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
