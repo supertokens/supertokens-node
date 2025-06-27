@@ -196,14 +196,15 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
-                const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                    tenantId,
-                    accountInfo: {
-                        email,
-                    },
-                    doUnionOfAccountInfo: false,
-                    userContext,
-                });
+                const conflictingUsers =
+                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+                        tenantId,
+                        accountInfo: {
+                            email,
+                        },
+                        doUnionOfAccountInfo: false,
+                        userContext,
+                    });
 
                 if (
                     conflictingUsers.some((u) =>
@@ -443,7 +444,7 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an webauthn user with the same email cause the function
             // above does not check for that.
-            const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            const users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
                 accountInfo: {
                     email,
@@ -528,7 +529,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             //check if primaryUserId is linked with this email
-            const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            const users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
                 accountInfo: {
                     email,
@@ -596,7 +597,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const shouldDoAccountLinkingResponse =
-                await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
                     webauthnAccount !== undefined
                         ? webauthnAccount
                         : {
@@ -631,7 +632,7 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
 
-                const isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                const isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
                     newUser: {
                         recipeId: "webauthn",
                         email,
@@ -820,12 +821,13 @@ export default function getAPIImplementation(): APIInterface {
                     // 1. the user was unverified and linking requires verification
                     // We do not take try linking by session here, since this is supposed to be called without a session
                     // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                    const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                        tenantId,
-                        inputUser: updatedUserAfterEmailVerification,
-                        session: undefined,
-                        userContext,
-                    });
+                    const linkRes =
+                        await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                            tenantId,
+                            inputUser: updatedUserAfterEmailVerification,
+                            session: undefined,
+                            userContext,
+                        });
                     const userAfterWeTriedLinking =
                         linkRes.status === "OK" ? linkRes.user : updatedUserAfterEmailVerification;
 
@@ -948,12 +950,13 @@ export default function getAPIImplementation(): APIInterface {
                         // email is shared.
                         // We do not take try linking by session here, since this is supposed to be called without a session
                         // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                        const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                            tenantId,
-                            inputUser: createUserResponse.user,
-                            session: undefined,
-                            userContext,
-                        });
+                        const linkRes =
+                            await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                                tenantId,
+                                inputUser: createUserResponse.user,
+                                session: undefined,
+                                userContext,
+                            });
                         const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
                         if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
                             // this means that the account we just linked to

@@ -32,7 +32,6 @@ export declare function loadPlugins({
     publicConfig: SuperTokensPublicConfig;
 }): {
     publicConfig: SuperTokensPublicConfig;
-    processedPlugins: SuperTokensPublicPlugin[];
     pluginRouteHandlers: PluginRouteHandler[];
     overrideMaps: Record<string, any>[];
 };

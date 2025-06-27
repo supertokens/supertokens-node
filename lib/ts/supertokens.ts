@@ -60,9 +60,6 @@ export default class SuperTokens {
 
     pluginRouteHandlers: PluginRouteHandler[];
 
-    pluginList: SuperTokensPublicPlugin[];
-
-    // needed for auto-initialization of recipes (see accountlinking recipe)
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
 
     supertokens: undefined | SuperTokensInfo;
@@ -99,7 +96,7 @@ export default class SuperTokens {
                 JSON.stringify({
                     ...config.appInfo,
                     origin: originToPrint,
-                })
+                }),
         );
 
         this.framework = config.framework !== undefined ? config.framework : "express";
@@ -119,7 +116,7 @@ export default class SuperTokens {
                 }),
             config.supertokens?.apiKey,
             config.supertokens?.networkInterceptor,
-            config.supertokens?.disableCoreCallCache
+            config.supertokens?.disableCoreCallCache,
         );
 
         if (config.recipeList === undefined || config.recipeList.length === 0) {
@@ -141,6 +138,7 @@ export default class SuperTokens {
         let oauth2Found = false;
         let openIdFound = false;
         let jwtFound = false;
+        let accountLinkingFound = false;
 
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
@@ -152,9 +150,11 @@ export default class SuperTokens {
         let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
         let OpenIdRecipe = require("./recipe/openid/recipe").default;
         let jwtRecipe = require("./recipe/jwt/recipe").default;
+        let AccountLinkingRecipe = require("./recipe/accountlinking/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps);
+
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
             } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
@@ -169,10 +169,18 @@ export default class SuperTokens {
                 openIdFound = true;
             } else if (recipeModule.getRecipeId() === jwtRecipe.RECIPE_ID) {
                 jwtFound = true;
+            } else if (recipeModule.getRecipeId() === AccountLinkingRecipe.RECIPE_ID) {
+                accountLinkingFound = true;
             }
+
             return recipeModule;
         });
 
+        if (!accountLinkingFound) {
+            this.recipeModules.push(
+                AccountLinkingRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps),
+            );
+        }
         if (!jwtFound) {
             this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
         }
@@ -249,7 +257,7 @@ export default class SuperTokens {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: UserContext
+        userContext: UserContext,
     ) => {
         return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method, userContext);
     };
@@ -270,13 +278,13 @@ export default class SuperTokens {
     getUserCount = async (
         includeRecipeIds: string[] | undefined,
         tenantId: string | undefined,
-        userContext: UserContext
+        userContext: UserContext,
     ): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion(userContext);
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             throw new Error(
-                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())"
+                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())",
             );
         }
         let includeRecipeIdsStr: string | undefined = undefined;
@@ -295,7 +303,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            userContext
+            userContext,
         );
         return Number(response.count);
     };
@@ -328,7 +336,7 @@ export default class SuperTokens {
                     externalUserIdInfo: input.externalUserIdInfo,
                     force: input.force,
                 },
-                input.userContext
+                input.userContext,
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -360,7 +368,7 @@ export default class SuperTokens {
                     userId: input.userId,
                     userIdType: input.userIdType,
                 },
-                input.userContext
+                input.userContext,
             );
             return response;
         } else {
@@ -387,7 +395,7 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     force: input.force,
                 },
-                input.userContext
+                input.userContext,
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -413,7 +421,7 @@ export default class SuperTokens {
                     externalUserIdInfo: input.externalUserIdInfo || null,
                 },
                 {},
-                input.userContext
+                input.userContext,
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -426,7 +434,7 @@ export default class SuperTokens {
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
         const handlerFromApis = this.pluginRouteHandlers.find(
-            (handler) => handler.path === path.getAsStringDangerous() && handler.method === method
+            (handler) => handler.path === path.getAsStringDangerous() && handler.method === method,
         );
         if (handlerFromApis) {
             let session: SessionContainerInterface | undefined = undefined;
@@ -435,7 +443,7 @@ export default class SuperTokens {
                     handlerFromApis.verifySessionOptions,
                     request,
                     response,
-                    userContext
+                    userContext,
                 );
             }
             handlerFromApis.handler(request, response, session, userContext);
@@ -446,7 +454,7 @@ export default class SuperTokens {
         if (!path.startsWith(this.appInfo.apiBasePath)) {
             logDebugMessage(
                 "middleware: Not handling because request path did not start with config path. Request path: " +
-                    path.getAsStringDangerous()
+                    path.getAsStringDangerous(),
             );
             return false;
         }
@@ -473,7 +481,7 @@ export default class SuperTokens {
                         " with path: " +
                         path.getAsStringDangerous() +
                         " and method: " +
-                        method
+                        method,
                 );
                 let idResult = await recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
                 if (idResult !== undefined) {
@@ -502,7 +510,7 @@ export default class SuperTokens {
                     response,
                     path,
                     method,
-                    userContext
+                    userContext,
                 );
                 if (!requestHandled) {
                     logDebugMessage("middleware: Not handled because API returned requestHandled as false");
@@ -574,7 +582,7 @@ export default class SuperTokens {
                         idResult = currIdResult;
                     } else {
                         throw new Error(
-                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support."
+                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support.",
                         );
                     }
                 }
@@ -593,7 +601,7 @@ export default class SuperTokens {
                 response,
                 path,
                 method,
-                userContext
+                userContext,
             );
             if (!requestHandled) {
                 logDebugMessage("middleware: Not handled because API returned requestHandled as false");

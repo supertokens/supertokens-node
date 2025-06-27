@@ -6,7 +6,6 @@ import {
     SuperTokensInfo,
     UserContext,
     PluginRouteHandler,
-    SuperTokensPublicPlugin,
     SuperTokensPlugin,
 } from "./types";
 import RecipeModule from "./recipeModule";
@@ -20,7 +19,6 @@ export default class SuperTokens {
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
     pluginRouteHandlers: PluginRouteHandler[];
-    pluginList: SuperTokensPublicPlugin[];
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
     supertokens: undefined | SuperTokensInfo;
     telemetryEnabled: boolean;

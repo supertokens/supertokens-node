@@ -32,7 +32,7 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an email password user with the same email cause the function
             // above does not check for that.
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            let users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
                 accountInfo: {
                     email,
@@ -128,7 +128,7 @@ export default function getAPIImplementation(): APIInterface {
             /**
              * check if primaryUserId is linked with this email
              */
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            let users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
                 accountInfo: {
                     email,
@@ -179,7 +179,7 @@ export default function getAPIImplementation(): APIInterface {
                     } email)`
                 );
                 // Otherwise, we check if the user can become primary.
-                const shouldBecomePrimaryUser = await AccountLinking.getInstance().shouldBecomePrimaryUser(
+                const shouldBecomePrimaryUser = await AccountLinking.getInstanceOrThrowError().shouldBecomePrimaryUser(
                     oldestUser,
                     tenantId,
                     undefined,
@@ -283,7 +283,7 @@ export default function getAPIImplementation(): APIInterface {
             // associated with the primary user account. If there is, then we do not proceed.
 
             let shouldDoAccountLinkingResponse =
-                await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
                     emailPasswordAccount !== undefined
                         ? emailPasswordAccount
                         : {
@@ -318,7 +318,7 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
 
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
                     newUser: {
                         recipeId: "emailpassword",
                         email,
@@ -475,12 +475,13 @@ export default function getAPIImplementation(): APIInterface {
                     // The function below will try and also create a primary user of the new account, this can happen if:
                     // 1. the user was unverified and linking requires verification
                     // We do not take try linking by session here, since this is supposed to be called without a session
-                    const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                        tenantId,
-                        inputUser: updatedUserAfterEmailVerification,
-                        session: undefined,
-                        userContext,
-                    });
+                    const linkRes =
+                        await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                            tenantId,
+                            inputUser: updatedUserAfterEmailVerification,
+                            session: undefined,
+                            userContext,
+                        });
                     const userAfterWeTriedLinking =
                         linkRes.status === "OK" ? linkRes.user : updatedUserAfterEmailVerification;
 
@@ -639,12 +640,13 @@ export default function getAPIImplementation(): APIInterface {
                 // email is shared.
                 // We do not take try linking by session here, since this is supposed to be called without a session
                 // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                    tenantId,
-                    inputUser: createUserResponse.user,
-                    session: undefined,
-                    userContext,
-                });
+                const linkRes =
+                    await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                        tenantId,
+                        inputUser: createUserResponse.user,
+                        session: undefined,
+                        userContext,
+                    });
                 const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
                 if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
                     // this means that the account we just linked to
@@ -912,14 +914,15 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
-                const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                    tenantId,
-                    accountInfo: {
-                        email,
-                    },
-                    doUnionOfAccountInfo: false,
-                    userContext,
-                });
+                const conflictingUsers =
+                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+                        tenantId,
+                        accountInfo: {
+                            email,
+                        },
+                        doUnionOfAccountInfo: false,
+                        userContext,
+                    });
                 if (
                     conflictingUsers.some((u) =>
                         u.loginMethods.some((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email))

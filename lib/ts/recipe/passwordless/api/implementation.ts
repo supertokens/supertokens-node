@@ -445,7 +445,7 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         emailExistsGET: async function (input) {
-            const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            const users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId: input.tenantId,
                 accountInfo: {
                     email: input.email,
@@ -658,7 +658,7 @@ async function getPasswordlessUserByAccountInfo(input: {
     userContext: UserContext;
     accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
 }): Promise<{ user: User; loginMethod: LoginMethod } | undefined> {
-    const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+    const existingUsers = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
         tenantId: input.tenantId,
         accountInfo: input.accountInfo,
         doUnionOfAccountInfo: false,

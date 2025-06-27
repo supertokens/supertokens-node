@@ -198,7 +198,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return { status: "OK" };
         },
         updateUser: async function (input) {
-            const accountLinking = AccountLinking.getInstance();
+            const accountLinking = AccountLinking.getInstanceOrThrowError();
             if (input.email) {
                 const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
 
@@ -249,7 +249,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     status: "UNKNOWN_USER_ID_ERROR",
                 };
             }
-            await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+            await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                 user,
                 recipeUserId: input.recipeUserId,
                 userContext: input.userContext,

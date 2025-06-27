@@ -60,7 +60,7 @@ export default class SuperTokensWrapper {
         users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
+        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
             userContext: getUserContext(input.userContext),
@@ -78,7 +78,7 @@ export default class SuperTokensWrapper {
         users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
+        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
             userContext: getUserContext(input.userContext),
@@ -134,7 +134,7 @@ export default class SuperTokensWrapper {
     }
 
     static async getUser(userId: string, userContext?: Record<string, any>) {
-        return await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
             userId,
             userContext: getUserContext(userContext),
         });
@@ -146,7 +146,7 @@ export default class SuperTokensWrapper {
         doUnionOfAccountInfo: boolean = false,
         userContext?: Record<string, any>
     ) {
-        return await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
             accountInfo,
             doUnionOfAccountInfo,
@@ -158,7 +158,7 @@ export default class SuperTokensWrapper {
         removeAllLinkedAccounts: boolean = true,
         userContext?: Record<string, any>
     ) {
-        return await AccountLinking.getInstance().recipeInterfaceImpl.deleteUser({
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
             userId,
             removeAllLinkedAccounts,
             userContext: getUserContext(userContext),

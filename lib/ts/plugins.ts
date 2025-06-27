@@ -126,7 +126,6 @@ export function loadPlugins({
     publicConfig: SuperTokensPublicConfig;
 }): {
     publicConfig: SuperTokensPublicConfig;
-    processedPlugins: SuperTokensPublicPlugin[];
     pluginRouteHandlers: PluginRouteHandler[];
     overrideMaps: Record<string, any>[];
 } {
@@ -192,7 +191,6 @@ export function loadPlugins({
 
     return {
         publicConfig,
-        processedPlugins,
         pluginRouteHandlers,
         overrideMaps,
     };
