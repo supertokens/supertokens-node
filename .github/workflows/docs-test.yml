@@ -1,9 +1,6 @@
 name: "Update Docs - Test"
 
-on:
-    pull_request:
-        types:
-            - synchronize
+on: push
 permissions:
     contents: write
 jobs:
