@@ -38,7 +38,7 @@ jobs:
                   echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "versionFolder=$setupVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "artifactName=node-docs-$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "artifactName=python-docs-$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
     publish-docs:
         runs-on: ubuntu-latest
         needs: setup
