@@ -393,7 +393,7 @@ morgan.token("body", function (req, res) {
 });
 
 morgan.token("res-body", function (req, res) {
-    return typeof res.__custombody__ ? res.__custombody__ : JSON.stringify(res.__custombody__);
+    return typeof res.__custombody__ === "string" ? res.__custombody__ : JSON.stringify(res.__custombody__);
 });
 
 const app = express();
