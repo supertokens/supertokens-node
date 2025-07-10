@@ -114,6 +114,7 @@ export default class SuperTokensWrapper {
     static getRequestFromUserContext(
         userContext: UserContext | undefined
     ): import("./framework").BaseRequest | undefined;
+    static isRecipeInitialized(recipeId: string): boolean;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -129,6 +130,7 @@ export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
 export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
 export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
+export declare let isRecipeInitialized: typeof SuperTokensWrapper.isRecipeInitialized;
 export declare let Error: typeof SuperTokensError;
 export { default as RecipeUserId } from "./recipeUserId";
 export { User } from "./user";

@@ -171,6 +171,12 @@ export default class SuperTokensWrapper {
     static getRequestFromUserContext(userContext: UserContext | undefined) {
         return SuperTokens.getInstanceOrThrowError().getRequestFromUserContext(userContext);
     }
+
+    static isRecipeInitialized(recipeId: string) {
+        return SuperTokens.getInstanceOrThrowError()
+            .recipeModules.map((recipe) => recipe.getRecipeId())
+            .includes(recipeId);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -200,6 +206,8 @@ export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
 export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
 
 export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
+
+export let isRecipeInitialized = SuperTokensWrapper.isRecipeInitialized;
 
 export let Error = SuperTokensWrapper.Error;
 

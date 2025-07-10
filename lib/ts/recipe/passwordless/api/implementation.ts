@@ -70,7 +70,7 @@ export default function getAPIImplementation(): APIInterface {
                                   linkCode: input.linkCode,
                                   tenantId: input.tenantId,
                                   userContext: input.userContext,
-                              }
+                              },
                     );
                 }
 
@@ -111,7 +111,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 const loginMethod = sessionUser.loginMethods.find(
-                    (lm) => lm.recipeUserId.getAsString() === input.session!.getRecipeUserId().getAsString()
+                    (lm) => lm.recipeUserId.getAsString() === input.session!.getRecipeUserId().getAsString(),
                 );
                 if (loginMethod === undefined) {
                     throw new SessionError({
@@ -187,7 +187,7 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(
                     preAuthChecks,
                     errorCodeMap,
-                    "SIGN_IN_UP_NOT_ALLOWED"
+                    "SIGN_IN_UP_NOT_ALLOWED",
                 );
             }
 
@@ -218,7 +218,7 @@ export default function getAPIImplementation(): APIInterface {
                           shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
-                      }
+                      },
             );
 
             if (
@@ -254,7 +254,7 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(
                     postAuthChecks,
                     errorCodeMap,
-                    "SIGN_IN_UP_NOT_ALLOWED"
+                    "SIGN_IN_UP_NOT_ALLOWED",
                 );
             }
 
@@ -298,11 +298,11 @@ export default function getAPIImplementation(): APIInterface {
                 factorIds = getEnabledPwlessFactors(input.options.config);
                 if (accountInfo.email !== undefined) {
                     factorIds = factorIds.filter((factor) =>
-                        [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL].includes(factor)
+                        [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL].includes(factor),
                     );
                 } else {
                     factorIds = factorIds.filter((factor) =>
-                        [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE].includes(factor)
+                        [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE].includes(factor),
                     );
                 }
             }
@@ -330,7 +330,7 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(
                     preAuthChecks,
                     errorCodeMap,
-                    "SIGN_IN_UP_NOT_ALLOWED"
+                    "SIGN_IN_UP_NOT_ALLOWED",
                 );
             }
 
@@ -344,7 +344,7 @@ export default function getAPIImplementation(): APIInterface {
                                   ? undefined
                                   : await input.options.config.getCustomUserInputCode(
                                         input.tenantId,
-                                        input.userContext
+                                        input.userContext,
                                     ),
                           session: input.session,
                           shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
@@ -358,12 +358,12 @@ export default function getAPIImplementation(): APIInterface {
                                   ? undefined
                                   : await input.options.config.getCustomUserInputCode(
                                         input.tenantId,
-                                        input.userContext
+                                        input.userContext,
                                     ),
                           session: input.session,
                           shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                           tenantId: input.tenantId,
-                      }
+                      },
             );
 
             if (response.status !== "OK") {
@@ -454,7 +454,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext: input.userContext,
             });
             const userExists = users.some((u) =>
-                u.loginMethods.some((lm) => lm.recipeId === "passwordless" && lm.hasSameEmailAs(input.email))
+                u.loginMethods.some((lm) => lm.recipeId === "passwordless" && lm.hasSameEmailAs(input.email)),
             );
 
             return {
@@ -470,7 +470,7 @@ export default function getAPIImplementation(): APIInterface {
                     // tenantId: input.tenantId,
                 },
                 false,
-                input.userContext
+                input.userContext,
             );
 
             return {
@@ -513,7 +513,7 @@ export default function getAPIImplementation(): APIInterface {
                 },
                 userWithMatchingLoginMethod?.user,
                 true,
-                input.userContext
+                input.userContext,
             );
 
             if (authTypeInfo.status === "LINKING_TO_SESSION_USER_FAILED") {
@@ -574,7 +574,7 @@ export default function getAPIImplementation(): APIInterface {
                             factorIds,
                             input.tenantId,
                             false,
-                            input.userContext
+                            input.userContext,
                         );
                     }
 
@@ -629,7 +629,8 @@ export default function getAPIImplementation(): APIInterface {
                             userContext: input.userContext,
                         });
                     } else {
-                        logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
+                        logDebugMessage(`Sending passwordless login email to ${deviceInfo.email}`);
+
                         await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                             type: "PASSWORDLESS_LOGIN",
                             isFirstFactor: authTypeInfo.isFirstFactor,
@@ -666,8 +667,8 @@ async function getPasswordlessUserByAccountInfo(input: {
     });
     logDebugMessage(
         `getPasswordlessUserByAccountInfo got ${existingUsers.length} from core resp ${JSON.stringify(
-            input.accountInfo
-        )}`
+            input.accountInfo,
+        )}`,
     );
     const usersWithMatchingLoginMethods = existingUsers
         .map((user) => ({
@@ -676,17 +677,17 @@ async function getPasswordlessUserByAccountInfo(input: {
                 (lm) =>
                     lm.recipeId === "passwordless" &&
                     (lm.hasSameEmailAs(input.accountInfo.email) ||
-                        lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
+                        lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber)),
             )!,
         }))
         .filter(({ loginMethod }) => loginMethod !== undefined);
 
     logDebugMessage(
-        `getPasswordlessUserByAccountInfo ${usersWithMatchingLoginMethods.length} has matching login methods`
+        `getPasswordlessUserByAccountInfo ${usersWithMatchingLoginMethods.length} has matching login methods`,
     );
     if (usersWithMatchingLoginMethods.length > 1) {
         throw new Error(
-            "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
+            "This should never happen: multiple users exist matching the accountInfo in passwordless createCode",
         );
     }
     return usersWithMatchingLoginMethods[0];
