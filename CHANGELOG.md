@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Refactor the AccountLinking recipe to be automatically nitialized on SuperKokens init
 -   Upgrade typedoc and the refrence docs
+-   Add a method for verifying if a recipe is initialized or not
 
 ## [23.0.0] - 2025-06-27
 
