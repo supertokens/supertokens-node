@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+-   Added register credential endpoint for the WebAuthn recipe
+
 ## [23.0.0] - 2025-06-27
 
 -   The `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `acceptLoginRequest`, `rejectLoginRequest` and `introspectToken` can now possibly return an `ErrorOAuth2`.
@@ -970,7 +972,7 @@ Session.init({
                             input.userId,
                             input.recipeUserId,
                             input.tenantId,
-                            input.userContext
+                            input.userContext,
                         )),
                     };
 
@@ -998,7 +1000,7 @@ Session.init({
                             input.recipeUserId,
                             input.tenantId,
                             input.accessTokenPayload,
-                            input.userContext
+                            input.userContext,
                         )),
                     };
 
