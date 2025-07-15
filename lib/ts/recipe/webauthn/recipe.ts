@@ -27,6 +27,7 @@ import {
     GENERATE_RECOVER_ACCOUNT_TOKEN_API,
     RECOVER_ACCOUNT_API,
     SIGNUP_EMAIL_EXISTS_API,
+    REGISTER_CREDENTIAL_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -35,6 +36,7 @@ import signInOptionsAPI from "./api/signInOptions";
 import generateRecoverAccountTokenAPI from "./api/generateRecoverAccountToken";
 import recoverAccountAPI from "./api/recoverAccount";
 import emailExistsAPI from "./api/emailExists";
+import registerCredentialAPI from "./api/registerCredential";
 import { isTestEnv } from "../../utils";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -295,6 +297,12 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(REGISTER_CREDENTIAL_API),
+                id: REGISTER_CREDENTIAL_API,
+                disabled: this.apiImpl.registerCredentialPOST === undefined,
+            },
         ];
     };
 
@@ -332,6 +340,8 @@ export default class Recipe extends RecipeModule {
             return await recoverAccountAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
+        } else if (id === REGISTER_CREDENTIAL_API) {
+            return await registerCredentialAPI(this.apiImpl, tenantId, options, userContext);
         } else return false;
     };
 

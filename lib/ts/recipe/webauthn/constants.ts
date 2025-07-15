@@ -27,6 +27,8 @@ export const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 
 export const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
 
+export const REGISTER_CREDENTIAL_API = "/webauthn/credential";
+
 // 60 seconds (60 * 1000ms)
 export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 60000;
 export const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";
