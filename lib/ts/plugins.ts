@@ -155,6 +155,13 @@ export function loadPlugins({
         }
     }
 
+    const duplicatePluginIds = finalPluginList.filter((plugin, index) =>
+        finalPluginList.some((elem, idx) => elem.id === plugin.id && idx !== index)
+    );
+    if (duplicatePluginIds.length > 0) {
+        throw new Error(`Duplicate plugin IDs: ${duplicatePluginIds.map((plugin) => plugin.id).join(", ")}`);
+    }
+
     const processedPlugins: SuperTokensPublicPlugin[] = finalPluginList.map(getPublicPlugin);
 
     for (const [pluginIndex, plugin] of finalPluginList.entries()) {

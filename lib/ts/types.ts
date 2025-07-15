@@ -128,7 +128,7 @@ export type PluginRouteHandler = {
 };
 
 export type SuperTokensPlugin = {
-    id: string; // TODO: validate that no two plugins have the same id
+    id: string;
     version?: string;
     compatibleSDKVersions?: string | string[]; // match the syntax of the engines field in package.json
     init?: (config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => void;
