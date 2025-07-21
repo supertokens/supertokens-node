@@ -17,7 +17,6 @@ export class UserRoleClaimClass extends PrimitiveArrayClaim<string> {
                 });
                 return res.roles;
             },
-            defaultMaxAgeInSeconds: 300,
         });
     }
 }

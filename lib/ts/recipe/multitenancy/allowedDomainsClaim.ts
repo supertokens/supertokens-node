@@ -16,7 +16,7 @@ export class AllowedDomainsClaimClass extends PrimitiveArrayClaim<string> {
                 }
                 return await recipe.getAllowedDomainsForTenantId(tenantId, userContext);
             },
-            defaultMaxAgeInSeconds: 3600,
+            defaultMaxAgeInSeconds: undefined,
         });
     }
 }
