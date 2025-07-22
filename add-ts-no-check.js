@@ -12,6 +12,7 @@ glob(__dirname + "/lib/**/*.d.ts", (err, files) => {
                 newContents += `\n${line}`;
             }
         }
+        newContents = newContents.replaceAll("\n// @ts-nocheck", "");
         writeFileSync(file, newContents);
     }
 });

@@ -8,16 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 -   Refactor the AccountLinking recipe to be automatically nitialized on SuperKokens init
--   Upgrade typedoc and the refrence docs
+-   Upgrade typedoc and the reference docs
 -   Add a method for verifying if a recipe is initialized or not
+-   Added register credential endpoint for the WebAuthn recipe
 
 ## [23.0.0] - 2025-06-27
 
+### Breaking changes
+
 -   The `getConsentRequest`, `acceptConsentRequest`, `rejectConsentRequest`, `acceptLoginRequest`, `rejectLoginRequest` and `introspectToken` can now possibly return an `ErrorOAuth2`.
 -   The `/oauth/introspect` can now possibly return an `ErrorAuth2`.
--   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
+-   Removed default defaultMaxAge from all built-in claims/validators. You can optionally set them when adding the validators. This should help with unexpected API calls during session verification.
+
+### Refactors
+
 -   Refactors querier to use dynamic request body and response body types inference.
 -   Refactor internal network calls made with querier to use the new dynamic types.
+-   The `User` class now has a `fromApi` function to normalize the user object returned from the API.
 -   Added experimental support for plugins. Please note that the experimental nature of this feature means that we might break the interface in non-major version updates.
 
 ## [22.1.1] - 2025-06-20
@@ -974,7 +981,7 @@ Session.init({
                             input.userId,
                             input.recipeUserId,
                             input.tenantId,
-                            input.userContext,
+                            input.userContext
                         )),
                     };
 
@@ -1002,7 +1009,7 @@ Session.init({
                             input.recipeUserId,
                             input.tenantId,
                             input.accessTokenPayload,
-                            input.userContext,
+                            input.userContext
                         )),
                     };
 

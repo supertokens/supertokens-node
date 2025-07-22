@@ -6,6 +6,7 @@ export declare const SIGN_IN_API = "/webauthn/signin";
 export declare const GENERATE_RECOVER_ACCOUNT_TOKEN_API = "/user/webauthn/reset/token";
 export declare const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 export declare const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
+export declare const REGISTER_CREDENTIAL_API = "/webauthn/credential";
 export declare const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 60000;
 export declare const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";
 export declare const DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY = "required";
