@@ -174,7 +174,7 @@ export default function getAPIImplementation(): APIInterface {
             // here to be on the safe side.
             if (!email) {
                 throw new Error(
-                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
+                    "Should never come here since we already check that the email value is a string in validateEmailAddress",
                 );
             }
 
@@ -208,7 +208,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 if (
                     conflictingUsers.some((u) =>
-                        u.loginMethods.some((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email))
+                        u.loginMethods.some((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email)),
                     )
                 ) {
                     return {
@@ -355,7 +355,7 @@ export default function getAPIImplementation(): APIInterface {
 
             // we find the email of the user that has the same credentialId as the one we are verifying
             const email = authenticatingUser.user.loginMethods.find(
-                (lm) => lm.recipeId === "webauthn" && lm.webauthn?.credentialIds.includes(credential.id)
+                (lm) => lm.recipeId === "webauthn" && lm.webauthn?.credentialIds.includes(credential.id),
             )?.email;
             if (email === undefined) {
                 throw new Error("This should never happen: webauthn user has no email");
@@ -472,14 +472,14 @@ export default function getAPIImplementation(): APIInterface {
             // in validation but kept here to be safe.
             if (typeof email !== "string") {
                 throw new Error(
-                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError",
                 );
             }
 
             // this function will be reused in different parts of the flow below..
             async function generateAndSendRecoverAccountToken(
                 primaryUserId: string,
-                recipeUserId: RecipeUserId | undefined
+                recipeUserId: RecipeUserId | undefined,
             ): Promise<{
                 status: "OK";
             }> {
@@ -495,7 +495,7 @@ export default function getAPIImplementation(): APIInterface {
                     logDebugMessage(
                         `Recover account email not sent, unknown user id: ${
                             recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
-                        }`
+                        }`,
                     );
                     return {
                         status: "OK",
@@ -543,7 +543,7 @@ export default function getAPIImplementation(): APIInterface {
             let webauthnAccount: RecipeLevelUser | undefined = undefined;
             for (let i = 0; i < users.length; i++) {
                 const webauthnAccountTmp = users[i].loginMethods.find(
-                    (l) => l.recipeId === "webauthn" && l.hasSameEmailAs(email)
+                    (l) => l.recipeId === "webauthn" && l.hasSameEmailAs(email),
                 );
                 if (webauthnAccountTmp !== undefined) {
                     webauthnAccount = webauthnAccountTmp;
@@ -565,7 +565,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
                 return await generateAndSendRecoverAccountToken(
                     webauthnAccount.recipeUserId.getAsString(),
-                    webauthnAccount.recipeUserId
+                    webauthnAccount.recipeUserId,
                 );
             }
 
@@ -607,7 +607,7 @@ export default function getAPIImplementation(): APIInterface {
                     primaryUserAssociatedWithEmail,
                     undefined,
                     tenantId,
-                    userContext
+                    userContext,
                 );
 
             // Now we need to check that if there exists any webauthn user at all
@@ -625,7 +625,7 @@ export default function getAPIImplementation(): APIInterface {
                 // not generate a recover account reset token
                 if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
                     logDebugMessage(
-                        `Recover account email not sent, since webauthn user didn't exist, and account linking not enabled`
+                        `Recover account email not sent, since webauthn user didn't exist, and account linking not enabled`,
                     );
                     return {
                         status: "OK",
@@ -649,7 +649,7 @@ export default function getAPIImplementation(): APIInterface {
                     return await generateAndSendRecoverAccountToken(primaryUserAssociatedWithEmail.id, undefined);
                 } else {
                     logDebugMessage(
-                        `Recover account email not sent, isSignUpAllowed returned false for email: ${email}`
+                        `Recover account email not sent, isSignUpAllowed returned false for email: ${email}`,
                     );
                     return {
                         status: "OK",
@@ -669,7 +669,7 @@ export default function getAPIImplementation(): APIInterface {
             if (areTheTwoAccountsLinked) {
                 return await generateAndSendRecoverAccountToken(
                     primaryUserAssociatedWithEmail.id,
-                    webauthnAccount.recipeUserId
+                    webauthnAccount.recipeUserId,
                 );
             }
 
@@ -699,7 +699,7 @@ export default function getAPIImplementation(): APIInterface {
                 // so no need to check for anything
                 return await generateAndSendRecoverAccountToken(
                     webauthnAccount.recipeUserId.getAsString(),
-                    webauthnAccount.recipeUserId
+                    webauthnAccount.recipeUserId,
                 );
             }
 
@@ -708,13 +708,13 @@ export default function getAPIImplementation(): APIInterface {
                 // does not care about that, then we should just continue with token generation
                 return await generateAndSendRecoverAccountToken(
                     primaryUserAssociatedWithEmail.id,
-                    webauthnAccount.recipeUserId
+                    webauthnAccount.recipeUserId,
                 );
             }
 
             return await generateAndSendRecoverAccountToken(
                 primaryUserAssociatedWithEmail.id,
-                webauthnAccount.recipeUserId
+                webauthnAccount.recipeUserId,
             );
         },
 
@@ -751,7 +751,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             async function doRegisterCredentialAndVerifyEmailAndTryLinkIfNotPrimary(
-                recipeUserId: RecipeUserId
+                recipeUserId: RecipeUserId,
             ): Promise<
                 | {
                       status: "OK";
@@ -891,7 +891,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 if (webauthnUserIsLinkedToExistingUser) {
                     return doRegisterCredentialAndVerifyEmailAndTryLinkIfNotPrimary(
-                        new RecipeUserId(userIdForWhomTokenWasGenerated)
+                        new RecipeUserId(userIdForWhomTokenWasGenerated),
                     );
                 } else {
                     // this means that the existingUser does not have an webauthn user associated
@@ -937,7 +937,7 @@ export default function getAPIImplementation(): APIInterface {
                         // as verified.
                         await markEmailAsVerified(
                             createUserResponse.user.loginMethods[0].recipeUserId,
-                            tokenConsumptionResponse.email
+                            tokenConsumptionResponse.email,
                         );
                         const updatedUser = await getUser(createUserResponse.user.id, userContext);
                         if (updatedUser === undefined) {
@@ -978,9 +978,29 @@ export default function getAPIImplementation(): APIInterface {
                 // Linking to an existing account will be done after the user goes through the email
                 // verification flow once they log in (if applicable).
                 return doRegisterCredentialAndVerifyEmailAndTryLinkIfNotPrimary(
-                    new RecipeUserId(userIdForWhomTokenWasGenerated)
+                    new RecipeUserId(userIdForWhomTokenWasGenerated),
                 );
             }
+        },
+
+        listCredentialsGET: async function ({ options, userContext, session }) {
+            const credentials = await options.recipeImplementation.listCredentials({
+                recipeUserId: session.getRecipeUserId().getAsString(),
+                userContext,
+            });
+            if (credentials.status !== "OK") {
+                // TODO BETTER ERROR HANDLING
+                return { status: "GENERAL_ERROR", message: "Internal server error" };
+            }
+
+            return {
+                status: "OK",
+                credentials: credentials.credentials.map((credential) => ({
+                    webauthnCredentialId: credential.webauthnCredentialId,
+                    relyingPartyId: credential.relyingPartyId,
+                    createdAt: credential.createdAt,
+                })),
+            };
         },
 
         registerCredentialPOST: async function ({
@@ -1016,7 +1036,7 @@ export default function getAPIImplementation(): APIInterface {
             // here to be on the safe side.
             if (!email) {
                 throw new Error(
-                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
+                    "Should never come here since we already check that the email value is a string in validateEmailAddress",
                 );
             }
 
@@ -1032,13 +1052,24 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(
                     registerCredentialResponse,
                     errorCodeMap,
-                    "REGISTER_CREDENTIAL_NOT_ALLOWED"
+                    "REGISTER_CREDENTIAL_NOT_ALLOWED",
                 );
             }
 
             return {
                 status: "OK",
             };
+        },
+        removeCredentialPOST: async function ({ webauthnCredentialId, options, userContext, session }) {
+            const removeCredentialResponse = await options.recipeImplementation.removeCredential({
+                webauthnCredentialId,
+                recipeUserId: session.getRecipeUserId().getAsString(),
+                userContext,
+            });
+            if (removeCredentialResponse.status !== "OK") {
+                return removeCredentialResponse;
+            }
+            return { status: "OK" };
         },
     };
 }

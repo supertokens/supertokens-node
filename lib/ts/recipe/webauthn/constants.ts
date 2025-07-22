@@ -27,6 +27,10 @@ export const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 
 export const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
 
+export const LIST_CREDENTIALS_API = "/webauthn/credentials";
+
+export const REMOVE_CREDENTIAL_API = "/webauthn/credentials/remove";
+
 // 60 seconds (60 * 1000ms)
 export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 60000;
 export const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";

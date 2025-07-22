@@ -29,13 +29,13 @@ export type TypeNormalisedInput = {
     getRelyingPartyName: TypeNormalisedInputRelyingPartyName;
     getOrigin: TypeNormalisedInputGetOrigin;
     getEmailDeliveryConfig: (
-        isInServerlessEnv: boolean
+        isInServerlessEnv: boolean,
     ) => EmailDeliveryTypeInputWithService<TypeWebauthnEmailDeliveryInput>;
     validateEmailAddress: TypeNormalisedInputValidateEmailAddress;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>,
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
@@ -62,7 +62,7 @@ export type TypeNormalisedInputGetOrigin = (input: {
 export type TypeNormalisedInputValidateEmailAddress = (
     email: string,
     tenantId: string,
-    userContext: UserContext
+    userContext: UserContext,
 ) => Promise<string | undefined> | string | undefined;
 
 export type TypeInput = {
@@ -74,7 +74,7 @@ export type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>,
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
@@ -97,7 +97,7 @@ export type TypeInputGetOrigin = (input: {
 export type TypeInputValidateEmailAddress = (
     email: string,
     tenantId: string,
-    userContext: UserContext
+    userContext: UserContext,
 ) => Promise<string | undefined> | string | undefined;
 
 type RegisterOptionsErrorResponse =
@@ -194,7 +194,7 @@ export type RecipeInterface = {
                   displayName: string | undefined;
                   email: string;
               }
-        )
+        ),
     ): Promise<
         | {
               status: "OK";
@@ -472,6 +472,8 @@ type RegisterCredentialPOSTErrorResponse =
     | { status: "INVALID_OPTIONS_ERROR" }
     | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
+type RemoveCredentialPOSTErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
+
 export type APIInterface = {
     registerOptionsPOST:
         | undefined
@@ -480,7 +482,7 @@ export type APIInterface = {
                   tenantId: string;
                   options: APIOptions;
                   userContext: UserContext;
-              } & ({ email: string; displayName?: string } | { recoverAccountToken: string })
+              } & ({ email: string; displayName?: string } | { recoverAccountToken: string }),
           ) => Promise<
               | {
                     status: "OK";
@@ -604,6 +606,20 @@ export type APIInterface = {
               | RecoverAccountPOSTErrorResponse
           >);
 
+    listCredentialsGET:
+        | undefined
+        | ((input: { session: SessionContainerInterface; options: APIOptions; userContext: UserContext }) => Promise<
+              | {
+                    status: "OK";
+                    credentials: {
+                        webauthnCredentialId: string;
+                        relyingPartyId: string;
+                        createdAt: number;
+                    }[];
+                }
+              | GeneralErrorResponse
+          >);
+
     registerCredentialPOST:
         | undefined
         | ((input: {
@@ -619,6 +635,21 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
               | RegisterCredentialPOSTErrorResponse
+          >);
+
+    removeCredentialPOST:
+        | undefined
+        | ((input: {
+              webauthnCredentialId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+              | RemoveCredentialPOSTErrorResponse
           >);
 
     emailExistsGET:
