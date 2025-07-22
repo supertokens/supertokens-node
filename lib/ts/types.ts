@@ -149,7 +149,7 @@ export type SuperTokensPlugin = {
               sdkVersion: string
           ) => { status: "OK"; routeHandlers: PluginRouteHandler[] } | { status: "ERROR"; message: string })
         | PluginRouteHandler[];
-    config?: (config: SuperTokensPublicConfig) => SuperTokensPublicConfig | undefined;
+    config?: (config: SuperTokensPublicConfig) => Omit<SuperTokensPublicConfig, "appInfo"> | undefined;
     exports?: Record<string, any>;
 };
 
@@ -162,7 +162,13 @@ export const nonPublicConfigProperties = ["recipeList", "experimental"] as const
 
 export type NonPublicConfigPropertiesType = typeof nonPublicConfigProperties[number];
 
-export type SuperTokensPublicConfig = Omit<TypeInput, NonPublicConfigPropertiesType>;
+export type SuperTokensConfigWithNormalisedAppInfo = Omit<TypeInput, "appInfo"> & {
+    appInfo: NormalisedAppinfo;
+};
+
+export type SuperTokensPublicConfig = Omit<Omit<TypeInput, NonPublicConfigPropertiesType>, "appInfo"> & {
+    appInfo: NormalisedAppinfo;
+};
 
 export type TypeInput = {
     supertokens?: SuperTokensInfo;

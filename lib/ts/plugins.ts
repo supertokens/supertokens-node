@@ -1,8 +1,9 @@
 import OverrideableBuilder from "supertokens-js-override";
-import { SuperTokensPlugin, SuperTokensPublicConfig, SuperTokensPublicPlugin } from ".";
-import { PluginRouteHandler, AllRecipeConfigs } from "./types";
+import { SuperTokensConfig, SuperTokensPlugin, SuperTokensPublicPlugin } from ".";
+import { PluginRouteHandler, AllRecipeConfigs, TypeInput, NormalisedAppinfo } from "./types";
 import { version } from "./version";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import { getPublicConfig } from "./utils";
 
 export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin {
     return {
@@ -22,12 +23,21 @@ export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlu
  * @param sdkVersion Current SDK version
  * @returns Resolved list of dependencies for the plugin
  */
-export function getPluginDependencies(
-    plugin: SuperTokensPlugin,
-    publicConfig: SuperTokensPublicConfig,
-    pluginsAbove: SuperTokensPlugin[],
-    sdkVersion: string
-): SuperTokensPlugin[] {
+export function getPluginDependencies({
+    plugin,
+    config,
+    pluginsAbove,
+    sdkVersion,
+    normalisedAppInfo,
+}: {
+    plugin: SuperTokensPlugin;
+    config: SuperTokensConfig;
+    normalisedAppInfo: NormalisedAppinfo;
+    pluginsAbove: SuperTokensPlugin[];
+    sdkVersion: string;
+}): SuperTokensPlugin[] {
+    const publicConfig = getPublicConfig({ ...config, appInfo: normalisedAppInfo });
+
     function recurseDependencies(
         plugin: SuperTokensPlugin,
         dependencies?: SuperTokensPlugin[],
@@ -120,20 +130,20 @@ export function applyPlugins<T extends keyof AllRecipeConfigs>(
  */
 export function loadPlugins({
     plugins,
-    publicConfig,
+    config,
+    normalisedAppInfo,
 }: {
     plugins: SuperTokensPlugin[];
-    publicConfig: SuperTokensPublicConfig;
+    config: TypeInput;
+    normalisedAppInfo: NormalisedAppinfo;
 }): {
-    publicConfig: SuperTokensPublicConfig;
+    config: TypeInput;
     pluginRouteHandlers: PluginRouteHandler[];
     overrideMaps: Record<string, any>[];
 } {
     const inputPluginList = plugins ?? [];
-    const pluginRouteHandlers: PluginRouteHandler[] = [];
     const finalPluginList: SuperTokensPlugin[] = [];
     const seenPlugins: Set<string> = new Set();
-
     for (const plugin of inputPluginList) {
         if (seenPlugins.has(plugin.id)) {
             continue;
@@ -144,10 +154,20 @@ export function loadPlugins({
             : [plugin.compatibleSDKVersions];
         if (!versionContraints.includes(version)) {
             // TODO: better checks
-            throw new Error("Plugin version mismatch");
+            throw new Error(
+                `Plugin version mismatch. Version ${version} not found in compatible versions: ${versionContraints.join(
+                    ", "
+                )}`
+            );
         }
 
-        const dependencies = getPluginDependencies(plugin, publicConfig, finalPluginList, version);
+        const dependencies = getPluginDependencies({
+            plugin,
+            config,
+            pluginsAbove: finalPluginList,
+            sdkVersion: version,
+            normalisedAppInfo,
+        });
         finalPluginList.push(...dependencies);
 
         for (const dep of dependencies) {
@@ -164,10 +184,18 @@ export function loadPlugins({
 
     const processedPlugins: SuperTokensPublicPlugin[] = finalPluginList.map(getPublicPlugin);
 
+    let _config = { ...config };
+    const pluginRouteHandlers: PluginRouteHandler[] = [];
     for (const [pluginIndex, plugin] of finalPluginList.entries()) {
         if (plugin.config) {
-            publicConfig = { ...publicConfig, ...plugin.config(publicConfig) };
+            // @ts-ignore
+            const { appInfo, ...pluginConfigOverride } = plugin.config(
+                getPublicConfig({ ..._config, appInfo: normalisedAppInfo })
+            );
+            _config = { ..._config, ...pluginConfigOverride };
         }
+
+        const publicConfig = getPublicConfig({ ..._config, appInfo: normalisedAppInfo });
 
         if (plugin.routeHandlers) {
             let handlers: PluginRouteHandler[] = [];
@@ -197,7 +225,7 @@ export function loadPlugins({
         .map((p) => p.overrideMap) as NonNullable<SuperTokensPlugin["overrideMap"]>[];
 
     return {
-        publicConfig,
+        config: _config,
         pluginRouteHandlers,
         overrideMaps,
     };

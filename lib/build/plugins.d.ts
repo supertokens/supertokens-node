@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { SuperTokensPlugin, SuperTokensPublicConfig, SuperTokensPublicPlugin } from ".";
-import { PluginRouteHandler, AllRecipeConfigs } from "./types";
+import { SuperTokensConfig, SuperTokensPlugin, SuperTokensPublicPlugin } from ".";
+import { PluginRouteHandler, AllRecipeConfigs, TypeInput, NormalisedAppinfo } from "./types";
 export declare function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin;
 /**
  * Resolve plugin dependencies recursively, ensuring that each plugin is only added once.
@@ -10,12 +10,19 @@ export declare function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensP
  * @param sdkVersion Current SDK version
  * @returns Resolved list of dependencies for the plugin
  */
-export declare function getPluginDependencies(
-    plugin: SuperTokensPlugin,
-    publicConfig: SuperTokensPublicConfig,
-    pluginsAbove: SuperTokensPlugin[],
-    sdkVersion: string
-): SuperTokensPlugin[];
+export declare function getPluginDependencies({
+    plugin,
+    config,
+    pluginsAbove,
+    sdkVersion,
+    normalisedAppInfo,
+}: {
+    plugin: SuperTokensPlugin;
+    config: SuperTokensConfig;
+    normalisedAppInfo: NormalisedAppinfo;
+    pluginsAbove: SuperTokensPlugin[];
+    sdkVersion: string;
+}): SuperTokensPlugin[];
 export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
     recipeId: T,
     config: AllRecipeConfigs[T] | undefined,
@@ -26,12 +33,14 @@ export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
  */
 export declare function loadPlugins({
     plugins,
-    publicConfig,
+    config,
+    normalisedAppInfo,
 }: {
     plugins: SuperTokensPlugin[];
-    publicConfig: SuperTokensPublicConfig;
+    config: TypeInput;
+    normalisedAppInfo: NormalisedAppinfo;
 }): {
-    publicConfig: SuperTokensPublicConfig;
+    config: TypeInput;
     pluginRouteHandlers: PluginRouteHandler[];
     overrideMaps: Record<string, any>[];
 };
