@@ -22,6 +22,7 @@ let UserMetaDataRecipeRaw = require("../../lib/build/recipe/usermetadata/recipe"
 let OpenIdRecipeRaw = require("../../lib/build/recipe/openid/recipe").default;
 let OAuth2ProviderRecipeRaw = require("../../lib/build/recipe/oauth2provider/recipe").default;
 let JWTRecipeRaw = require("../../lib/build/recipe/jwt/recipe").default;
+let AccountLinkingRecipeRaw = require("../../lib/build/recipe/accountlinking/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -251,6 +252,7 @@ app.post("/test/setup/st", async (req, res) => {
     OpenIdRecipeRaw.reset();
     OAuth2ProviderRecipeRaw.reset();
     JWTRecipeRaw.reset();
+    AccountLinkingRecipeRaw.reset();
 
     SuperTokens.init(
         getConfig(req.body.coreUrl, req.body.enableAntiCsrf, req.body.enableJWT, req.body.jwtPropertyName)

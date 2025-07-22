@@ -124,13 +124,14 @@ const router = Router()
             logDebugMessage("AccountLinking:verifyEmailForRecipeUserIfLinkedAccountsAreVerified %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const user = new User(req.body.user);
-            const response = await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified(
-                {
-                    user,
-                    recipeUserId,
-                    userContext: req.body.userContext,
-                }
-            );
+            const response =
+                await AccountLinkingRecipe.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified(
+                    {
+                        user,
+                        recipeUserId,
+                        userContext: req.body.userContext,
+                    }
+                );
             res.json(response);
         } catch (e) {
             next(e);

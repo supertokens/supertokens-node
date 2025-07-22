@@ -43,7 +43,7 @@ export default class Wrapper {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
-        const linkRes = await Recipe.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+        const linkRes = await Recipe.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
             tenantId,
             inputUser: user,
             session,
@@ -74,7 +74,7 @@ export default class Wrapper {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
-        return await Recipe.getInstance().getPrimaryUserThatCanBeLinkedToRecipeUserId({
+        return await Recipe.getInstanceOrThrowError().getPrimaryUserThatCanBeLinkedToRecipeUserId({
             tenantId,
             user,
             userContext: getUserContext(userContext),
@@ -82,21 +82,21 @@ export default class Wrapper {
     }
 
     static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
-        return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canCreatePrimaryUser({
             recipeUserId,
             userContext: getUserContext(userContext),
         });
     }
 
     static async createPrimaryUser(recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
-        return await Recipe.getInstance().recipeInterfaceImpl.createPrimaryUser({
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
             userContext: getUserContext(userContext),
         });
     }
 
     static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: Record<string, any>) {
-        return await Recipe.getInstance().recipeInterfaceImpl.canLinkAccounts({
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
             primaryUserId,
             userContext: getUserContext(userContext),
@@ -104,7 +104,7 @@ export default class Wrapper {
     }
 
     static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: Record<string, any>) {
-        return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId,
             userContext: getUserContext(userContext),
@@ -112,7 +112,7 @@ export default class Wrapper {
     }
 
     static async unlinkAccount(recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
-        return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccount({
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unlinkAccount({
             recipeUserId,
             userContext: getUserContext(userContext),
         });
@@ -125,7 +125,7 @@ export default class Wrapper {
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
-        return await Recipe.getInstance().isSignUpAllowed({
+        return await Recipe.getInstanceOrThrowError().isSignUpAllowed({
             newUser,
             isVerified,
             session,
@@ -146,7 +146,7 @@ export default class Wrapper {
             throw new Error("Unknown recipeUserId");
         }
 
-        return await Recipe.getInstance().isSignInAllowed({
+        return await Recipe.getInstanceOrThrowError().isSignInAllowed({
             user,
             accountInfo: user.loginMethods.find((lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString())!,
             session,
@@ -169,7 +169,7 @@ export default class Wrapper {
             throw new Error("Passed in recipe user id does not exist");
         }
 
-        const res = await Recipe.getInstance().isEmailChangeAllowed({
+        const res = await Recipe.getInstanceOrThrowError().isEmailChangeAllowed({
             user,
             newEmail,
             isVerified,

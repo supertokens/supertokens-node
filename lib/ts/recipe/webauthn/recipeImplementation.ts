@@ -190,7 +190,7 @@ export default function getRecipeInterface(
             )!;
 
             if (!loginMethod.verified) {
-                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                     user: response.user,
                     recipeUserId: response.recipeUserId,
                     userContext,

@@ -24,7 +24,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
-import supertokens from "../../supertokens";
 import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
@@ -85,15 +84,11 @@ export default class Recipe extends RecipeModule {
     // The side effect of this is that if there are any APIs or errors specific to this recipe,
     // those won't be handled by the supertokens middleware and error handler (cause this recipe
     // is not in the recipeList).
-    static getInstance(): Recipe {
-        if (Recipe.instance === undefined) {
-            Recipe.init()(
-                supertokens.getInstanceOrThrowError().appInfo,
-                supertokens.getInstanceOrThrowError().isInServerlessEnv,
-                supertokens.getInstanceOrThrowError().pluginOverrideMaps
-            );
+    static getInstanceOrThrowError(): Recipe {
+        if (Recipe.instance !== undefined) {
+            return Recipe.instance;
         }
-        return Recipe.instance!;
+        throw new Error("Initialisation not done. Did you forget to call the AccountLinking.init function?");
     }
 
     getAPIsHandled(): APIHandled[] {

@@ -104,7 +104,7 @@ async function _getUserForRecipeId(
 }> {
     let recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 
-    const user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
+    const user = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
         userId: recipeUserId.getAsString(),
         userContext,
     });

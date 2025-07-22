@@ -20,7 +20,6 @@ import {
     SuperTokensInfo,
     UserContext,
     PluginRouteHandler,
-    SuperTokensPublicPlugin,
     SuperTokensPlugin,
 } from "./types";
 import {
@@ -30,8 +29,6 @@ import {
     sendNon200ResponseWithMessage,
     getRidFromHeader,
     isTestEnv,
-    getPublicConfig,
-    getNonPublicConfig,
 } from "./utils";
 import { loadPlugins } from "./plugins";
 import { Querier } from "./querier";
@@ -61,9 +58,6 @@ export default class SuperTokens {
 
     pluginRouteHandlers: PluginRouteHandler[];
 
-    pluginList: SuperTokensPublicPlugin[];
-
-    // needed for auto-initialization of recipes (see accountlinking recipe)
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
 
     supertokens: undefined | SuperTokensInfo;
@@ -71,19 +65,21 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
-        const { publicConfig, processedPlugins, pluginRouteHandlers, overrideMaps } = loadPlugins({
+        this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
+
+        const {
+            config: _config,
+            pluginRouteHandlers,
+            overrideMaps,
+        } = loadPlugins({
+            config,
             plugins: config.experimental?.plugins ?? [],
-            publicConfig: getPublicConfig(config),
+            normalisedAppInfo: this.appInfo,
         });
+        config = { ..._config };
 
         this.pluginRouteHandlers = pluginRouteHandlers;
         this.pluginOverrideMaps = overrideMaps;
-        this.pluginList = processedPlugins;
-
-        config = {
-            ...publicConfig,
-            ...getNonPublicConfig(config),
-        };
 
         if (config.debug === true) {
             enableDebugLogs();
@@ -106,7 +102,6 @@ export default class SuperTokens {
 
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);
-        this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
         this.supertokens = config.supertokens;
 
         Querier.init(
@@ -143,6 +138,7 @@ export default class SuperTokens {
         let oauth2Found = false;
         let openIdFound = false;
         let jwtFound = false;
+        let accountLinkingFound = false;
 
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
@@ -154,9 +150,11 @@ export default class SuperTokens {
         let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
         let OpenIdRecipe = require("./recipe/openid/recipe").default;
         let jwtRecipe = require("./recipe/jwt/recipe").default;
+        let AccountLinkingRecipe = require("./recipe/accountlinking/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps);
+
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
             } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
@@ -171,18 +169,28 @@ export default class SuperTokens {
                 openIdFound = true;
             } else if (recipeModule.getRecipeId() === jwtRecipe.RECIPE_ID) {
                 jwtFound = true;
+            } else if (recipeModule.getRecipeId() === AccountLinkingRecipe.RECIPE_ID) {
+                accountLinkingFound = true;
             }
+
             return recipeModule;
         });
 
+        if (!accountLinkingFound) {
+            this.recipeModules.push(
+                AccountLinkingRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+            );
+        }
         if (!jwtFound) {
-            this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
         }
         if (!openIdFound) {
-            this.recipeModules.push(OpenIdRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(OpenIdRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
         }
         if (!multitenancyFound) {
-            this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(
+                MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+            );
         }
         if (totpFound && !multiFactorAuthFound) {
             throw new Error("Please initialize the MultiFactorAuth recipe to use TOTP.");
@@ -190,7 +198,9 @@ export default class SuperTokens {
         if (!userMetadataFound) {
             // Initializing the user metadata recipe shouldn't cause any issues/side effects and it doesn't expose any APIs,
             // so we can just always initialize it
-            this.recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(
+                UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+            );
         }
         // While for many usecases account linking recipe also has to be initialized for MFA to function well,
         // the app doesn't have to do that if they only use TOTP (which shouldn't be that uncommon)
@@ -199,7 +209,9 @@ export default class SuperTokens {
 
         // We've decided to always initialize the OAuth2Provider recipe
         if (!oauth2Found) {
-            this.recipeModules.push(OAuth2ProviderRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            this.recipeModules.push(
+                OAuth2ProviderRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+            );
         }
         this.telemetryEnabled = config.telemetry === undefined ? !isTestEnv() : config.telemetry;
     }
@@ -236,7 +248,6 @@ export default class SuperTokens {
         }
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
-
     handleAPI = async (
         matchedRecipe: RecipeModule,
         id: string,

@@ -25,7 +25,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext,
             }
         ) {
-            const accountLinking = AccountLinking.getInstance();
+            const accountLinking = AccountLinking.getInstanceOrThrowError();
             const users = await listUsersByAccountInfo(
                 tenantId,
                 { thirdParty: { id: thirdPartyId, userId: thirdPartyUserId } },
@@ -74,7 +74,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             let userAsObj = User.fromApi(response.user);
             const recipeUserIdAsObj = new RecipeUserId(response.recipeUserId);
 
-            await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+            await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                 user: userAsObj,
                 recipeUserId: recipeUserIdAsObj,
                 userContext,

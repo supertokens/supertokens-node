@@ -118,7 +118,7 @@ export default function getRecipeInterface(
                 )!;
 
                 if (!loginMethod.verified) {
-                    await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                         user: response.user,
                         recipeUserId: response.recipeUserId,
                         userContext,
@@ -265,7 +265,7 @@ export default function getRecipeInterface(
               }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
-            const accountLinking = AccountLinking.getInstance();
+            const accountLinking = AccountLinking.getInstanceOrThrowError();
             if (input.email) {
                 const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
 
@@ -344,7 +344,7 @@ export default function getRecipeInterface(
                         status: "UNKNOWN_USER_ID_ERROR",
                     };
                 }
-                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                     user,
                     recipeUserId: input.recipeUserId,
                     userContext: input.userContext,

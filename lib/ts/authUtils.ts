@@ -179,7 +179,7 @@ export const AuthUtils = {
 
             logDebugMessage("preAuthChecks checking if the user is allowed to sign up");
             if (
-                !(await AccountLinking.getInstance().isSignUpAllowed({
+                !(await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
                     newUser: authenticatingAccountInfo,
                     isVerified: isVerified || signInVerifiesLoginMethod || verifiedInSessionUser,
                     tenantId,
@@ -193,7 +193,7 @@ export const AuthUtils = {
             // for sign ins, this is checked after the credentials have been verified
             logDebugMessage("preAuthChecks checking if the user is allowed to sign in");
             if (
-                !(await AccountLinking.getInstance().isSignInAllowed({
+                !(await AccountLinking.getInstanceOrThrowError().isSignInAllowed({
                     user: authenticatingUser,
                     accountInfo: authenticatingAccountInfo,
                     signInVerifiesLoginMethod,
@@ -339,12 +339,13 @@ export const AuthUtils = {
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired called with ${JSON.stringify(accountInfo)}`
             );
-            const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId,
-                accountInfo,
-                doUnionOfAccountInfo: true,
-                userContext: userContext,
-            });
+            const existingUsers =
+                await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo,
+                    doUnionOfAccountInfo: true,
+                    userContext: userContext,
+                });
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired got ${existingUsers.length} users from the core resp`
             );
@@ -531,7 +532,7 @@ export const AuthUtils = {
                 return { status: "OK", isFirstFactor: true };
             }
 
-            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
+            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstanceOrThrowError().config)) {
                 if (shouldTryLinkingWithSessionUser === true) {
                     throw new Error(
                         "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
@@ -607,7 +608,7 @@ export const AuthUtils = {
 
             // We check if the app intends to link these two accounts
             // Note: in some cases if the accountInfo already belongs to a primary user
-            const shouldLink = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+            const shouldLink = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 sessionUser,
                 session,
@@ -718,7 +719,7 @@ export const AuthUtils = {
         }
 
         if (authTypeRes.isFirstFactor) {
-            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
+            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstanceOrThrowError().config)) {
                 logDebugMessage(
                     "linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo skipping link by account info because this is a first factor auth and the app hasn't defined shouldDoAutomaticAccountLinking"
                 );
@@ -729,7 +730,7 @@ export const AuthUtils = {
             );
             // We try and list all users that can be linked to the input user based on the account info
             // later we can use these when trying to link or when checking if linking to the session user is possible.
-            const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+            const linkRes = await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
                 inputUser: inputUser,
                 session,
                 tenantId,
@@ -815,13 +816,14 @@ export const AuthUtils = {
 
             // We do this check here instead of using the shouldBecomePrimaryUser util, because
             // here we handle the shouldRequireVerification case differently
-            const shouldDoAccountLinking = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                sessionUser.loginMethods[0],
-                undefined,
-                session,
-                session.getTenantId(userContext),
-                userContext
-            );
+            const shouldDoAccountLinking =
+                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+                    sessionUser.loginMethods[0],
+                    undefined,
+                    session,
+                    session.getTenantId(userContext),
+                    userContext
+                );
             logDebugMessage(
                 `tryAndMakeSessionUserIntoAPrimaryUser shouldDoAccountLinking: ${JSON.stringify(
                     shouldDoAccountLinking
@@ -849,10 +851,11 @@ export const AuthUtils = {
                         "This should never happen: email verification claim validator passed after setting value to false"
                     );
                 }
-                const createPrimaryUserRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
-                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
-                    userContext,
-                });
+                const createPrimaryUserRes =
+                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
+                        recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+                        userContext,
+                    });
                 logDebugMessage(
                     `tryAndMakeSessionUserIntoAPrimaryUser createPrimaryUser returned ${createPrimaryUserRes.status}`
                 );
@@ -940,7 +943,7 @@ export const AuthUtils = {
         // If we get here, it means that the session and the input user can be linked, so we try it.
         // Note that this function will not call shouldDoAutomaticAccountLinking and check the verification status before linking
         // it'll mark the freshly linked recipe user as verified if the email address was verified in the session user.
-        let linkAccountsResult = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
+        let linkAccountsResult = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
             recipeUserId: authenticatedUser.loginMethods[0].recipeUserId,
             primaryUserId: sessionUser.id,
             userContext,
