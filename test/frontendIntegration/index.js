@@ -206,7 +206,7 @@ app.use(
         allowedHeaders: ["content-type", ...SuperTokens.getAllCORSHeaders()],
         methods: ["GET", "PUT", "POST", "DELETE"],
         credentials: true,
-    }),
+    })
 );
 app.use(urlencodedParser);
 app.use(jsonParser);
@@ -255,7 +255,7 @@ app.post("/test/setup/st", async (req, res) => {
     AccountLinkingRecipeRaw.reset();
 
     SuperTokens.init(
-        getConfig(req.body.coreUrl, req.body.enableAntiCsrf, req.body.enableJWT, req.body.jwtPropertyName),
+        getConfig(req.body.coreUrl, req.body.enableAntiCsrf, req.body.enableJWT, req.body.jwtPropertyName)
     );
 
     lastSetEnableAntiCSRF = req.body.enableAntiCsrf;
@@ -284,7 +284,7 @@ app.post("/login-2.18", async (req, res) => {
             userDataInJWT: payload,
             userDataInDatabase: {},
         },
-        {},
+        {}
     );
     Querier.apiVersion = undefined;
 
@@ -300,8 +300,8 @@ app.post("/login-2.18", async (req, res) => {
                     uid: userId,
                     ate: Date.now() + 3600000,
                     up: payload,
-                }),
-            ).toString("base64"),
+                })
+            ).toString("base64")
         )
         .send();
 });
@@ -325,7 +325,7 @@ app.post("/multipleInterceptors", async (req, res) => {
     res.status(200).send(
         req.headers.interceptorheader2 !== undefined && req.headers.interceptorheader1 !== undefined
             ? "success"
-            : "failure",
+            : "failure"
     );
 });
 
@@ -335,7 +335,7 @@ app.get(
     async (req, res) => {
         noOfTimesGetSessionCalledDuringTest += 1;
         res.send(req.session.getUserId());
-    },
+    }
 );
 
 app.get(
@@ -344,7 +344,7 @@ app.get(
     async (req, res) => {
         let response = req.headers["rid"];
         res.send(response !== "anti-csrf" ? "fail" : "success");
-    },
+    }
 );
 
 app.get("/check-rid-no-session", async (req, res) => {
@@ -357,7 +357,7 @@ app.get(
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
         res.json(req.session.getAccessTokenPayload());
-    },
+    }
 );
 
 app.post(
@@ -372,7 +372,7 @@ app.post(
         }
         await req.session.mergeIntoAccessTokenPayload({ ...clearing, ...req.body });
         res.json(req.session.getAccessTokenPayload());
-    },
+    }
 );
 
 app.post(
@@ -389,7 +389,7 @@ app.post(
         })(req, res, next),
     async (req, res) => {
         res.json({});
-    },
+    }
 );
 
 app.post("/403-without-body", async (req, res) => {
@@ -410,7 +410,7 @@ app.post(
     async (req, res) => {
         await req.session.revokeSession();
         res.send("success");
-    },
+    }
 );
 
 app.post(
@@ -420,7 +420,7 @@ app.post(
         let userId = req.session.getUserId();
         await SuperTokens.revokeAllSessionsForUser(userId);
         res.send("success");
-    },
+    }
 );
 
 app.post("/auth/session/refresh", async (req, res, next) => {
@@ -503,7 +503,7 @@ app.post(
 
         await Session.mergeIntoAccessTokenPayload(req.session.getHandle(), { ...clearing, ...req.body });
         res.json(req.session.getAccessTokenPayload());
-    },
+    }
 );
 
 app.use("*", async (req, res, next) => {

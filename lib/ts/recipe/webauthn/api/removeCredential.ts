@@ -42,7 +42,7 @@ export default async function removeCredentialAPI(
     if (session === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "A valid session is required to register a credential",
+            message: "A valid session is required to remove a credential",
         });
     }
 
@@ -53,13 +53,7 @@ export default async function removeCredentialAPI(
         session,
     });
 
-    if (result.status === "OK") {
-        send200Response(options.res, {
-            status: "OK",
-        });
-    } else {
-        send200Response(options.res, result);
-    }
+    send200Response(options.res, result);
 
     return true;
 }

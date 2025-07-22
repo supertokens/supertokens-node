@@ -33,7 +33,7 @@ export default async function listCredentialsAPI(
     if (session === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "A valid session is required to register a credential",
+            message: "A valid session is required to list credentials",
         });
     }
 
@@ -43,11 +43,7 @@ export default async function listCredentialsAPI(
         session,
     });
 
-    if (result.status === "OK") {
-        send200Response(options.res, result);
-    } else {
-        send200Response(options.res, result);
-    }
+    send200Response(options.res, result);
 
     return true;
 }
