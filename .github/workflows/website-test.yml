@@ -7,11 +7,14 @@ on:
             - reopened
             - synchronize
     push:
-        branches:
-            - master
-            - "v[0-9]+.[0-9]+"
         tags:
-            - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+            - dev-v[0-9]+.[0-9]+.[0-9]+
+
+# Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
+# Previous runs will be cancelled.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     define-versions:
@@ -38,6 +41,14 @@ jobs:
                 fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
 
         steps:
+            - name: Setup ENVs
+              id: envs
+              run: |
+                  APP_SERVER_LOG_DIR=${{ github.workspace }}/logs
+                  echo "APP_SERVER_LOG_DIR=$APP_SERVER_LOG_DIR" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+                  mkdir -p $APP_SERVER_LOG_DIR
+
             - uses: actions/checkout@v4
               with:
                   path: supertokens-node
@@ -69,8 +80,8 @@ jobs:
               run: |
                   npm i
 
-                  NODE_PORT=8080 node . &> app-server.log &
-                  NODE_PORT=8082 node . &> app-server-cross-domain.log &
+                  NODE_PORT=8080 node . &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+                  NODE_PORT=8082 node . &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
             - uses: supertokens/website-testing-action@main
               with:
@@ -78,3 +89,4 @@ jobs:
                   node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
                   path: supertokens-website
                   check-name-suffix: "[Node=${{ matrix.node-version }}][FDI=${{ matrix.fdi-version }}]"
+                  app-server-logs: ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}
