@@ -524,6 +524,9 @@ type RegisterCredentialPOSTErrorResponse =
           status: "INVALID_AUTHENTICATOR_ERROR";
           reason: string;
       };
+type RemoveCredentialPOSTErrorResponse = {
+    status: "CREDENTIAL_NOT_FOUND_ERROR";
+};
 export type APIInterface = {
     registerOptionsPOST:
         | undefined
@@ -658,6 +661,19 @@ export type APIInterface = {
               | GeneralErrorResponse
               | RecoverAccountPOSTErrorResponse
           >);
+    listCredentialsGET:
+        | undefined
+        | ((input: { session: SessionContainerInterface; options: APIOptions; userContext: UserContext }) => Promise<
+              | {
+                    status: "OK";
+                    credentials: {
+                        webauthnCredentialId: string;
+                        relyingPartyId: string;
+                        createdAt: number;
+                    }[];
+                }
+              | GeneralErrorResponse
+          >);
     registerCredentialPOST:
         | undefined
         | ((input: {
@@ -673,6 +689,20 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
               | RegisterCredentialPOSTErrorResponse
+          >);
+    removeCredentialPOST:
+        | undefined
+        | ((input: {
+              webauthnCredentialId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+              | RemoveCredentialPOSTErrorResponse
           >);
     emailExistsGET:
         | undefined

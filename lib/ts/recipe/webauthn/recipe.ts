@@ -28,6 +28,8 @@ import {
     RECOVER_ACCOUNT_API,
     SIGNUP_EMAIL_EXISTS_API,
     REGISTER_CREDENTIAL_API,
+    LIST_CREDENTIALS_API,
+    REMOVE_CREDENTIAL_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -52,6 +54,8 @@ import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
 import { Querier } from "../../querier";
 import { applyPlugins } from "../../plugins";
+import listCredentialsAPI from "./api/listCredentials";
+import removeCredentialAPI from "./api/removeCredential";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -303,6 +307,18 @@ export default class Recipe extends RecipeModule {
                 id: REGISTER_CREDENTIAL_API,
                 disabled: this.apiImpl.registerCredentialPOST === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(LIST_CREDENTIALS_API),
+                id: LIST_CREDENTIALS_API,
+                disabled: this.apiImpl.listCredentialsGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(REMOVE_CREDENTIAL_API),
+                id: REMOVE_CREDENTIAL_API,
+                disabled: this.apiImpl.removeCredentialPOST === undefined,
+            },
         ];
     };
 
@@ -342,6 +358,10 @@ export default class Recipe extends RecipeModule {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === REGISTER_CREDENTIAL_API) {
             return await registerCredentialAPI(this.apiImpl, tenantId, options, userContext);
+        } else if (id === LIST_CREDENTIALS_API) {
+            return await listCredentialsAPI(this.apiImpl, tenantId, options, userContext);
+        } else if (id === REMOVE_CREDENTIAL_API) {
+            return await removeCredentialAPI(this.apiImpl, tenantId, options, userContext);
         } else return false;
     };
 
