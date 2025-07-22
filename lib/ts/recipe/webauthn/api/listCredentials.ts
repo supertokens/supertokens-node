@@ -44,9 +44,7 @@ export default async function listCredentialsAPI(
     });
 
     if (result.status === "OK") {
-        send200Response(options.res, {
-            status: "OK",
-        });
+        send200Response(options.res, result);
     } else {
         send200Response(options.res, result);
     }

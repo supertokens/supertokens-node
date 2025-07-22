@@ -27,7 +27,7 @@ export const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 
 export const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
 
-export const LIST_CREDENTIALS_API = "/webauthn/credential";
+export const LIST_CREDENTIALS_API = "/webauthn/credential/list";
 
 export const REGISTER_CREDENTIAL_API = "/webauthn/credential";
 
