@@ -59,7 +59,7 @@ import { resetOverrideLogs, logOverrideEvent, getOverrideLogs } from "./override
 import Dashboard from "../../../recipe/dashboard";
 import DashboardRecipe from "../../../lib/build/recipe/dashboard/recipe";
 import { TypeInput as WebauthnTypeInput } from "../../../lib/build/recipe/webauthn/types";
-
+import morgan from "morgan";
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
 const API_PORT = Number(process.env.API_PORT || 3030);
@@ -163,6 +163,7 @@ function initST(config: any) {
                         "Session.getCookieNameForTokenType",
                         getCookieNameForTokenType
                     ),
+                    getTokenTransferMethod: () => config.getTokenTransferMethod ?? "any",
                     override: {
                         apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis),
                         functions: overrideBuilderWithLogging(
@@ -387,6 +388,14 @@ function initST(config: any) {
     supertokens.init(init);
 }
 
+morgan.token("body", function (req, res) {
+    return JSON.stringify(req.body);
+});
+
+morgan.token("res-body", function (req, res) {
+    return typeof res.__custombody__ === "string" ? res.__custombody__ : JSON.stringify(res.__custombody__);
+});
+
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
@@ -394,6 +403,8 @@ app.use((req, res, next) => {
     next();
 });
 app.use(middleware());
+app.use(morgan("[:date[iso]] :url :method :body", { immediate: true }));
+app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] :res-body"));
 
 app.get("/test/ping", async (req, res, next) => {
     res.json({ ok: true });

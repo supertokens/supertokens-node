@@ -10,6 +10,7 @@
     "dependencies": {
         "debug": "^4.3.5",
         "express": "^4.19.2",
+        "morgan": "^1.10.0",
         "nock": "^13.5.4",
         "typescript": "^5.4.5"
     },
