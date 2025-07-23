@@ -351,6 +351,7 @@ jobs:
 
     publish:
         runs-on: ubuntu-latest
+        environment: publish
         needs:
             - setup
             - release
@@ -362,12 +363,17 @@ jobs:
                   ref: ${{ needs.setup.outputs.releaseTag }}
                   fetch-tags: true
 
-            - run: |
-                  echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  registry-url: "https://registry.npmjs.org/"
 
+            - run: |
                   if [[ "${{ needs.merge.outputs.isLatest }}" == "true" ]]
                   then
                       npm publish --tag latest
                   else
                       npm publish --tag version-${{ needs.setup.outputs.packageVersion }}
                   fi
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
