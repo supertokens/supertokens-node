@@ -5,6 +5,7 @@ import { UserContext, User as UserType } from "./types";
 import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
+import { SessionContainerInterface } from "./recipe/session/types";
 export type {
     TypeInput as SuperTokensConfig,
     SuperTokensPublicConfig,
@@ -115,6 +116,11 @@ export default class SuperTokensWrapper {
         userContext: UserContext | undefined
     ): import("./framework").BaseRequest | undefined;
     static isRecipeInitialized(recipeId: string): boolean;
+    static getAvailableFirstFactors(
+        tenantId: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<string[]>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -131,6 +137,7 @@ export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersBy
 export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
 export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
 export declare let isRecipeInitialized: typeof SuperTokensWrapper.isRecipeInitialized;
+export declare let getAvailableFirstFactors: typeof SuperTokensWrapper.getAvailableFirstFactors;
 export declare let Error: typeof SuperTokensError;
 export { default as RecipeUserId } from "./recipeUserId";
 export { User } from "./user";
