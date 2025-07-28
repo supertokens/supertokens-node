@@ -37,6 +37,9 @@ export async function getInfoFromAccessToken(
     timeCreated: number;
     tenantId: string;
 }> {
+    logDebugMessage(`verifyAccessToken called with ${JSON.stringify(jwtInfo)}`);
+    logDebugMessage(`verifyAccessToken called with ${JSON.stringify(jwks)}`);
+    logDebugMessage(`verifyAccessToken called with ${JSON.stringify(doAntiCsrfCheck)}`);
     try {
         // From the library examples
         let payload = undefined;

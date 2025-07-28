@@ -22,52 +22,20 @@ export declare class Querier {
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getNewInstanceOrThrowError(rIdToCore?: string): Querier;
-    static init(
-        hosts?: {
-            domain: NormalisedURLDomain;
-            basePath: NormalisedURLPath;
-        }[],
-        apiKey?: string,
-        networkInterceptor?: NetworkInterceptor,
-        disableCache?: boolean
-    ): void;
+    static init(hosts?: {
+        domain: NormalisedURLDomain;
+        basePath: NormalisedURLPath;
+    }[], apiKey?: string, networkInterceptor?: NetworkInterceptor, disableCache?: boolean): void;
     private getPath;
-    sendPostRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "post">,
-        userContext: UserContext
-    ) => Promise<ResponseBody<P, "post">>;
-    sendDeleteRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "delete">,
-        params: any | undefined,
-        userContext: UserContext
-    ) => Promise<ResponseBody<P, "delete">>;
-    sendGetRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        params: Record<string, boolean | number | string | undefined>,
-        userContext: UserContext
-    ) => Promise<ResponseBody<P, "get">>;
-    sendGetRequestWithResponseHeaders: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        params: Record<string, boolean | number | string | undefined>,
-        inpHeaders: Record<string, string> | undefined,
-        userContext: UserContext
-    ) => Promise<{
+    sendPostRequest: <P extends keyof paths>(templatePath: PathParam<P>, body: RequestBody<P, "post">, userContext: UserContext) => Promise<ResponseBody<P, "post">>;
+    sendDeleteRequest: <P extends keyof paths>(templatePath: PathParam<P>, body: RequestBody<P, "delete">, params: any | undefined, userContext: UserContext) => Promise<ResponseBody<P, "delete">>;
+    sendGetRequest: <P extends keyof paths>(templatePath: PathParam<P>, params: Record<string, boolean | number | string | undefined>, userContext: UserContext) => Promise<ResponseBody<P, "get">>;
+    sendGetRequestWithResponseHeaders: <P extends keyof paths>(templatePath: PathParam<P>, params: Record<string, boolean | number | string | undefined>, inpHeaders: Record<string, string> | undefined, userContext: UserContext) => Promise<{
         body: ResponseBody<P, "get">;
         headers: Headers;
     }>;
-    sendPutRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "put">,
-        params: Record<string, boolean | number | string | undefined>,
-        userContext: UserContext
-    ) => Promise<ResponseBody<P, "put">>;
-    sendPatchRequest: <P extends keyof paths>(
-        templatePath: PathParam<P>,
-        body: RequestBody<P, "patch">,
-        userContext: UserContext
-    ) => Promise<ResponseBody<P, "patch">>;
+    sendPutRequest: <P extends keyof paths>(templatePath: PathParam<P>, body: RequestBody<P, "put">, params: Record<string, boolean | number | string | undefined>, userContext: UserContext) => Promise<ResponseBody<P, "put">>;
+    sendPatchRequest: <P extends keyof paths>(templatePath: PathParam<P>, body: RequestBody<P, "patch">, userContext: UserContext) => Promise<ResponseBody<P, "patch">>;
     invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;

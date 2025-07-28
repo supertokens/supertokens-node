@@ -168,7 +168,6 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const email = generatedOptions.email;
-
             // NOTE: Following checks will likely never throw an error as the
             // check for type is done in a parent function but they are kept
             // here to be on the safe side.
@@ -177,6 +176,19 @@ export default function getAPIImplementation(): APIInterface {
                     "Should never come here since we already check that the email value is a string in validateEmailAddress"
                 );
             }
+            const accountInfo = { email };
+            const recipeId = "webauthn";
+            const checkCredentialsOnTenant = async () => {
+                return true;
+            };
+            const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                accountInfo,
+                recipeId,
+                userContext,
+                session,
+                tenantId,
+                checkCredentialsOnTenant,
+            });
 
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
@@ -185,10 +197,10 @@ export default function getAPIImplementation(): APIInterface {
                 },
                 factorIds: ["webauthn"],
                 isSignUp: true,
-                isVerified: isFakeEmail(email),
-                signInVerifiesLoginMethod: false,
+                signInVerifiesLoginMethod: true,
                 skipSessionUserUpdateInCore: false,
-                authenticatingUser: undefined, // since this a sign up, this is undefined
+                authenticatingUser: authenticatingUser?.user,
+                isVerified: authenticatingUser?.loginMethod!.verified ?? true,
                 tenantId,
                 userContext,
                 session,
@@ -196,15 +208,16 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
-                const conflictingUsers =
-                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+                const conflictingUsers = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo(
+                    {
                         tenantId,
                         accountInfo: {
                             email,
                         },
                         doUnionOfAccountInfo: false,
                         userContext,
-                    });
+                    }
+                );
 
                 if (
                     conflictingUsers.some((u) =>
@@ -592,23 +605,23 @@ export default function getAPIImplementation(): APIInterface {
             if (!emailVerified && hasOtherEmailOrPhone) {
                 return {
                     status: "RECOVER_ACCOUNT_NOT_ALLOWED",
-                    reason: "Recover account link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
+                    reason:
+                        "Recover account link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
                 };
             }
 
-            const shouldDoAccountLinkingResponse =
-                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
-                    webauthnAccount !== undefined
-                        ? webauthnAccount
-                        : {
-                              recipeId: "webauthn",
-                              email,
-                          },
-                    primaryUserAssociatedWithEmail,
-                    undefined,
-                    tenantId,
-                    userContext
-                );
+            const shouldDoAccountLinkingResponse = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+                webauthnAccount !== undefined
+                    ? webauthnAccount
+                    : {
+                          recipeId: "webauthn",
+                          email,
+                      },
+                primaryUserAssociatedWithEmail,
+                undefined,
+                tenantId,
+                userContext
+            );
 
             // Now we need to check that if there exists any webauthn user at all
             // for the input email. If not, then it implies that when the token is consumed,
@@ -729,13 +742,14 @@ export default function getAPIImplementation(): APIInterface {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
-                    const tokenResponse =
-                        await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
+                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                        {
                             tenantId,
                             recipeUserId,
                             email,
                             userContext,
-                        });
+                        }
+                    );
 
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
@@ -821,13 +835,14 @@ export default function getAPIImplementation(): APIInterface {
                     // 1. the user was unverified and linking requires verification
                     // We do not take try linking by session here, since this is supposed to be called without a session
                     // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                    const linkRes =
-                        await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                    const linkRes = await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser(
+                        {
                             tenantId,
                             inputUser: updatedUserAfterEmailVerification,
                             session: undefined,
                             userContext,
-                        });
+                        }
+                    );
                     const userAfterWeTriedLinking =
                         linkRes.status === "OK" ? linkRes.user : updatedUserAfterEmailVerification;
 
@@ -950,13 +965,14 @@ export default function getAPIImplementation(): APIInterface {
                         // email is shared.
                         // We do not take try linking by session here, since this is supposed to be called without a session
                         // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                        const linkRes =
-                            await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                        const linkRes = await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser(
+                            {
                                 tenantId,
                                 inputUser: createUserResponse.user,
                                 session: undefined,
                                 userContext,
-                            });
+                            }
+                        );
                         const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
                         if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
                             // this means that the account we just linked to

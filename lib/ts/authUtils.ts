@@ -336,16 +336,14 @@ export const AuthUtils = {
     }): Promise<{ user: User; loginMethod: LoginMethod } | undefined> => {
         let i = 0;
         while (i++ < 300) {
-            logDebugMessage(
-                `getAuthenticatingUserAndAddToCurrentTenantIfRequired called with ${JSON.stringify(accountInfo)}`
-            );
-            const existingUsers =
-                await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+            const existingUsers = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo(
+                {
                     tenantId,
                     accountInfo,
                     doUnionOfAccountInfo: true,
                     userContext: userContext,
-                });
+                }
+            );
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired got ${existingUsers.length} users from the core resp`
             );
@@ -816,14 +814,13 @@ export const AuthUtils = {
 
             // We do this check here instead of using the shouldBecomePrimaryUser util, because
             // here we handle the shouldRequireVerification case differently
-            const shouldDoAccountLinking =
-                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
-                    sessionUser.loginMethods[0],
-                    undefined,
-                    session,
-                    session.getTenantId(userContext),
-                    userContext
-                );
+            const shouldDoAccountLinking = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+                sessionUser.loginMethods[0],
+                undefined,
+                session,
+                session.getTenantId(userContext),
+                userContext
+            );
             logDebugMessage(
                 `tryAndMakeSessionUserIntoAPrimaryUser shouldDoAccountLinking: ${JSON.stringify(
                     shouldDoAccountLinking
@@ -851,11 +848,12 @@ export const AuthUtils = {
                         "This should never happen: email verification claim validator passed after setting value to false"
                     );
                 }
-                const createPrimaryUserRes =
-                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
+                const createPrimaryUserRes = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser(
+                    {
                         recipeUserId: sessionUser.loginMethods[0].recipeUserId,
                         userContext,
-                    });
+                    }
+                );
                 logDebugMessage(
                     `tryAndMakeSessionUserIntoAPrimaryUser createPrimaryUser returned ${createPrimaryUserRes.status}`
                 );
