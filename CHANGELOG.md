@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+-   Updated FDI support to 4.2
+
 ## [23.0.0] - 2025-07-21
 
 ### Breaking changes
@@ -980,7 +982,7 @@ Session.init({
                             input.userId,
                             input.recipeUserId,
                             input.tenantId,
-                            input.userContext
+                            input.userContext,
                         )),
                     };
 
@@ -1008,7 +1010,7 @@ Session.init({
                             input.recipeUserId,
                             input.tenantId,
                             input.accessTokenPayload,
-                            input.userContext
+                            input.userContext,
                         )),
                     };
 
