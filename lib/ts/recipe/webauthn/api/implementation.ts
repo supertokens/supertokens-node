@@ -984,14 +984,35 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         listCredentialsGET: async function ({ options, userContext, session }) {
-            const credentials = await options.recipeImplementation.listCredentials({
-                recipeUserId: session.getRecipeUserId().getAsString(),
-                userContext,
-            });
+            const existingUser = await getUser(session.getUserId(), userContext);
+            if (!existingUser) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const recipeUserIds = existingUser.loginMethods
+                .filter((lm) => lm.recipeId === "webauthn")
+                ?.map((lm) => lm.recipeUserId);
+
+            const credentials: {
+                webauthnCredentialId: string;
+                relyingPartyId: string;
+                createdAt: number;
+            }[] = [];
+            for (const recipeUserId of recipeUserIds) {
+                const listCredentialsResponse = await options.recipeImplementation.listCredentials({
+                    recipeUserId: recipeUserId.getAsString(),
+                    userContext,
+                });
+
+                credentials.push(...listCredentialsResponse.credentials);
+            }
 
             return {
                 status: "OK",
-                credentials: credentials.credentials.map((credential) => ({
+                credentials: credentials.map((credential) => ({
                     webauthnCredentialId: credential.webauthnCredentialId,
                     relyingPartyId: credential.relyingPartyId,
                     createdAt: credential.createdAt,
