@@ -1080,9 +1080,27 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         removeCredentialPOST: async function ({ webauthnCredentialId, options, userContext, session }) {
+            const user = await getUser(session.getUserId(), userContext);
+            if (!user) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const recipeUserId = user.loginMethods.find(
+                (lm) => lm.recipeId === "webauthn" && lm.webauthn?.credentialIds.includes(webauthnCredentialId)
+            )?.recipeUserId;
+            if (!recipeUserId) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
             const removeCredentialResponse = await options.recipeImplementation.removeCredential({
                 webauthnCredentialId,
-                recipeUserId: session.getRecipeUserId().getAsString(),
+                recipeUserId: recipeUserId.getAsString(),
                 userContext,
             });
             if (removeCredentialResponse.status !== "OK") {
