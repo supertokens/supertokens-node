@@ -18,6 +18,7 @@ import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThr
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import Session from "../../session";
+import STError from "../../../error";
 
 export default async function registerCredentialAPI(
     apiImplementation: APIInterface,
@@ -42,7 +43,16 @@ export default async function registerCredentialAPI(
     );
     const credential = validateCredentialOrThrowError(requestBody.credential);
 
+    const recipeUserId = requestBody.recipeUserId;
+    if (recipeUserId === undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the recipeUserId",
+        });
+    }
+
     const result = await apiImplementation.registerCredentialPOST({
+        recipeUserId,
         credential,
         webauthnGeneratedOptionsId,
         tenantId,
