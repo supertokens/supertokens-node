@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Updated FDI support to 4.2
 -   Added `recipeUserId` in the WebAuthn list credentials response
+-   Added `recipeUserId` as required field for registering new WebAuthn credentials endpoint
 
 ## [23.0.0] - 2025-07-21
 
