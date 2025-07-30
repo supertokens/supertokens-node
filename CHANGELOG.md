@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [23.0.1] - 2025-07-31
+
+-   Updated FDI support to 4.2
+-   Added `recipeUserId` in the WebAuthn list credentials response
 -   Fix WebAuthn credential listing to work even when the WebAuthn user is not the primary user and when there are multiple WebAuthn users linked
 
 ## [23.0.0] - 2025-07-21
@@ -982,7 +986,7 @@ Session.init({
                             input.userId,
                             input.recipeUserId,
                             input.tenantId,
-                            input.userContext
+                            input.userContext,
                         )),
                     };
 
@@ -1010,7 +1014,7 @@ Session.init({
                             input.recipeUserId,
                             input.tenantId,
                             input.accessTokenPayload,
-                            input.userContext
+                            input.userContext,
                         )),
                     };
 

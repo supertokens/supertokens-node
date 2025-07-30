@@ -1000,6 +1000,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnCredentialId: string;
                 relyingPartyId: string;
                 createdAt: number;
+                recipeUserId: string;
             }[] = [];
             for (const recipeUserId of recipeUserIds) {
                 const listCredentialsResponse = await options.recipeImplementation.listCredentials({
@@ -1013,6 +1014,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 credentials: credentials.map((credential) => ({
+                    recipeUserId: credential.recipeUserId,
                     webauthnCredentialId: credential.webauthnCredentialId,
                     relyingPartyId: credential.relyingPartyId,
                     createdAt: credential.createdAt,
