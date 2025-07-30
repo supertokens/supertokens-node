@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [23.0.1] - 2025-07-31
+
 -   Updated FDI support to 4.2
 -   Added `recipeUserId` in the WebAuthn list credentials response
+-   Prevent removal of WebAuthn credentials unless all session claims are satisfied
+-   Change how sessions are fetched before listing, removing and adding WebAuthn credentials
 
 ## [23.0.0] - 2025-07-21
 

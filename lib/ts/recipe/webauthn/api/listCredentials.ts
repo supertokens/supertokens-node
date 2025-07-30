@@ -15,9 +15,8 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
-import STError from "../error";
 import { UserContext } from "../../../types";
-import { AuthUtils } from "../../../authUtils";
+import Session from "../../session";
 
 export default async function listCredentialsAPI(
     apiImplementation: APIInterface,
@@ -29,13 +28,12 @@ export default async function listCredentialsAPI(
         return false;
     }
 
-    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(options.req, options.res, undefined, userContext);
-    if (session === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "A valid session is required to list credentials",
-        });
-    }
+    const session = await Session.getSession(
+        options.req,
+        options.res,
+        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext
+    );
 
     const result = await apiImplementation.listCredentialsGET({
         options,
