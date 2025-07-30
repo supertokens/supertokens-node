@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Updated FDI support to 4.2
 -   Added `recipeUserId` in the WebAuthn list credentials response
--   Fix WebAuthn credential listing to work even when the WebAuthn user is not the primary user and when there are multiple WebAuthn users linked
+-   Fix WebAuthn credential listing and removal to work even when the WebAuthn user is not the primary user and when there are multiple WebAuthn users linked
 
 ## [23.0.0] - 2025-07-21
 
