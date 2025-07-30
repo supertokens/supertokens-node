@@ -1001,6 +1001,7 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         registerCredentialPOST: async function ({
+            recipeUserId,
             webauthnGeneratedOptionsId,
             credential,
             tenantId,
@@ -1017,6 +1018,24 @@ export default function getAPIImplementation(): APIInterface {
                     "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
             };
 
+            const user = await getUser(session.getUserId(), userContext);
+            if (!user) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const loginMethod = user.loginMethods.find(
+                (lm) => lm.recipeId === "webauthn" && lm.recipeUserId.getAsString() === recipeUserId
+            );
+            if (!loginMethod) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
             const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
                 webauthnGeneratedOptionsId,
                 tenantId,
@@ -1027,6 +1046,12 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const email = generatedOptions.email;
+            if (email !== loginMethod.email) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "Email mismatch",
+                };
+            }
 
             // NOTE: Following checks will likely never throw an error as the
             // check for type is done in a parent function but they are kept

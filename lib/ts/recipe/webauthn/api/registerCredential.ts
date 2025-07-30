@@ -44,7 +44,16 @@ export default async function registerCredentialAPI(
         });
     }
 
+    const recipeUserId = requestBody.recipeUserId;
+    if (recipeUserId === undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the recipeUserId",
+        });
+    }
+
     const result = await apiImplementation.registerCredentialPOST({
+        recipeUserId,
         credential,
         webauthnGeneratedOptionsId,
         tenantId,

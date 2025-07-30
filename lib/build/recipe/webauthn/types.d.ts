@@ -684,6 +684,7 @@ export type APIInterface = {
               session: SessionContainerInterface;
               options: APIOptions;
               userContext: UserContext;
+              recipeUserId: string;
           }) => Promise<
               | {
                     status: "OK";
