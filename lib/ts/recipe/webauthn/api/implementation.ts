@@ -986,14 +986,36 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         listCredentialsGET: async function ({ options, userContext, session }) {
-            const credentials = await options.recipeImplementation.listCredentials({
-                recipeUserId: session.getRecipeUserId().getAsString(),
-                userContext,
-            });
+            const existingUser = await getUser(session.getUserId(), userContext);
+            if (!existingUser) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const recipeUserIds = existingUser.loginMethods
+                .filter((lm) => lm.recipeId === "webauthn")
+                ?.map((lm) => lm.recipeUserId);
+
+            const credentials: {
+                webauthnCredentialId: string;
+                relyingPartyId: string;
+                createdAt: number;
+                recipeUserId: string;
+            }[] = [];
+            for (const recipeUserId of recipeUserIds) {
+                const listCredentialsResponse = await options.recipeImplementation.listCredentials({
+                    recipeUserId: recipeUserId.getAsString(),
+                    userContext,
+                });
+
+                credentials.push(...listCredentialsResponse.credentials);
+            }
 
             return {
                 status: "OK",
-                credentials: credentials.credentials.map((credential) => ({
+                credentials: credentials.map((credential) => ({
                     recipeUserId: credential.recipeUserId,
                     webauthnCredentialId: credential.webauthnCredentialId,
                     relyingPartyId: credential.relyingPartyId,
@@ -1076,9 +1098,28 @@ export default function getAPIImplementation(): APIInterface {
                 ]);
             }
 
+            const user = await getUser(session.getUserId(), userContext);
+            if (!user) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const recipeUserId = user.loginMethods.find(
+                (lm) => lm.recipeId === "webauthn" && lm.webauthn?.credentialIds.includes(webauthnCredentialId)
+            )?.recipeUserId;
+
+            if (!recipeUserId) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
             const removeCredentialResponse = await options.recipeImplementation.removeCredential({
                 webauthnCredentialId,
-                recipeUserId: session.getRecipeUserId().getAsString(),
+                recipeUserId: recipeUserId.getAsString(),
                 userContext,
             });
             if (removeCredentialResponse.status !== "OK") {
