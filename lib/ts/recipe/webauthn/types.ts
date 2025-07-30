@@ -612,6 +612,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     credentials: {
+                        recipeUserId: string;
                         webauthnCredentialId: string;
                         relyingPartyId: string;
                         createdAt: number;

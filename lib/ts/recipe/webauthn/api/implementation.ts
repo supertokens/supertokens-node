@@ -994,6 +994,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 credentials: credentials.credentials.map((credential) => ({
+                    recipeUserId: credential.recipeUserId,
                     webauthnCredentialId: credential.webauthnCredentialId,
                     relyingPartyId: credential.relyingPartyId,
                     createdAt: credential.createdAt,
