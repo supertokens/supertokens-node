@@ -16,9 +16,9 @@
 import { send200Response } from "../../../utils";
 import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
-import STError from "../error";
 import { UserContext } from "../../../types";
-import { AuthUtils } from "../../../authUtils";
+import Session from "../../session";
+import STError from "../../../error";
 
 export default async function registerCredentialAPI(
     apiImplementation: APIInterface,
@@ -30,19 +30,18 @@ export default async function registerCredentialAPI(
         return false;
     }
 
+    const session = await Session.getSession(
+        options.req,
+        options.res,
+        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext
+    );
+
     const requestBody = await options.req.getJSONBody();
     const webauthnGeneratedOptionsId = validateWebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
     const credential = validateCredentialOrThrowError(requestBody.credential);
-
-    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(options.req, options.res, undefined, userContext);
-    if (session === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "A valid session is required to register a credential",
-        });
-    }
 
     const recipeUserId = requestBody.recipeUserId;
     if (recipeUserId === undefined) {
