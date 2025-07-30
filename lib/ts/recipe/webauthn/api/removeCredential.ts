@@ -17,7 +17,7 @@ import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import STError from "../error";
 import { UserContext } from "../../../types";
-import { AuthUtils } from "../../../authUtils";
+import Session from "../../session";
 
 export default async function removeCredentialAPI(
     apiImplementation: APIInterface,
@@ -29,20 +29,14 @@ export default async function removeCredentialAPI(
         return false;
     }
 
+    const session = await Session.getSession(options.req, options.res, { sessionRequired: true }, userContext);
+
     const requestBody = await options.req.getJSONBody();
     const webauthnCredentialId = requestBody.webauthnCredentialId;
     if (webauthnCredentialId === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message: "A valid webauthnCredentialId is required",
-        });
-    }
-
-    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(options.req, options.res, undefined, userContext);
-    if (session === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "A valid session is required to remove a credential",
         });
     }
 
