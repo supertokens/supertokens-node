@@ -29,7 +29,12 @@ export default async function removeCredentialAPI(
         return false;
     }
 
-    const session = await Session.getSession(options.req, options.res, { sessionRequired: true }, userContext);
+    const session = await Session.getSession(
+        options.req,
+        options.res,
+        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext
+    );
 
     const requestBody = await options.req.getJSONBody();
     const webauthnCredentialId = requestBody.webauthnCredentialId;

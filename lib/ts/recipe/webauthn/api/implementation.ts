@@ -20,6 +20,8 @@ import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { getUser } from "../../..";
+import MultiFactorAuth from "../../multifactorauth";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -183,7 +185,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "webauthn",
                     email,
                 },
-                factorIds: ["webauthn"],
+                factorIds: [MultiFactorAuth.FactorIds.WEBAUTHN],
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
                 signInVerifiesLoginMethod: false,
@@ -366,7 +368,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId,
                     email,
                 },
-                factorIds: [recipeId],
+                factorIds: [MultiFactorAuth.FactorIds.WEBAUTHN],
                 isSignUp: false,
                 authenticatingUser: authenticatingUser?.user,
                 isVerified,
@@ -1016,6 +1018,15 @@ export default function getAPIImplementation(): APIInterface {
                     "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
             };
 
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance) {
+                await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
+                    session,
+                    MultiFactorAuth.FactorIds.WEBAUTHN,
+                    userContext
+                );
+            }
+
             const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
                 webauthnGeneratedOptionsId,
                 tenantId,
@@ -1057,6 +1068,13 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         removeCredentialPOST: async function ({ webauthnCredentialId, options, userContext, session }) {
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance) {
+                await session.assertClaims([
+                    MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth(),
+                ]);
+            }
+
             const removeCredentialResponse = await options.recipeImplementation.removeCredential({
                 webauthnCredentialId,
                 recipeUserId: session.getRecipeUserId().getAsString(),
