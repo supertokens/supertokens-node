@@ -612,6 +612,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     credentials: {
+                        recipeUserId: string;
                         webauthnCredentialId: string;
                         relyingPartyId: string;
                         createdAt: number;
@@ -629,6 +630,7 @@ export type APIInterface = {
               session: SessionContainerInterface;
               options: APIOptions;
               userContext: UserContext;
+              recipeUserId: string;
           }) => Promise<
               | {
                     status: "OK";

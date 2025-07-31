@@ -20,6 +20,8 @@ import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { getUser } from "../../..";
+import MultiFactorAuth from "../../multifactorauth";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -183,7 +185,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "webauthn",
                     email,
                 },
-                factorIds: ["webauthn"],
+                factorIds: [MultiFactorAuth.FactorIds.WEBAUTHN],
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
                 signInVerifiesLoginMethod: false,
@@ -366,7 +368,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId,
                     email,
                 },
-                factorIds: [recipeId],
+                factorIds: [MultiFactorAuth.FactorIds.WEBAUTHN],
                 isSignUp: false,
                 authenticatingUser: authenticatingUser?.user,
                 isVerified,
@@ -984,14 +986,37 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         listCredentialsGET: async function ({ options, userContext, session }) {
-            const credentials = await options.recipeImplementation.listCredentials({
-                recipeUserId: session.getRecipeUserId().getAsString(),
-                userContext,
-            });
+            const existingUser = await getUser(session.getUserId(), userContext);
+            if (!existingUser) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const recipeUserIds = existingUser.loginMethods
+                .filter((lm) => lm.recipeId === "webauthn")
+                ?.map((lm) => lm.recipeUserId);
+
+            const credentials: {
+                webauthnCredentialId: string;
+                relyingPartyId: string;
+                createdAt: number;
+                recipeUserId: string;
+            }[] = [];
+            for (const recipeUserId of recipeUserIds) {
+                const listCredentialsResponse = await options.recipeImplementation.listCredentials({
+                    recipeUserId: recipeUserId.getAsString(),
+                    userContext,
+                });
+
+                credentials.push(...listCredentialsResponse.credentials);
+            }
 
             return {
                 status: "OK",
-                credentials: credentials.credentials.map((credential) => ({
+                credentials: credentials.map((credential) => ({
+                    recipeUserId: credential.recipeUserId,
                     webauthnCredentialId: credential.webauthnCredentialId,
                     relyingPartyId: credential.relyingPartyId,
                     createdAt: credential.createdAt,
@@ -1000,6 +1025,7 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         registerCredentialPOST: async function ({
+            recipeUserId,
             webauthnGeneratedOptionsId,
             credential,
             tenantId,
@@ -1016,6 +1042,33 @@ export default function getAPIImplementation(): APIInterface {
                     "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
             };
 
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance) {
+                await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
+                    session,
+                    MultiFactorAuth.FactorIds.WEBAUTHN,
+                    userContext
+                );
+            }
+
+            const user = await getUser(session.getUserId(), userContext);
+            if (!user) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const loginMethod = user.loginMethods.find(
+                (lm) => lm.recipeId === "webauthn" && lm.recipeUserId.getAsString() === recipeUserId
+            );
+            if (!loginMethod) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
             const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
                 webauthnGeneratedOptionsId,
                 tenantId,
@@ -1026,6 +1079,12 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const email = generatedOptions.email;
+            if (email !== loginMethod.email) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "Email mismatch",
+                };
+            }
 
             // NOTE: Following checks will likely never throw an error as the
             // check for type is done in a parent function but they are kept
@@ -1057,9 +1116,35 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         removeCredentialPOST: async function ({ webauthnCredentialId, options, userContext, session }) {
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance) {
+                await session.assertClaims([
+                    MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth(),
+                ]);
+            }
+
+            const user = await getUser(session.getUserId(), userContext);
+            if (!user) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
+            const recipeUserId = user.loginMethods.find(
+                (lm) => lm.recipeId === "webauthn" && lm.webauthn?.credentialIds.includes(webauthnCredentialId)
+            )?.recipeUserId;
+
+            if (!recipeUserId) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "User not found",
+                };
+            }
+
             const removeCredentialResponse = await options.recipeImplementation.removeCredential({
                 webauthnCredentialId,
-                recipeUserId: session.getRecipeUserId().getAsString(),
+                recipeUserId: recipeUserId.getAsString(),
                 userContext,
             });
             if (removeCredentialResponse.status !== "OK") {
