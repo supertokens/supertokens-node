@@ -44,6 +44,7 @@ import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 import { SessionContainerInterface } from "./recipe/session/types";
 import Session from "./recipe/session/recipe";
+import SuperTokensError from "./error";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -56,7 +57,7 @@ export default class SuperTokens {
 
     recipeModules: RecipeModule[];
 
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & { pluginId: string })[];
 
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
 
@@ -445,7 +446,26 @@ export default class SuperTokens {
                     userContext
                 );
             }
-            handlerFromApis.handler(request, response, session, userContext);
+
+            logDebugMessage("middleware: Request being handled by plugin. ID is: " + handlerFromApis.pluginId);
+
+            try {
+                await handlerFromApis.handler(request, response, session, userContext);
+            } catch (err) {
+                // passthrough for errors from SuperTokens - let errorHandler handle them
+                if (SuperTokensError.isErrorFromSuperTokens(err)) {
+                    throw err;
+                } else {
+                    logDebugMessage(
+                        "middleware: Error from plugin, transforming to SuperTokensError. Plugin ID: " +
+                            handlerFromApis.pluginId
+                    );
+
+                    // transform errors to SuperTokensError to be handled by the errorHandler
+                    throw SuperTokensError.fromError(err, SuperTokensError.PLUGIN_ERROR);
+                }
+            }
+
             return true;
         }
 
@@ -618,6 +638,11 @@ export default class SuperTokens {
         if (STError.isErrorFromSuperTokens(err)) {
             logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
             if (err.type === STError.BAD_INPUT_ERROR) {
+                logDebugMessage("errorHandler: Sending 400 status code response");
+                return sendNon200ResponseWithMessage(response, err.message, 400);
+            }
+
+            if (err.type === STError.PLUGIN_ERROR) {
                 logDebugMessage("errorHandler: Sending 400 status code response");
                 return sendNon200ResponseWithMessage(response, err.message, 400);
             }

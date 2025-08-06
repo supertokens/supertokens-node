@@ -139,7 +139,7 @@ export function loadPlugins({
     normalisedAppInfo: NormalisedAppinfo;
 }): {
     config: TypeInput;
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & { pluginId: string })[];
     overrideMaps: Record<string, any>[];
 } {
     const inputPluginList = plugins ?? [];
@@ -187,7 +187,7 @@ export function loadPlugins({
     const processedPlugins: SuperTokensPublicPlugin[] = finalPluginList.map(getPublicPlugin);
 
     let _config = { ...config };
-    const pluginRouteHandlers: PluginRouteHandler[] = [];
+    const pluginRouteHandlers: (PluginRouteHandler & { pluginId: string })[] = [];
     for (const [pluginIndex, plugin] of finalPluginList.entries()) {
         if (plugin.config) {
             // @ts-ignore
@@ -200,15 +200,15 @@ export function loadPlugins({
         const publicConfig = getPublicConfig({ ..._config, appInfo: normalisedAppInfo });
 
         if (plugin.routeHandlers) {
-            let handlers: PluginRouteHandler[] = [];
+            let handlers: (PluginRouteHandler & { pluginId: string })[] = [];
             if (typeof plugin.routeHandlers === "function") {
                 const result = plugin.routeHandlers(publicConfig, processedPlugins, version);
                 if (result.status === "ERROR") {
                     throw new Error(result.message);
                 }
-                handlers = result.routeHandlers;
+                handlers = result.routeHandlers.map((handler) => ({ ...handler, pluginId: plugin.id }));
             } else {
-                handlers = plugin.routeHandlers;
+                handlers = plugin.routeHandlers.map((handler) => ({ ...handler, pluginId: plugin.id }));
             }
 
             pluginRouteHandlers.push(...handlers);

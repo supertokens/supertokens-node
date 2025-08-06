@@ -18,7 +18,9 @@ export default class SuperTokens {
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & {
+        pluginId: string;
+    })[];
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
     supertokens: undefined | SuperTokensInfo;
     telemetryEnabled: boolean;
