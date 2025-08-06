@@ -37,7 +37,7 @@ export function dependencyFactory(dependencies?: SuperTokensPlugin[]) {
     return function dependency(
         config: SuperTokensPublicConfig,
         pluginsAbove: SuperTokensPublicPlugin[],
-        sdkVersion: string
+        sdkVersion: string,
     ): { status: "OK"; pluginsToAdd?: SuperTokensPlugin[] } | { status: "ERROR"; message: string } {
         const addedPluginIds: string[] = pluginsAbove.map((p) => p.id);
         const pluginsToAdd: SuperTokensPlugin[] = dependencies!.filter((p) => !addedPluginIds.includes(p.id));
@@ -77,7 +77,7 @@ export function pluginFactory({
 
     return {
         id: identifier,
-        compatibleSDKVersions: ["23.0"],
+        compatibleSDKVersions: ["23.0.x"],
         overrideMap,
         init: addInit ? initFactory(identifier) : undefined,
         dependencies: dependencyFactory(dependencies),
