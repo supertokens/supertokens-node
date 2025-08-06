@@ -120,7 +120,7 @@ export default class SuperTokensWrapper {
         tenantId: string,
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
-    ): Promise<string[]>;
+    ): Promise<any>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;

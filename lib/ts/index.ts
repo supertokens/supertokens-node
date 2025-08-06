@@ -1,4 +1,4 @@
- /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -23,7 +23,6 @@ import { User } from "./user";
 import { getUserContext } from "./utils";
 import { SessionContainerInterface } from "./recipe/session/types";
 import { FactorIds } from "./recipe/multifactorauth";
-import { AuthUtils } from "./authUtils";
 
 export type {
     TypeInput as SuperTokensConfig,
@@ -189,6 +188,7 @@ export default class SuperTokensWrapper {
         const factorIds = Object.values(FactorIds);
 
         try {
+            const { AuthUtils } = require("./authUtils");
             const availableFirstFactors = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
                 factorIds,
                 tenantId,
