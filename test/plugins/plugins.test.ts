@@ -68,7 +68,7 @@ describe("Plugins", () => {
             overrideFunctions: boolean;
             overrideApis: boolean;
             overrideConfig: boolean;
-            pluginFactortyConfigs: {
+            pluginFactoryConfigs: {
                 identifier: string;
                 overrideFunctions: boolean;
                 overrideApis: boolean;
@@ -83,7 +83,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: false,
                 overrideConfig: false,
-                pluginFactortyConfigs: [],
+                pluginFactoryConfigs: [],
                 expectedFunctionOrder: ["original"],
                 expectedApiOrder: ["original"],
                 expectedConfigOrder: ["original"],
@@ -92,7 +92,7 @@ describe("Plugins", () => {
                 overrideFunctions: true,
                 overrideApis: false,
                 overrideConfig: false,
-                pluginFactortyConfigs: [],
+                pluginFactoryConfigs: [],
                 expectedFunctionOrder: ["override", "original"],
                 expectedApiOrder: ["original"],
                 expectedConfigOrder: ["original"],
@@ -101,7 +101,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: true,
                 overrideConfig: false,
-                pluginFactortyConfigs: [],
+                pluginFactoryConfigs: [],
                 expectedFunctionOrder: ["original"],
                 expectedApiOrder: ["override", "original"],
                 expectedConfigOrder: ["original"],
@@ -110,7 +110,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: false,
                 overrideConfig: true,
-                pluginFactortyConfigs: [],
+                pluginFactoryConfigs: [],
                 expectedFunctionOrder: ["original"],
                 expectedApiOrder: ["original"],
                 expectedConfigOrder: ["override"],
@@ -120,7 +120,7 @@ describe("Plugins", () => {
                 overrideFunctions: true,
                 overrideApis: false,
                 overrideConfig: false,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: true, overrideApis: false, overrideConfig: false },
                 ],
                 expectedFunctionOrder: ["override", "plugin1", "original"],
@@ -131,7 +131,7 @@ describe("Plugins", () => {
                 overrideFunctions: true,
                 overrideApis: false,
                 overrideConfig: false,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: false, overrideApis: true, overrideConfig: false },
                 ],
                 expectedFunctionOrder: ["override", "original"],
@@ -142,7 +142,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: true,
                 overrideConfig: false,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: true, overrideApis: false, overrideConfig: false },
                 ],
                 expectedFunctionOrder: ["plugin1", "original"],
@@ -153,7 +153,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: true,
                 overrideConfig: false,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: false, overrideApis: true, overrideConfig: false },
                 ],
                 expectedFunctionOrder: ["original"],
@@ -164,7 +164,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: false,
                 overrideConfig: true,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: false, overrideApis: true, overrideConfig: false },
                 ],
                 expectedFunctionOrder: ["original"],
@@ -175,7 +175,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: false,
                 overrideConfig: true,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: false, overrideApis: true, overrideConfig: true },
                 ],
                 expectedFunctionOrder: ["original"],
@@ -187,7 +187,7 @@ describe("Plugins", () => {
                 overrideFunctions: true,
                 overrideApis: false,
                 overrideConfig: false,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: true, overrideApis: false, overrideConfig: true },
                     { identifier: "plugin2", overrideFunctions: true, overrideApis: false, overrideConfig: false },
                 ],
@@ -199,7 +199,7 @@ describe("Plugins", () => {
                 overrideFunctions: false,
                 overrideApis: true,
                 overrideConfig: false,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: false, overrideApis: true, overrideConfig: false },
                     { identifier: "plugin2", overrideFunctions: false, overrideApis: true, overrideConfig: true },
                 ],
@@ -212,7 +212,7 @@ describe("Plugins", () => {
                 overrideFunctions: true,
                 overrideApis: true,
                 overrideConfig: true,
-                pluginFactortyConfigs: [
+                pluginFactoryConfigs: [
                     { identifier: "plugin1", overrideFunctions: true, overrideApis: true, overrideConfig: true },
                     { identifier: "plugin2", overrideFunctions: true, overrideApis: true, overrideConfig: true },
                 ],
@@ -228,21 +228,21 @@ describe("Plugins", () => {
                     overrideFunctions,
                     overrideApis,
                     overrideConfig,
-                    pluginFactortyConfigs,
+                    pluginFactoryConfigs,
                     expectedFunctionOrder,
                     expectedApiOrder,
                     expectedConfigOrder,
                 },
                 testNo,
             ) => {
-                const plugins = pluginFactortyConfigs.map((pfc) => pluginFactory(pfc));
+                const plugins = pluginFactoryConfigs.map((pfc) => pluginFactory(pfc));
 
                 const testNameList = [
                     `${testNo}. fnOverride=${overrideFunctions}`,
                     `apiOverride=${overrideApis}`,
                     `configOverride=${overrideConfig}`,
                     `plugins=[${plugins.map((p) => p.id).join(",")}]`,
-                    ...pluginFactortyConfigs.map((pfc) => {
+                    ...pluginFactoryConfigs.map((pfc) => {
                         const overrideList: string[] = [];
                         if (pfc.overrideFunctions) {
                             overrideList.push("fn");
