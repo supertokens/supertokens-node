@@ -21,6 +21,8 @@ import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
 import { getUserContext } from "./utils";
+import { SessionContainerInterface } from "./recipe/session/types";
+import { FactorIds } from "./recipe/multifactorauth";
 
 export type {
     TypeInput as SuperTokensConfig,
@@ -177,6 +179,34 @@ export default class SuperTokensWrapper {
             .recipeModules.map((recipe) => recipe.getRecipeId())
             .includes(recipeId);
     }
+
+    static async getAvailableFirstFactors(
+        tenantId: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
+        const factorIds = Object.values(FactorIds);
+
+        try {
+            const { AuthUtils } = require("./authUtils");
+            const availableFirstFactors = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
+                factorIds,
+                tenantId,
+                !!session,
+                getUserContext(userContext)
+            );
+
+            return availableFirstFactors;
+        } catch (error) {
+            if (error instanceof SuperTokensError) {
+                if (error.type === SuperTokensError.BAD_INPUT_ERROR) {
+                    return [];
+                }
+            }
+
+            throw error;
+        }
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -208,6 +238,8 @@ export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
 export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
 
 export let isRecipeInitialized = SuperTokensWrapper.isRecipeInitialized;
+
+export let getAvailableFirstFactors = SuperTokensWrapper.getAvailableFirstFactors;
 
 export let Error = SuperTokensWrapper.Error;
 

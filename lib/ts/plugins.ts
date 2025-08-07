@@ -4,6 +4,7 @@ import { PluginRouteHandler, AllRecipeConfigs, TypeInput, NormalisedAppinfo } fr
 import { version } from "./version";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { getPublicConfig } from "./utils";
+import { isVersionCompatible } from "./versionChecker";
 
 export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin {
     return {
@@ -138,7 +139,7 @@ export function loadPlugins({
     normalisedAppInfo: NormalisedAppinfo;
 }): {
     config: TypeInput;
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & { pluginId: string })[];
     overrideMaps: Record<string, any>[];
 } {
     const inputPluginList = plugins ?? [];
@@ -149,16 +150,17 @@ export function loadPlugins({
             continue;
         }
 
-        const versionContraints = Array.isArray(plugin.compatibleSDKVersions)
-            ? plugin.compatibleSDKVersions
-            : [plugin.compatibleSDKVersions];
-        if (!versionContraints.includes(version)) {
-            // TODO: better checks
-            throw new Error(
-                `Plugin version mismatch. Version ${version} not found in compatible versions: ${versionContraints.join(
-                    ", "
-                )}`
-            );
+        if (plugin.compatibleSDKVersions) {
+            const versionCheck = isVersionCompatible(version, plugin.compatibleSDKVersions);
+            if (!versionCheck) {
+                throw new Error(
+                    `Incompatible SDK version for plugin ${
+                        plugin.id
+                    }. Version "${version}" not found in compatible versions: ${JSON.stringify(
+                        plugin.compatibleSDKVersions
+                    )}`
+                );
+            }
         }
 
         const dependencies = getPluginDependencies({
@@ -185,28 +187,31 @@ export function loadPlugins({
     const processedPlugins: SuperTokensPublicPlugin[] = finalPluginList.map(getPublicPlugin);
 
     let _config = { ...config };
-    const pluginRouteHandlers: PluginRouteHandler[] = [];
+    const pluginRouteHandlers: (PluginRouteHandler & { pluginId: string })[] = [];
     for (const [pluginIndex, plugin] of finalPluginList.entries()) {
         if (plugin.config) {
             // @ts-ignore
-            const { appInfo, ...pluginConfigOverride } = plugin.config(
+            const { appInfo, recipeList, experimental, ...pluginConfigOverride } = plugin.config(
                 getPublicConfig({ ..._config, appInfo: normalisedAppInfo })
             );
             _config = { ..._config, ...pluginConfigOverride };
         }
 
-        const publicConfig = getPublicConfig({ ..._config, appInfo: normalisedAppInfo });
+        const publicConfig = getPublicConfig({
+            ..._config,
+            appInfo: normalisedAppInfo,
+        });
 
         if (plugin.routeHandlers) {
-            let handlers: PluginRouteHandler[] = [];
+            let handlers: (PluginRouteHandler & { pluginId: string })[] = [];
             if (typeof plugin.routeHandlers === "function") {
                 const result = plugin.routeHandlers(publicConfig, processedPlugins, version);
                 if (result.status === "ERROR") {
                     throw new Error(result.message);
                 }
-                handlers = result.routeHandlers;
+                handlers = result.routeHandlers.map((handler) => ({ ...handler, pluginId: plugin.id }));
             } else {
-                handlers = plugin.routeHandlers;
+                handlers = plugin.routeHandlers.map((handler) => ({ ...handler, pluginId: plugin.id }));
             }
 
             pluginRouteHandlers.push(...handlers);

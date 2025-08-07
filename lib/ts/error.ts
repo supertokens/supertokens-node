@@ -16,6 +16,7 @@
 export default class SuperTokensError extends Error {
     private static errMagic = "ndskajfasndlfkj435234krjdsa";
     static BAD_INPUT_ERROR: "BAD_INPUT_ERROR" = "BAD_INPUT_ERROR";
+    static PLUGIN_ERROR: "PLUGIN_ERROR" = "PLUGIN_ERROR";
 
     public type: string;
     public payload: any;
@@ -42,6 +43,11 @@ export default class SuperTokensError extends Error {
                   type: "BAD_INPUT_ERROR";
                   payload: undefined;
               }
+            | {
+                  message: string;
+                  type: "PLUGIN_ERROR";
+                  payload: undefined;
+              }
     ) {
         super(options.message);
         this.type = options.type;
@@ -51,5 +57,16 @@ export default class SuperTokensError extends Error {
 
     static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
         return obj.errMagic === SuperTokensError.errMagic;
+    }
+
+    static fromError(err: Error, type: string): SuperTokensError {
+        const newError = new SuperTokensError({
+            message: err.message,
+            type,
+        });
+
+        newError.stack = err.stack;
+
+        return newError;
     }
 }

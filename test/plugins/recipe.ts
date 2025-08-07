@@ -9,6 +9,7 @@ export function validateAndNormalizeUserInput(appInfo, config) {
     let override = {
         functions: (originalImplementation) => originalImplementation,
         apis: (originalImplementation) => originalImplementation,
+        config: (originalConfig) => originalConfig,
         ...config?.override,
     };
 
@@ -21,6 +22,8 @@ export default class Recipe extends RecipeModule {
     static initCalls: string[] = [];
 
     config;
+
+    configImpl;
 
     recipeInterfaceImpl;
 
@@ -39,6 +42,9 @@ export default class Recipe extends RecipeModule {
         {
             let builder = new OverrideableBuilder(getAPIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
+        }
+        {
+            this.configImpl = this.config.override.config(config);
         }
     }
 
