@@ -191,13 +191,16 @@ export function loadPlugins({
     for (const [pluginIndex, plugin] of finalPluginList.entries()) {
         if (plugin.config) {
             // @ts-ignore
-            const { appInfo, ...pluginConfigOverride } = plugin.config(
+            const { appInfo, recipeList, experimental, ...pluginConfigOverride } = plugin.config(
                 getPublicConfig({ ..._config, appInfo: normalisedAppInfo })
             );
             _config = { ..._config, ...pluginConfigOverride };
         }
 
-        const publicConfig = getPublicConfig({ ..._config, appInfo: normalisedAppInfo });
+        const publicConfig = getPublicConfig({
+            ..._config,
+            appInfo: normalisedAppInfo,
+        });
 
         if (plugin.routeHandlers) {
             let handlers: (PluginRouteHandler & { pluginId: string })[] = [];
