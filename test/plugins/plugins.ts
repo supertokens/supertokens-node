@@ -23,6 +23,15 @@ export function apiOverrideFactory(identifier: string) {
     };
 }
 
+export function configOverrideFactory(identifier: string) {
+    return function override(originalConfig) {
+        return {
+            ...originalConfig,
+            testProperty: [...(originalConfig.testProperty || []), identifier],
+        };
+    };
+}
+
 export function initFactory(identifier: string) {
     return function init(config: SuperTokensPublicConfig, pluginsAbove: SuperTokensPublicPlugin[], sdkVersion: string) {
         PluginTestRecipe.initCalls.push(identifier);
@@ -37,7 +46,7 @@ export function dependencyFactory(dependencies?: SuperTokensPlugin[]) {
     return function dependency(
         config: SuperTokensPublicConfig,
         pluginsAbove: SuperTokensPublicPlugin[],
-        sdkVersion: string,
+        sdkVersion: string
     ): { status: "OK"; pluginsToAdd?: SuperTokensPlugin[] } | { status: "ERROR"; message: string } {
         const addedPluginIds: string[] = pluginsAbove.map((p) => p.id);
         const pluginsToAdd: SuperTokensPlugin[] = dependencies!.filter((p) => !addedPluginIds.includes(p.id));
@@ -52,12 +61,14 @@ export function pluginFactory({
     identifier,
     overrideFunctions = false,
     overrideApis = false,
+    overrideConfig = false,
     dependencies,
     addInit = false,
 }: {
     identifier: string;
     overrideFunctions: boolean;
     overrideApis: boolean;
+    overrideConfig: boolean;
     dependencies?: SuperTokensPlugin[];
     addInit?: boolean;
 }): SuperTokensPlugin {
@@ -75,6 +86,10 @@ export function pluginFactory({
         overrideMap[PluginTestRecipe.RECIPE_ID].apis = apiOverrideFactory(identifier);
     }
 
+    if (overrideConfig) {
+        overrideMap[PluginTestRecipe.RECIPE_ID].config = configOverrideFactory(identifier);
+    }
+
     return {
         id: identifier,
         compatibleSDKVersions: ["23.0.x"],
@@ -88,18 +103,21 @@ export const Plugin1 = pluginFactory({
     identifier: "plugin1",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     addInit: true,
 });
 export const Plugin2 = pluginFactory({
     identifier: "plugin2",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     addInit: true,
 });
 export const Plugin3Dep1 = pluginFactory({
     identifier: "plugin3dep1",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     dependencies: [Plugin1],
     addInit: true,
 });
@@ -107,6 +125,7 @@ export const Plugin3Dep2_1 = pluginFactory({
     identifier: "plugin3dep2_1",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     dependencies: [Plugin2, Plugin1],
     addInit: true,
 });
@@ -114,6 +133,7 @@ export const Plugin4Dep1 = pluginFactory({
     identifier: "plugin4dep1",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     dependencies: [Plugin1],
     addInit: true,
 });
@@ -121,6 +141,7 @@ export const Plugin4Dep2 = pluginFactory({
     identifier: "plugin4dep2",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     dependencies: [Plugin2],
     addInit: true,
 });
@@ -128,6 +149,7 @@ export const Plugin4Dep3__2_1 = pluginFactory({
     identifier: "plugin4dep3__2_1",
     overrideFunctions: true,
     overrideApis: false,
+    overrideConfig: true,
     dependencies: [Plugin3Dep2_1],
     addInit: true,
 });
