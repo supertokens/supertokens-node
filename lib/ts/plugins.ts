@@ -4,6 +4,7 @@ import { PluginRouteHandler, AllRecipeConfigs, TypeInput, NormalisedAppinfo } fr
 import { version } from "./version";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { getPublicConfig } from "./utils";
+import { isVersionCompatible } from "./versionChecker";
 
 export function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensPublicPlugin {
     return {
@@ -149,16 +150,17 @@ export function loadPlugins({
             continue;
         }
 
-        const versionContraints = Array.isArray(plugin.compatibleSDKVersions)
-            ? plugin.compatibleSDKVersions
-            : [plugin.compatibleSDKVersions];
-        if (!versionContraints.includes(version)) {
-            // TODO: better checks
-            throw new Error(
-                `Plugin version mismatch. Version ${version} not found in compatible versions: ${versionContraints.join(
-                    ", "
-                )}`
-            );
+        if (plugin.compatibleSDKVersions) {
+            const versionCheck = isVersionCompatible(version, plugin.compatibleSDKVersions);
+            if (!versionCheck) {
+                throw new Error(
+                    `Incompatible SDK version for plugin ${
+                        plugin.id
+                    }. Version "${version}" not found in compatible versions: ${JSON.stringify(
+                        plugin.compatibleSDKVersions
+                    )}`
+                );
+            }
         }
 
         const dependencies = getPluginDependencies({

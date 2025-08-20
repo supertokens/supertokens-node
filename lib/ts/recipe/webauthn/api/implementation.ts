@@ -1100,7 +1100,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnGeneratedOptionsId,
                 credential,
                 userContext,
-                recipeUserId: session.getRecipeUserId().getAsString(),
+                recipeUserId: loginMethod.recipeUserId.getAsString(),
             });
 
             if (registerCredentialResponse.status !== "OK") {
