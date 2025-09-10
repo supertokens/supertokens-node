@@ -11,6 +11,7 @@ import {
     GoogleWorkspaces,
     Linkedin,
     Okta,
+    SAML,
     Twitter,
 } from ".";
 import { UserContext } from "../../../types";
@@ -85,6 +86,8 @@ function createProvider(input: ProviderInput): TypeProvider {
         return Twitter(clonedInput);
     } else if (clonedInput.config.thirdPartyId.startsWith("boxy-saml")) {
         return BoxySAML(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("saml")) {
+        return SAML(clonedInput);
     }
 
     return NewProvider(clonedInput);

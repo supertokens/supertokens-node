@@ -187,6 +187,13 @@ export function send200Response(res: BaseResponse, responseJson: any) {
     res.sendJSONResponse(responseJson);
 }
 
+export function sendRedirectResponse(res: BaseResponse, location: string) {
+    logDebugMessage("Sending redirect response with status code 302");
+    res.setHeader("Location", location, false);
+    res.setStatusCode(302);
+    res.sendHTMLResponse("");
+}
+
 // this function tries to convert the json response based on the toJson function
 // defined in the objects in the input. This is primarily used to convert the RecipeUserId
 // type to a string type before sending it to the client.
