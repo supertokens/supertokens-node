@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { send200Response, sendRedirectResponse } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 
@@ -26,7 +26,16 @@ export default async function callbackAPI(
         return false;
     }
 
-    const response = await apiImplementation.callbackPOST({ options, userContext });
+    const clientId = options.req.getKeyValueFromQuery("client_id");
+    const inputBody = await options.req.getBodyAsJSONOrFormData();
+    const samlResponse: string = inputBody.SAMLResponse;
+    const relayState: string | undefined = inputBody.RelayState;
+
+    const response = await apiImplementation.callbackPOST({ options, userContext, clientId, samlResponse, relayState });
+    if (response.status === "OK") {
+        sendRedirectResponse(options.res, response.redirectURI);
+        return true;
+    }
     send200Response(options.res, response);
     return true;
 }

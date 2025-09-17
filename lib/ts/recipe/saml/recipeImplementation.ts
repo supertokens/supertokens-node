@@ -35,17 +35,28 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
         verifySAMLResponse: async function (
             this: RecipeInterface,
-            input: { samlResponse: string; userContext: UserContext }
+            { tenantId, clientId, samlResponse, relayState, userContext }
         ) {
-            void input;
-            return {
-                status: "OK",
-            };
+            const resp = await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/callback",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
+                    clientId,
+                    samlResponse,
+                    relayState,
+                },
+                userContext
+            );
+            return resp;
         },
 
         createLoginRequest: async function (
             this: RecipeInterface,
-            { tenantId, clientId, redirectURI, acsURL, userContext }
+            { tenantId, clientId, redirectURI, state, acsURL, userContext }
         ) {
             const resp = await querier.sendPostRequest(
                 {
@@ -57,6 +68,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 {
                     clientId,
                     redirectURI,
+                    state,
                     acsURL,
                 },
                 userContext

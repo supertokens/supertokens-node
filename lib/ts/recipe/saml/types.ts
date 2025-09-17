@@ -48,16 +48,24 @@ export type RecipeInterface = {
         tenantId: string;
         clientId: string;
         redirectURI: string;
+        state?: string;
         acsURL: string;
         userContext: UserContext;
     }) => Promise<{ status: "OK"; redirectURI: string } | { status: "INVALID_CLIENT_ERROR" }>;
 
-    verifySAMLResponse: (input: { samlResponse: string; userContext: UserContext }) => Promise<
+    verifySAMLResponse: (input: {
+        tenantId: string;
+        clientId?: string;
+        samlResponse: string;
+        relayState: string | undefined;
+        userContext: UserContext;
+    }) => Promise<
         | {
               status: "OK";
+              redirectURI: string;
           }
         | {
-              status: "INVALID_RESPONSE";
+              status: "INVALID_RESPONSE_ERROR" | "INVALID_CLIENT_ERROR";
           }
     >;
 };
@@ -75,10 +83,17 @@ export type APIOptions = {
 export type APIInterface = {
     loginGET:
         | undefined
-        | ((input: { clientId: string; redirectURI: string; options: APIOptions; userContext: UserContext }) => Promise<
+        | ((input: {
+              clientId: string;
+              redirectURI: string;
+              state?: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
               | {
                     status: "OK";
                     redirectURI: string;
+                    state?: string;
                 }
               | {
                     status: "INVALID_CLIENT_ERROR";
@@ -88,9 +103,19 @@ export type APIInterface = {
 
     callbackPOST:
         | undefined
-        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<
+        | ((input: {
+              options: APIOptions;
+              userContext: UserContext;
+              clientId?: string;
+              samlResponse: string;
+              relayState: string | undefined;
+          }) => Promise<
               | {
                     status: "OK";
+                    redirectURI: string;
+                }
+              | {
+                    status: "INVALID_RESPONSE_ERROR" | "INVALID_CLIENT_ERROR";
                 }
               | GeneralErrorResponse
           >);

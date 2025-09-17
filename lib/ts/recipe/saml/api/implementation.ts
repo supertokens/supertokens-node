@@ -18,7 +18,7 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        loginGET: async function ({ clientId, redirectURI, options, userContext }) {
+        loginGET: async function ({ clientId, redirectURI, state, options, userContext }) {
             const acsURL =
                 options.appInfo.apiDomain.getAsStringDangerous() +
                 options.appInfo.apiBasePath.appendPath(new NormalisedURLPath("/saml/callback")).getAsStringDangerous();
@@ -27,17 +27,22 @@ export default function getAPIInterface(): APIInterface {
                 clientId,
                 acsURL,
                 redirectURI,
+                state,
                 userContext,
             });
 
             return result;
         },
 
-        // Placeholder implementation: assume session exists and return OK
-        callbackPOST: async function ({ options: _options, userContext: _userContext }) {
-            return {
-                status: "OK",
-            };
+        callbackPOST: async function ({ clientId, samlResponse, relayState, options, userContext }) {
+            const result = await options.recipeImplementation.verifySAMLResponse({
+                tenantId: "public", // TODO: get tenantId from options
+                clientId,
+                samlResponse,
+                relayState,
+                userContext,
+            });
+            return result;
         },
     };
 }

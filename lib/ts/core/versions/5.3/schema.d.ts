@@ -10428,6 +10428,7 @@ export interface operations {
                     clientId: string;
                     redirectURI: string;
                     acsURL: string;
+                    state?: string;
                 };
             };
         };
@@ -10475,6 +10476,7 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    clientId?: string;
                     samlResponse: string;
                     relayState?: string;
                 };
@@ -10490,11 +10492,11 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
-                              code: string;
+                              redirectURI: string;
                           }
                         | {
                               /** @enum {string} */
-                              status: "INVALID_SAML_RESPONSE_ERROR";
+                              status: "INVALID_CLIENT_ERROR" | "INVALID_RESPONSE_ERROR";
                               message: string;
                           };
                 };

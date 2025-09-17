@@ -29,6 +29,7 @@ export default async function loginAPI(
 
     const clientId = options.req.getKeyValueFromQuery("client_id");
     const redirectURI = options.req.getKeyValueFromQuery("redirect_uri");
+    const state = options.req.getKeyValueFromQuery("state");
 
     if (clientId === undefined || typeof clientId !== "string") {
         throw new STError({
@@ -47,6 +48,7 @@ export default async function loginAPI(
     const response = await apiImplementation.loginGET({
         clientId,
         redirectURI,
+        state,
         options,
         userContext,
     });
