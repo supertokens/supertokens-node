@@ -127,6 +127,7 @@ export default class Recipe extends RecipeModule {
         let options = {
             recipeImplementation: this.recipeInterfaceImpl,
             config: this.config,
+            appInfo: this.appInfo,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             req,

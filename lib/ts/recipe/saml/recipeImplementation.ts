@@ -17,6 +17,7 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import { TypeNormalisedInput } from "./types";
 import { UserContext } from "../../types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     void querier;
@@ -42,11 +43,34 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             };
         },
 
-        createLoginRequest: async function (this: RecipeInterface, input: {}) {
-            void input;
+        createLoginRequest: async function (
+            this: RecipeInterface,
+            { tenantId, clientId, redirectURI, acsURL, userContext }
+        ) {
+            const resp = await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/login",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
+                    clientId,
+                    redirectURI,
+                    acsURL,
+                },
+                userContext
+            );
+
+            if (resp.status !== "OK") {
+                return {
+                    status: resp.status,
+                };
+            }
+
             return {
                 status: "OK",
-                redirectURL: "https://example.com/sso/login",
+                redirectURI: resp.ssoRedirectURI,
             };
         },
     };

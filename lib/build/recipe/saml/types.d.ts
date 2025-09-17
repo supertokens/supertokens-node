@@ -1,8 +1,7 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, UserContext } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import { GeneralErrorResponse, NormalisedAppinfo, UserContext } from "../../types";
 export type TypeInput = {
     override?: {
         functions?: (
@@ -31,10 +30,21 @@ export type RecipeInterface = {
               status: "UNKNOWN_CLIENT" | "INVALID_REDIRECT_URI";
           }
     >;
-    createLoginRequest: (input: { clientId: string; redirectURI: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        redirectURL: string;
-    }>;
+    createLoginRequest: (input: {
+        tenantId: string;
+        clientId: string;
+        redirectURI: string;
+        acsURL: string;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              redirectURI: string;
+          }
+        | {
+              status: "INVALID_CLIENT_ERROR";
+          }
+    >;
     verifySAMLResponse: (input: { samlResponse: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
@@ -47,6 +57,7 @@ export type RecipeInterface = {
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
+    appInfo: NormalisedAppinfo;
     recipeId: string;
     isInServerlessEnv: boolean;
     req: BaseRequest;
@@ -58,13 +69,16 @@ export type APIInterface = {
         | ((input: { clientId: string; redirectURI: string; options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
-                    redirectURL: string;
+                    redirectURI: string;
+                }
+              | {
+                    status: "INVALID_CLIENT_ERROR";
                 }
               | GeneralErrorResponse
           >);
     callbackPOST:
         | undefined
-        | ((input: { options: APIOptions; session: SessionContainerInterface; userContext: UserContext }) => Promise<
+        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<
               | {
                     status: "OK";
                 }

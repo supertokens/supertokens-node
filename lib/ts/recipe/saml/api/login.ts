@@ -50,10 +50,12 @@ export default async function loginAPI(
         options,
         userContext,
     });
+
     if (response.status === "OK") {
-        sendRedirectResponse(options.res, response.redirectURL);
+        sendRedirectResponse(options.res, response.redirectURI);
         return true;
     }
+
     send200Response(options.res, response);
     return true;
 }

@@ -15,7 +15,6 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
-import Session from "../../session";
 import { UserContext } from "../../../types";
 
 export default async function callbackAPI(
@@ -27,14 +26,7 @@ export default async function callbackAPI(
         return false;
     }
 
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
-        userContext
-    );
-
-    const response = await apiImplementation.callbackPOST({ options, session, userContext });
+    const response = await apiImplementation.callbackPOST({ options, userContext });
     send200Response(options.res, response);
     return true;
 }

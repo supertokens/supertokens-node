@@ -14,29 +14,27 @@
  */
 
 import { APIInterface } from "../";
+import NormalisedURLPath from "../../../normalisedURLPath";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        // Placeholder implementation: validate inputs and return OK
-        loginGET: async function ({ clientId, redirectURI, options: _options, userContext }) {
-            // Optionally create a login request and redirect URL (placeholder)
-            const result = await _options.recipeImplementation.createLoginRequest({
+        loginGET: async function ({ clientId, redirectURI, options, userContext }) {
+            const acsURL =
+                options.appInfo.apiDomain.getAsStringDangerous() +
+                options.appInfo.apiBasePath.appendPath(new NormalisedURLPath("/saml/callback")).getAsStringDangerous();
+            const result = await options.recipeImplementation.createLoginRequest({
+                tenantId: "public", // TODO: get tenantId from options
                 clientId,
+                acsURL,
                 redirectURI,
                 userContext,
             });
 
-            return {
-                status: "OK",
-                redirectURL: result.redirectURL,
-            };
+            return result;
         },
 
         // Placeholder implementation: assume session exists and return OK
-        callbackPOST: async function ({ options: _options, session, userContext: _userContext }) {
-            // In a real implementation we would parse and verify SAMLResponse from the request
-            // and then complete login / link accounts etc.
-            void session; // prevent unused warning in placeholder
+        callbackPOST: async function ({ options: _options, userContext: _userContext }) {
             return {
                 status: "OK",
             };

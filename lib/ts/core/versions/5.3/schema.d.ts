@@ -2714,6 +2714,114 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/<tenantId>/recipe/saml/clients/create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Create or update a SAML client for the specified tenant.
+         *      */
+        put: operations["createOrUpdateSamlClient"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/clients/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get the list of all SAML clients configured for the specified tenant.
+         *      */
+        get: operations["listSamlClients"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/clients/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Delete a SAML client for the specified tenant.
+         *      */
+        post: operations["removeSamlClient"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Create a new login redirect URL for a given SAML client ID.
+         *      */
+        post: operations["createSamlLoginRedirect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Handle the SAML response from the Identity Provider (IdP).
+         *      */
+        post: operations["handleSamlCallback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Exchange an intermediate code for tokens and user claims.
+         *      */
+        post: operations["exchangeSamlCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bulk-import/users": {
         parameters: {
             query?: never;
@@ -3169,6 +3277,13 @@ export interface components {
             /** @example false */
             enableRefreshTokenRotation?: boolean;
         };
+        samlClient: {
+            status: components["schemas"]["statusOK"];
+            clientId: string;
+            spEntityId?: string;
+            redirectURIs: string[];
+            defaultRedirectURI: string;
+        };
         /**
          * @description should be a JSON object (not a JSON literal nor an array)
          * @example {
@@ -3563,6 +3678,8 @@ export interface components {
         multitenancyRid: string;
         /** @example oauth */
         oauthRid: string;
+        /** @example saml */
+        samlRid: string;
         /** @example usermetadata */
         userMetadataRid: string;
         /** @example userroles */
@@ -10160,6 +10277,284 @@ export interface operations {
             400: components["responses"]["400"];
             401: components["responses"]["401"];
             402: components["responses"]["402"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    createOrUpdateSamlClient: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    clientId?: string;
+                    spEntityId?: string;
+                    redirectURIs: string[];
+                    defaultRedirectURI: string;
+                    metadataXML: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns the created or updated SAML client */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["samlClient"];
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    listSamlClients: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns all SAML clients */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        clients: components["schemas"]["samlClient"][];
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    removeSamlClient: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    clientId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Indicates whether the client existed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        didExist: boolean;
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    createSamlLoginRedirect: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    clientId: string;
+                    redirectURI: string;
+                    acsURL: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns the URL to redirect the user to the IdP */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              ssoRedirectURI: string;
+                          }
+                        | {
+                              /** @enum {string} */
+                              status: "INVALID_CLIENT_ERROR";
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    handleSamlCallback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    samlResponse: string;
+                    relayState?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns an intermediate code on success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              code: string;
+                          }
+                        | {
+                              /** @enum {string} */
+                              status: "INVALID_SAML_RESPONSE_ERROR";
+                              message: string;
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    exchangeSamlCode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns tokens and claims on success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              tokens: {
+                                  accessToken: string;
+                                  idToken: string;
+                              };
+                              claims: {
+                                  [key: string]: string;
+                              };
+                          }
+                        | {
+                              /** @enum {string} */
+                              status: "INVALID_CODE_ERROR";
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
