@@ -48,7 +48,6 @@ export type RecipeInterface = {
     >;
     verifySAMLResponse: (input: {
         tenantId: string;
-        clientId?: string;
         samlResponse: string;
         relayState: string | undefined;
         userContext: UserContext;
@@ -59,6 +58,17 @@ export type RecipeInterface = {
           }
         | {
               status: "INVALID_RESPONSE_ERROR" | "INVALID_CLIENT_ERROR";
+          }
+    >;
+    exchangeCodeForToken: (input: { tenantId: string; code: string; userContext: UserContext }) => Promise<
+        | {
+              status: "OK";
+              tokens: {
+                  idToken: string;
+              };
+          }
+        | {
+              status: "INVALID_CODE_ERROR";
           }
     >;
 };
@@ -96,7 +106,6 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: UserContext;
-              clientId?: string;
               samlResponse: string;
               relayState: string | undefined;
           }) => Promise<

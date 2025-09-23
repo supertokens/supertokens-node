@@ -10542,11 +10542,7 @@ export interface operations {
                         | {
                               status: components["schemas"]["statusOK"];
                               tokens: {
-                                  accessToken: string;
                                   idToken: string;
-                              };
-                              claims: {
-                                  [key: string]: string;
                               };
                           }
                         | {

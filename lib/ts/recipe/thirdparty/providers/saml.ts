@@ -17,6 +17,7 @@ import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 import SuperTokens from "../../../supertokens";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import SAMLRecipe from "../../saml/recipe";
 
 export default function SAML(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -41,6 +42,10 @@ export default function SAML(input: ProviderInput): TypeProvider {
         const oGetConfig = originalImplementation.getConfigForClientType;
         originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
             const config = await oGetConfig({ clientType, userContext });
+            config.jwksURI =
+                appinfo.apiDomain.getAsStringDangerous() +
+                appinfo.apiBasePath.appendPath(new NormalisedURLPath("/jwt/jwks.json")).getAsStringDangerous();
+            console.log(config.jwksURI);
             return config;
         };
 
@@ -61,11 +66,15 @@ export default function SAML(input: ProviderInput): TypeProvider {
             };
         };
 
-        const oExchangeAuthCodeForOAuthTokens = originalImplementation.exchangeAuthCodeForOAuthTokens;
         originalImplementation.exchangeAuthCodeForOAuthTokens = async function (input) {
-            const result = await oExchangeAuthCodeForOAuthTokens(input);
-            console.log("exchangeAuthCodeForOAuthTokens", input, result);
-            return result;
+            const samlRecipe = SAMLRecipe.getInstanceOrThrowError();
+            const res = await samlRecipe.recipeInterfaceImpl.exchangeCodeForToken({
+                tenantId: "public",
+                code: input.redirectURIInfo.redirectURIQueryParams.code as string,
+                userContext: input.userContext!,
+            }); // TODO fix tenantId
+            console.log("token: ", res);
+            return res;
         };
 
         if (oOverride !== undefined) {

@@ -26,12 +26,11 @@ export default async function callbackAPI(
         return false;
     }
 
-    const clientId = options.req.getKeyValueFromQuery("client_id");
     const inputBody = await options.req.getBodyAsJSONOrFormData();
     const samlResponse: string = inputBody.SAMLResponse;
     const relayState: string | undefined = inputBody.RelayState;
 
-    const response = await apiImplementation.callbackPOST({ options, userContext, clientId, samlResponse, relayState });
+    const response = await apiImplementation.callbackPOST({ options, userContext, samlResponse, relayState });
     if (response.status === "OK") {
         sendRedirectResponse(options.res, response.redirectURI);
         return true;

@@ -34,10 +34,9 @@ export default function getAPIInterface(): APIInterface {
             return result;
         },
 
-        callbackPOST: async function ({ clientId, samlResponse, relayState, options, userContext }) {
+        callbackPOST: async function ({ samlResponse, relayState, options, userContext }) {
             const result = await options.recipeImplementation.verifySAMLResponse({
                 tenantId: "public", // TODO: get tenantId from options
-                clientId,
                 samlResponse,
                 relayState,
                 userContext,

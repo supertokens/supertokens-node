@@ -35,7 +35,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
         verifySAMLResponse: async function (
             this: RecipeInterface,
-            { tenantId, clientId, samlResponse, relayState, userContext }
+            { tenantId, samlResponse, relayState, userContext }
         ) {
             const resp = await querier.sendPostRequest(
                 {
@@ -45,7 +45,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     },
                 },
                 {
-                    clientId,
                     samlResponse,
                     relayState,
                 },
@@ -84,6 +83,23 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 status: "OK",
                 redirectURI: resp.ssoRedirectURI,
             };
+        },
+
+        exchangeCodeForToken: async function ({ tenantId, code, userContext }) {
+            const resp = await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/token",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
+                    code,
+                },
+                userContext
+            );
+
+            return resp;
         },
     };
 }
