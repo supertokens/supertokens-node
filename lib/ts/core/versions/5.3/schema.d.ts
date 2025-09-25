@@ -2714,7 +2714,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/<tenantId>/recipe/saml/clients/create": {
+    "/<tenantId>/recipe/saml/clients": {
         parameters: {
             query?: never;
             header?: never;
@@ -3278,11 +3278,12 @@ export interface components {
             enableRefreshTokenRotation?: boolean;
         };
         samlClient: {
-            status: components["schemas"]["statusOK"];
             clientId: string;
-            spEntityId?: string;
+            spEntityId: string;
             redirectURIs: string[];
             defaultRedirectURI: string;
+            idpEntityId: string;
+            idpSigningCertificate?: string;
         };
         /**
          * @description should be a JSON object (not a JSON literal nor an array)
@@ -10302,10 +10303,11 @@ export interface operations {
             content: {
                 "application/json": {
                     clientId?: string;
-                    spEntityId?: string;
+                    spEntityId: string;
                     redirectURIs: string[];
                     defaultRedirectURI: string;
-                    metadataXML: string;
+                    metadataXML?: string;
+                    metadataURL?: string;
                 };
             };
         };
@@ -10316,7 +10318,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["samlClient"];
+                    "application/json":
+                        | ({
+                              status: components["schemas"]["statusOK"];
+                          } & components["schemas"]["samlClient"])
+                        | {
+                              /**
+                               * @example INVALID_METADATA_XML_ERROR
+                               * @enum {string}
+                               */
+                              status: "INVALID_METADATA_XML_ERROR";
+                          };
                 };
             };
             400: components["responses"]["400"];

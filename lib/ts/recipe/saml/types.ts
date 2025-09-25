@@ -37,7 +37,27 @@ export type TypeNormalisedInput = {
     };
 };
 
+export type SAMLClient = {
+    clientId: string;
+    spEntityId: string;
+    redirectURIs: string[];
+    defaultRedirectURI: string;
+    idpEntityId: string;
+    idpSigningCertificate?: string;
+};
+
 export type RecipeInterface = {
+    createOrUpdateClient: (input: {
+        tenantId: string;
+        clientId?: string;
+        spEntityId: string;
+        redirectURIs: string[];
+        defaultRedirectURI: string;
+        metadataXML?: string;
+        metadataURL?: string;
+        userContext: UserContext;
+    }) => Promise<({ status: "OK" } & SAMLClient) | { status: "INVALID_METADATA_XML_ERROR" }>;
+
     verifyClientRedirectURI: (input: {
         clientId: string;
         redirectURI: string;
