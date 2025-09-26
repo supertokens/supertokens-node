@@ -58,6 +58,17 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             );
         },
 
+        listClients: async function (this: RecipeInterface, { tenantId, userContext }) {
+            return await querier.sendGetRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/clients/list",
+                    params: { tenantId },
+                },
+                {},
+                userContext
+            );
+        },
+
         verifyClientRedirectURI: async function (
             this: RecipeInterface,
             input: { clientId: string; redirectURI: string; userContext: UserContext }

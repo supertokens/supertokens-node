@@ -48,6 +48,10 @@ export type RecipeInterface = {
               status: "INVALID_METADATA_XML_ERROR";
           }
     >;
+    listClients: (input: { tenantId: string; userContext: UserContext }) => Promise<{
+        status: "OK";
+        clients: SAMLClient[];
+    }>;
     verifyClientRedirectURI: (input: { clientId: string; redirectURI: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
