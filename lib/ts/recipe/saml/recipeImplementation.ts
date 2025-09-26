@@ -69,6 +69,19 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             );
         },
 
+        removeClient: async function (this: RecipeInterface, { tenantId, clientId, userContext }) {
+            return await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/clients/remove",
+                    params: { tenantId },
+                },
+                {
+                    clientId,
+                },
+                userContext
+            );
+        },
+
         verifyClientRedirectURI: async function (
             this: RecipeInterface,
             input: { clientId: string; redirectURI: string; userContext: UserContext }

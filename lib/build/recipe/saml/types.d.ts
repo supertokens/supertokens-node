@@ -52,6 +52,10 @@ export type RecipeInterface = {
         status: "OK";
         clients: SAMLClient[];
     }>;
+    removeClient: (input: { tenantId: string; clientId: string; userContext: UserContext }) => Promise<{
+        status: "OK";
+        didExist: boolean;
+    }>;
     verifyClientRedirectURI: (input: { clientId: string; redirectURI: string; userContext: UserContext }) => Promise<
         | {
               status: "OK";
