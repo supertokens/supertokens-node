@@ -45,7 +45,6 @@ export default function SAML(input: ProviderInput): TypeProvider {
             config.jwksURI =
                 appinfo.apiDomain.getAsStringDangerous() +
                 appinfo.apiBasePath.appendPath(new NormalisedURLPath("/jwt/jwks.json")).getAsStringDangerous();
-            console.log(config.jwksURI);
             return config;
         };
 
@@ -73,7 +72,6 @@ export default function SAML(input: ProviderInput): TypeProvider {
                 code: input.redirectURIInfo.redirectURIQueryParams.code as string,
                 userContext: input.userContext!,
             }); // TODO fix tenantId
-            console.log("token: ", res);
             return res;
         };
 

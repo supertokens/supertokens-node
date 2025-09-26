@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response, sendRedirectResponse } from "../../../utils";
+import { sendRedirectResponse } from "../../../utils";
 import STError from "../../thirdparty/error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
@@ -55,9 +55,10 @@ export default async function loginAPI(
 
     if (response.status === "OK") {
         sendRedirectResponse(options.res, response.redirectURI);
-        return true;
+    } else {
+        // INVALID_CLIENT_ERROR
+        sendRedirectResponse(options.res, `${redirectURI}?error=invalid_client_error`);
     }
 
-    send200Response(options.res, response);
     return true;
 }
