@@ -25,7 +25,17 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
     return {
         createOrUpdateClient: async function (
             this: RecipeInterface,
-            { tenantId, clientId, spEntityId, redirectURIs, defaultRedirectURI, metadataXML, metadataURL, userContext }
+            {
+                tenantId,
+                clientId,
+                spEntityId,
+                redirectURIs,
+                defaultRedirectURI,
+                metadataXML,
+                metadataURL,
+                allowIDPInitiatedLogin,
+                userContext,
+            }
         ) {
             return await querier.sendPutRequest(
                 {
@@ -41,6 +51,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     defaultRedirectURI,
                     metadataXML,
                     metadataURL,
+                    allowIDPInitiatedLogin,
                 },
                 {},
                 userContext

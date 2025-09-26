@@ -3284,6 +3284,7 @@ export interface components {
             defaultRedirectURI: string;
             idpEntityId: string;
             idpSigningCertificate?: string;
+            allowIDPInitiatedLogin: boolean;
         };
         /**
          * @description should be a JSON object (not a JSON literal nor an array)
@@ -10308,6 +10309,7 @@ export interface operations {
                     defaultRedirectURI: string;
                     metadataXML?: string;
                     metadataURL?: string;
+                    allowIDPInitiatedLogin?: boolean;
                 };
             };
         };

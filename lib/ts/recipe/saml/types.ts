@@ -44,6 +44,7 @@ export type SAMLClient = {
     defaultRedirectURI: string;
     idpEntityId: string;
     idpSigningCertificate?: string;
+    allowIDPInitiatedLogin: boolean;
 };
 
 export type RecipeInterface = {
@@ -55,6 +56,7 @@ export type RecipeInterface = {
         defaultRedirectURI: string;
         metadataXML?: string;
         metadataURL?: string;
+        allowIDPInitiatedLogin?: boolean;
         userContext: UserContext;
     }) => Promise<({ status: "OK" } & SAMLClient) | { status: "INVALID_METADATA_XML_ERROR" }>;
 
