@@ -50,8 +50,8 @@ export default function Apple(input: ProviderInput): TypeProvider {
 
     input.override = function (originalImplementation) {
         const oGetConfig = originalImplementation.getConfigForClientType;
-        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
-            const config = await oGetConfig({ clientType, userContext });
+        originalImplementation.getConfigForClientType = async function ({ tenantId, clientType, userContext }) {
+            const config = await oGetConfig({ tenantId, clientType, userContext });
 
             if (config.scope === undefined) {
                 config.scope = ["openid", "email"];

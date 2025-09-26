@@ -32,6 +32,7 @@ export default function getAPIInterface(): APIInterface {
             for (const providerInput of mergedProviders) {
                 try {
                     const providerInstance = await findAndCreateProviderInstance(
+                        tenantId,
                         mergedProviders,
                         providerInput.config.thirdPartyId,
                         clientType,

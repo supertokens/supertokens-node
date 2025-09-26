@@ -117,7 +117,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        _tenantId: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
@@ -134,9 +134,9 @@ export default class Recipe extends RecipeModule {
             res,
         };
         if (id === SAML_LOGIN) {
-            return await loginAPI(this.apiImpl, options, userContext);
+            return await loginAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SAML_CALLBACK) {
-            return await callbackAPI(this.apiImpl, options, userContext);
+            return await callbackAPI(this.apiImpl, tenantId, options, userContext);
         }
         throw new Error("should never come here");
     };

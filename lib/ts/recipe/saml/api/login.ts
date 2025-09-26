@@ -20,6 +20,7 @@ import { UserContext } from "../../../types";
 
 export default async function loginAPI(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
@@ -46,6 +47,7 @@ export default async function loginAPI(
     }
 
     const response = await apiImplementation.loginGET({
+        tenantId,
         clientId,
         redirectURI,
         state,

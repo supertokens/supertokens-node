@@ -19,6 +19,7 @@ import { UserContext } from "../../../types";
 
 export default async function callbackAPI(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
@@ -30,7 +31,7 @@ export default async function callbackAPI(
     const samlResponse: string = inputBody.SAMLResponse;
     const relayState: string | undefined = inputBody.RelayState;
 
-    const response = await apiImplementation.callbackPOST({ options, userContext, samlResponse, relayState });
+    const response = await apiImplementation.callbackPOST({ tenantId, options, userContext, samlResponse, relayState });
     if (response.status === "OK") {
         sendRedirectResponse(options.res, response.redirectURI);
         return true;

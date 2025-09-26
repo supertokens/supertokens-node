@@ -209,6 +209,7 @@ export default async function getThirdPartyConfig(
             for (const client of provider.config.clients ?? []) {
                 try {
                     const providerInstance = await findAndCreateProviderInstance(
+                        tenantId,
                         mergedProvidersFromCoreAndStatic,
                         thirdPartyId,
                         client.clientType,

@@ -128,6 +128,7 @@ export type APIInterface = {
     loginGET:
         | undefined
         | ((input: {
+              tenantId: string;
               clientId: string;
               redirectURI: string;
               state?: string;
@@ -148,6 +149,7 @@ export type APIInterface = {
     callbackPOST:
         | undefined
         | ((input: {
+              tenantId: string;
               options: APIOptions;
               userContext: UserContext;
               samlResponse: string;

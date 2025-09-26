@@ -18,12 +18,15 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        loginGET: async function ({ clientId, redirectURI, state, options, userContext }) {
+        loginGET: async function ({ tenantId, clientId, redirectURI, state, options, userContext }) {
             const acsURL =
                 options.appInfo.apiDomain.getAsStringDangerous() +
-                options.appInfo.apiBasePath.appendPath(new NormalisedURLPath("/saml/callback")).getAsStringDangerous();
+                options.appInfo.apiBasePath
+                    .appendPath(new NormalisedURLPath(`/${tenantId}`))
+                    .appendPath(new NormalisedURLPath("/saml/callback"))
+                    .getAsStringDangerous();
             const result = await options.recipeImplementation.createLoginRequest({
-                tenantId: "public", // TODO: get tenantId from options
+                tenantId,
                 clientId,
                 acsURL,
                 redirectURI,

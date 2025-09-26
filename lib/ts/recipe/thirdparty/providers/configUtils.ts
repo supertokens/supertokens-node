@@ -35,8 +35,13 @@ export function getProviderConfigForClient(
     };
 }
 
-async function fetchAndSetConfig(provider: TypeProvider, clientType: string | undefined, userContext: UserContext) {
-    let config = await provider.getConfigForClientType({ clientType, userContext });
+async function fetchAndSetConfig(
+    tenantId: string,
+    provider: TypeProvider,
+    clientType: string | undefined,
+    userContext: UserContext
+) {
+    let config = await provider.getConfigForClientType({ tenantId, clientType, userContext });
 
     await discoverOIDCEndpoints(config);
 
@@ -94,6 +99,7 @@ function createProvider(input: ProviderInput): TypeProvider {
 }
 
 export async function findAndCreateProviderInstance(
+    tenantId: string,
     providers: ProviderInput[],
     thirdPartyId: string,
     clientType: string | undefined,
@@ -102,7 +108,7 @@ export async function findAndCreateProviderInstance(
     for (const providerInput of providers) {
         if (providerInput.config.thirdPartyId === thirdPartyId) {
             let providerInstance = createProvider(providerInput);
-            await fetchAndSetConfig(providerInstance, clientType, userContext);
+            await fetchAndSetConfig(tenantId, providerInstance, clientType, userContext);
             return providerInstance;
         }
     }

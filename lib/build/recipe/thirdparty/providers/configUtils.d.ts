@@ -12,6 +12,7 @@ export declare function getProviderConfigForClient(
     clientConfig: ProviderClientConfig
 ): ProviderConfigForClientType;
 export declare function findAndCreateProviderInstance(
+    tenantId: string,
     providers: ProviderInput[],
     thirdPartyId: string,
     clientType: string | undefined,

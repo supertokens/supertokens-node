@@ -40,8 +40,8 @@ export default function SAML(input: ProviderInput): TypeProvider {
 
     input.override = function (originalImplementation) {
         const oGetConfig = originalImplementation.getConfigForClientType;
-        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
-            const config = await oGetConfig({ clientType, userContext });
+        originalImplementation.getConfigForClientType = async function ({ tenantId, clientType, userContext }) {
+            const config = await oGetConfig({ tenantId, clientType, userContext });
             config.jwksURI =
                 appinfo.apiDomain.getAsStringDangerous() +
                 appinfo.apiBasePath.appendPath(new NormalisedURLPath("/jwt/jwks.json")).getAsStringDangerous();
@@ -59,7 +59,10 @@ export default function SAML(input: ProviderInput): TypeProvider {
             return {
                 urlWithQueryParams:
                     appinfo.apiDomain.getAsStringDangerous() +
-                    appinfo.apiBasePath.appendPath(new NormalisedURLPath("/saml/login")).getAsStringDangerous() +
+                    appinfo.apiBasePath
+                        .appendPath(new NormalisedURLPath(`/${input.tenantId}`))
+                        .appendPath(new NormalisedURLPath("/saml/login"))
+                        .getAsStringDangerous() +
                     "?" +
                     new URLSearchParams(queryParams).toString(),
             };
@@ -68,10 +71,10 @@ export default function SAML(input: ProviderInput): TypeProvider {
         originalImplementation.exchangeAuthCodeForOAuthTokens = async function (input) {
             const samlRecipe = SAMLRecipe.getInstanceOrThrowError();
             const res = await samlRecipe.recipeInterfaceImpl.exchangeCodeForToken({
-                tenantId: "public",
+                tenantId: input.tenantId,
                 code: input.redirectURIInfo.redirectURIQueryParams.code as string,
                 userContext: input.userContext!,
-            }); // TODO fix tenantId
+            });
             return res;
         };
 

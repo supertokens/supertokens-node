@@ -26,8 +26,8 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
 
     input.override = function (originalImplementation) {
         const oGetConfig = originalImplementation.getConfigForClientType;
-        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
-            const config = await oGetConfig({ clientType, userContext });
+        originalImplementation.getConfigForClientType = async function ({ tenantId, clientType, userContext }) {
+            const config = await oGetConfig({ tenantId, clientType, userContext });
 
             if (config.additionalConfig !== undefined && config.additionalConfig.directoryId !== undefined) {
                 config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/.well-known/openid-configuration`;

@@ -7,8 +7,9 @@ import { decodeBase64 } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        authorisationUrlGET: async function ({ provider, redirectURIOnProviderDashboard, userContext }) {
+        authorisationUrlGET: async function ({ tenantId, provider, redirectURIOnProviderDashboard, userContext }) {
             const authUrl = await provider.getAuthorisationRedirectURL({
+                tenantId,
                 redirectURIOnProviderDashboard,
                 userContext,
             });
@@ -41,6 +42,7 @@ export default function getAPIInterface(): APIInterface {
 
             if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
                 oAuthTokensToUse = await provider.exchangeAuthCodeForOAuthTokens({
+                    tenantId,
                     redirectURIInfo: input.redirectURIInfo,
                     userContext,
                 });
@@ -50,7 +52,7 @@ export default function getAPIInterface(): APIInterface {
                 throw Error("should never come here");
             }
 
-            const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });
+            const userInfo = await provider.getUserInfo({ tenantId, oAuthTokens: oAuthTokensToUse, userContext });
 
             if (userInfo.email === undefined && provider.config.requireEmail === false) {
                 userInfo.email = {
