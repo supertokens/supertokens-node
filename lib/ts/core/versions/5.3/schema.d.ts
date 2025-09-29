@@ -10490,7 +10490,6 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
-                    clientId?: string;
                     samlResponse: string;
                     relayState?: string;
                 };
@@ -10510,7 +10509,7 @@ export interface operations {
                           }
                         | {
                               /** @enum {string} */
-                              status: "INVALID_CLIENT_ERROR" | "INVALID_RESPONSE_ERROR";
+                              status: "INVALID_RELAY_STATE_ERROR" | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR";
                               message: string;
                           };
                 };

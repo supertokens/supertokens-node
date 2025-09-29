@@ -97,7 +97,7 @@ export type RecipeInterface = {
               redirectURI: string;
           }
         | {
-              status: "INVALID_RESPONSE_ERROR" | "INVALID_CLIENT_ERROR";
+              status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR";
           }
     >;
 
@@ -160,7 +160,7 @@ export type APIInterface = {
                     redirectURI: string;
                 }
               | {
-                    status: "INVALID_RESPONSE_ERROR" | "INVALID_CLIENT_ERROR";
+                    status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR";
                 }
               | GeneralErrorResponse
           >);
