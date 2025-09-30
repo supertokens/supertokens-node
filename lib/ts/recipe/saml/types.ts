@@ -97,7 +97,11 @@ export type RecipeInterface = {
               redirectURI: string;
           }
         | {
-              status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR";
+              status:
+                  | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
+                  | "INVALID_RELAY_STATE_ERROR"
+                  | "INVALID_CLIENT_ERROR"
+                  | "IDP_LOGIN_DISALLOWED_ERROR";
           }
     >;
 
@@ -160,7 +164,11 @@ export type APIInterface = {
                     redirectURI: string;
                 }
               | {
-                    status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR";
+                    status:
+                        | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
+                        | "INVALID_RELAY_STATE_ERROR"
+                        | "INVALID_CLIENT_ERROR"
+                        | "IDP_LOGIN_DISALLOWED_ERROR";
                 }
               | GeneralErrorResponse
           >);

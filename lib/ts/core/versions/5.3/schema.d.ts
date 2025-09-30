@@ -10509,7 +10509,11 @@ export interface operations {
                           }
                         | {
                               /** @enum {string} */
-                              status: "INVALID_RELAY_STATE_ERROR" | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR";
+                              status:
+                                  | "INVALID_RELAY_STATE_ERROR"
+                                  | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
+                                  | "INVALID_CLIENT_ERROR"
+                                  | "IDP_LOGIN_DISALLOWED_ERROR";
                               message: string;
                           };
                 };
