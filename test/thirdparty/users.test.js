@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, signInUPCustomRequest } = require("../utils");
+const { printPath, createCoreApplication, signInUPCustomRequest } = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -48,18 +48,11 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     });
 
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test getUsersOldestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -86,11 +79,18 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
-        await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test4@gmail.com", "testPass4");
+        const randomValue = Math.random();
+
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
+        }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -98,12 +98,12 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[0]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test1@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -130,7 +130,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     });
 
     it("test getUsersNewestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -157,11 +157,18 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
-        await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test4@gmail.com", "testPass4");
+        const randomValue = Math.random();
+
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
+        }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -169,12 +176,12 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test4@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[emails.length - 1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test3@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[emails.length - 2]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -182,7 +189,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersOldestFirst({ tenantId: "public", limit: 10, paginationToken: "invalid-pagination-token" });
+            await getUsersNewestFirst({ tenantId: "public", limit: 10, paginationToken: "invalid-pagination-token" });
             assert(false);
         } catch (err) {
             if (!err.message.includes("invalid pagination token")) {
@@ -191,7 +198,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         }
 
         try {
-            await getUsersOldestFirst({ tenantId: "public", limit: -1 });
+            await getUsersNewestFirst({ tenantId: "public", limit: -1 });
             assert(false);
         } catch (err) {
             if (!err.message.includes("limit must a positive integer with min value 1")) {
@@ -201,7 +208,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     });
 
     it("test getUserCount", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -231,14 +238,21 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
+        const randomValue = Math.random();
+
+        await signInUPCustomRequest(app, Math.random() + "@gmail.com", `testPass-${randomValue}-4`);
         userCount = await getUserCount();
         assert.strictEqual(userCount, 1);
 
-        await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test4@gmail.com", "testPass4");
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signInUPCustomRequest(app, email, `testPass-${randomValue}-${i}`);
+        }
 
         userCount = await getUserCount();
         assert.strictEqual(userCount, 5);

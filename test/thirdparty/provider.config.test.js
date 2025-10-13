@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST, removeAppAndTenants } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy, removeAppAndTenants } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -29,18 +29,11 @@ const { configsForVerification, providers } = require("./tpConfigsForVerificatio
 
 describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test the provider override is not increasing call stack", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         let stackCount = [];
 
@@ -92,7 +85,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test the config is same within override and provider instance", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         let oIConfig;
         STExpress.init({
@@ -139,7 +132,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test the config is same within override and provider instance when overriding getConfigForClientType", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         let oIConfig;
         STExpress.init({
@@ -193,7 +186,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test built-in provider computed config from static config", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -224,7 +217,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test built-in provider computed config from core config", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -253,7 +246,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when only one clientType is provided from static", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -286,7 +279,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are more than one clientType from static", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -326,7 +319,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there is one clientType from core", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -351,7 +344,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are more than one clientType from core", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -383,7 +376,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are same clientTypes from static and core", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -431,7 +424,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are different clientTypes from static and core", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -473,24 +466,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test getProvider and signInUp on an app and tenant", async function () {
-        const connectionURI = await startSTWithMultitenancy({ noApp: true });
-
-        await removeAppAndTenants("a1");
-
-        // Create app
-        await fetch(`http://localhost:8080/recipe/multitenancy/app/v2`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                appId: "a1",
-            }),
-        });
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080/appid-a1",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
