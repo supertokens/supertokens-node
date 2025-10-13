@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, delay } = require("../utils");
+const { printPath, createCoreApplication, delay } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -28,19 +28,15 @@ const request = require("supertest");
 
 describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
     after(async function () {
         process.env.TEST_MODE = "testing";
-        await killAllST();
-        await cleanST();
     });
 
     it("test default backward compatibility api being called: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -108,7 +104,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test backward compatibility: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -168,7 +164,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test custom override: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -251,7 +247,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test smtp service: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let codeLifetime = undefined;
         let userInputCode = undefined;
@@ -352,7 +348,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called, error message sent back to user: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -427,7 +423,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -513,7 +509,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test backward compatibility: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -592,7 +588,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test custom override: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -702,7 +698,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test smtp service: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -831,7 +827,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called, error message sent back to user: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -930,7 +926,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("Test that passwordless email uses correct origin", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let url = "";
 
         STExpress.init({

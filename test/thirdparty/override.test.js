@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     signUPRequest,
     assertJSONEquals,
@@ -71,18 +69,11 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         };
     });
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("overriding functions tests", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
@@ -249,7 +240,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding api tests", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
@@ -361,7 +352,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding functions tests, throws error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         STExpress.init({
             supertokens: {
@@ -511,7 +502,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding api tests, throws error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let user = undefined;
         let newUser = undefined;
         let emailExists = undefined;

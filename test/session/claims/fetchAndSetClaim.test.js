@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
+const { printPath, createCoreApplication, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
 const sinon = require("sinon");
@@ -23,14 +23,7 @@ const { ProcessState } = require("../../../lib/build/processState");
 
 describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetchAndSetClaim.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("SessionClass.fetchAndSetClaim", () => {
@@ -64,7 +57,7 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
         });
 
         it("should update using a handle if claim fetchValue returns a value", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             SuperTokens.init({
                 supertokens: {

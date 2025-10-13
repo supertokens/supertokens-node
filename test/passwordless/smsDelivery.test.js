@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, delay } = require("../utils");
+const { printPath, createCoreApplication, delay } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -28,19 +28,16 @@ let { isCDIVersionCompatible } = require("../utils");
 describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`, function () {
     beforeEach(async function () {
         process.env.TEST_MODE = "testing";
-        await killAllST();
-        await setupST();
+
         ProcessState.getInstance().reset();
     });
 
     after(async function () {
         process.env.TEST_MODE = "testing";
-        await killAllST();
-        await cleanST();
     });
 
     it("test default backward compatibility api being called: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -111,7 +108,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test backward compatibility: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -171,7 +168,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test custom override: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -254,7 +251,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test twilio service: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let userInputCode = undefined;
@@ -356,7 +353,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test default backward compatibility api being called, error message sent back to user: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -431,7 +428,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test supertokens service: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let userInputCode = undefined;
@@ -515,7 +512,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test default backward compatibility api being called, error message not sent back to user if response code is 429: passwordless login", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -584,7 +581,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test default backward compatibility api being called: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -673,7 +670,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test backward compatibility: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -752,7 +749,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test custom override: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -862,7 +859,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test twilio service: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let userInputCode = undefined;
@@ -1004,7 +1001,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test default backward compatibility api being called, error message sent back to user: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1103,7 +1100,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test supertokens service: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let phoneNumber = undefined;
         let codeLifetime = undefined;
         let userInputCode = undefined;
@@ -1208,7 +1205,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     it("test default backward compatibility api being called, error message not sent back to user if response code is 429: resend code api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 const assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -28,14 +28,7 @@ describe(`exposeAccessTokenToFrontendInCookieBasedAuth: ${printPath(
     "[test/session/exposeAccessTokenToFrontendInCookieBasedAuth.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     it("should default to false", () => {
@@ -65,7 +58,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
         const sessionConfig = { exposeAccessTokenToFrontendInCookieBasedAuth, getTokenTransferMethod: () => "cookie" };
         describe("createNewSession", () => {
             it("should attach the appropriate tokens", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -98,7 +91,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
         describe("mergeIntoAccessTokenPayload", () => {
             it("should attach the appropriate tokens", async () => {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -156,7 +149,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
         describe("verifySession", () => {
             it("should attach the appropriate tokens after refresh", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,
@@ -218,7 +211,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
         describe("refresh session", () => {
             it("should attach the appropriate tokens", async function () {
-                const connectionURI = await startST();
+                const connectionURI = await createCoreApplication();
                 SuperTokens.init({
                     supertokens: {
                         connectionURI,

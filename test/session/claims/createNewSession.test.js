@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, mockResponse, mockRequest } = require("../../utils");
+const { printPath, createCoreApplication, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const { ProcessState } = require("../../../lib/build/processState");
 const SuperTokens = require("../../..");
@@ -21,19 +21,12 @@ const { TrueClaim, UndefinedClaim } = require("./testClaims");
 
 describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/createNewSession.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("createNewSession", () => {
         it("should create access token payload w/ session claims", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             SuperTokens.init({
                 supertokens: {
@@ -80,7 +73,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
         });
 
         it("should create access token payload wo/ session claims with an undefined value", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -125,7 +118,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
         });
 
         it("should merge claims and the passed access token payload obj", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             const payloadParam = { initial: true };
             const custom2 = { undef: undefined, nullProp: null, inner: "asdf" };
             const customClaims = {

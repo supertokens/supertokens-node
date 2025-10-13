@@ -2,7 +2,7 @@ let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
@@ -12,18 +12,11 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("Test that default getJWKS api does not work when disabled", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -76,7 +69,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     });
 
     it("Test that default getJWKS works fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -127,7 +120,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     });
 
     it("Test that we can override the Cache-Control header through the function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -187,7 +180,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     });
 
     it("Test that we can remove the Cache-Control header through the function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -247,7 +240,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     });
 
     it("Test that we can override the Cache-Control header through the api", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
