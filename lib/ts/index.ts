@@ -14,7 +14,7 @@
  */
 
 import SuperTokens from "./supertokens";
-import SuperTokensError from "./error";
+import SuperTokensError, { SuperTokensPluginError } from "./error";
 import { UserContext, User as UserType } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
 import { AccountInfoInput } from "./recipe/accountlinking/types";
@@ -36,6 +36,7 @@ export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
     static Error = SuperTokensError;
+    static PluginError = SuperTokensPluginError;
     static RecipeUserId = RecipeUserId;
     static User = User;
 
@@ -242,6 +243,8 @@ export let isRecipeInitialized = SuperTokensWrapper.isRecipeInitialized;
 export let getAvailableFirstFactors = SuperTokensWrapper.getAvailableFirstFactors;
 
 export let Error = SuperTokensWrapper.Error;
+
+export let PluginError = SuperTokensWrapper.PluginError;
 
 export { default as RecipeUserId } from "./recipeUserId";
 export { User } from "./user";

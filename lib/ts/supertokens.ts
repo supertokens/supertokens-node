@@ -38,13 +38,12 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeFramework } from "./framework/types";
-import STError from "./error";
+import STError, { transformErrorToSuperTokensError } from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 import { SessionContainerInterface } from "./recipe/session/types";
 import Session from "./recipe/session/recipe";
-import SuperTokensError from "./error";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -452,18 +451,13 @@ export default class SuperTokens {
             try {
                 await handlerFromApis.handler(request, response, session, userContext);
             } catch (err) {
-                // passthrough for errors from SuperTokens - let errorHandler handle them
-                if (SuperTokensError.isErrorFromSuperTokens(err)) {
-                    throw err;
-                } else {
-                    logDebugMessage(
-                        "middleware: Error from plugin, transforming to SuperTokensError. Plugin ID: " +
-                            handlerFromApis.pluginId
-                    );
+                logDebugMessage(
+                    "middleware: Error from plugin, transforming to SuperTokensError. Plugin ID: " +
+                        handlerFromApis.pluginId
+                );
 
-                    // transform errors to SuperTokensError to be handled by the errorHandler
-                    throw SuperTokensError.fromError(err, SuperTokensError.PLUGIN_ERROR);
-                }
+                // transform errors to SuperTokensError to be handled by the errorHandler
+                throw transformErrorToSuperTokensError(err);
             }
 
             return true;
@@ -643,8 +637,14 @@ export default class SuperTokens {
             }
 
             if (err.type === STError.PLUGIN_ERROR) {
-                logDebugMessage("errorHandler: Sending 400 status code response");
-                return sendNon200ResponseWithMessage(response, err.message, 400);
+                const code = "code" in err && err.code ? err.code : 400;
+                logDebugMessage(`errorHandler: Sending ${code} status code response`);
+                return sendNon200ResponseWithMessage(response, err.message, code);
+            }
+
+            if (err.type === STError.UNKNOWN_ERROR) {
+                logDebugMessage("errorHandler: Sending 500 status code response");
+                return sendNon200ResponseWithMessage(response, err.message, 500);
             }
 
             for (let i = 0; i < this.recipeModules.length; i++) {

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import SuperTokens from "./supertokens";
-import SuperTokensError from "./error";
+import SuperTokensError, { SuperTokensPluginError } from "./error";
 import { UserContext, User as UserType } from "./types";
 import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
@@ -15,6 +15,7 @@ export type {
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
+    static PluginError: typeof SuperTokensPluginError;
     static RecipeUserId: typeof RecipeUserId;
     static User: typeof User;
     static getAllCORSHeaders(): string[];
@@ -139,5 +140,6 @@ export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getReque
 export declare let isRecipeInitialized: typeof SuperTokensWrapper.isRecipeInitialized;
 export declare let getAvailableFirstFactors: typeof SuperTokensWrapper.getAvailableFirstFactors;
 export declare let Error: typeof SuperTokensError;
+export declare let PluginError: typeof SuperTokensPluginError;
 export { default as RecipeUserId } from "./recipeUserId";
 export { User } from "./user";
