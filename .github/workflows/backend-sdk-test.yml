@@ -6,9 +6,11 @@ on:
             - opened
             - reopened
             - synchronize
+            - labeled
+            - unlabeled
     push:
-        tags:
-            - dev-v[0-9]+.[0-9]+.[0-9]+
+        branches:
+            - "[0-9]+.[0-9]+"
 
 # Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
 # Previous runs will be cancelled.
