@@ -4,15 +4,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, JSONObject, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
-import {
-    APIInterface,
-    PayloadBuilderFunction,
-    RecipeInterface,
-    TypeInput,
-    TypeNormalisedInput,
-    UserInfo,
-    UserInfoBuilderFunction,
-} from "./types";
+import { APIInterface, PayloadBuilderFunction, RecipeInterface, TypeInput, TypeNormalisedInput, UserInfo, UserInfoBuilderFunction } from "./types";
 import { User } from "../../user";
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: "oauth2provider";
@@ -33,35 +25,11 @@ export default class Recipe extends RecipeModule {
     addAccessTokenBuilderFromOtherRecipe: (accessTokenBuilders: PayloadBuilderFunction) => void;
     addIdTokenBuilderFromOtherRecipe: (idTokenBuilder: PayloadBuilderFunction) => void;
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest: (
-        id: string,
-        tenantId: string,
-        req: BaseRequest,
-        res: BaseResponse,
-        _path: NormalisedURLPath,
-        method: HTTPMethod,
-        userContext: UserContext
-    ) => Promise<boolean>;
+    handleAPIRequest: (id: string, tenantId: string, req: BaseRequest, res: BaseResponse, _path: NormalisedURLPath, method: HTTPMethod, userContext: UserContext) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    getDefaultAccessTokenPayload(
-        user: User,
-        scopes: string[],
-        sessionHandle: string,
-        userContext: UserContext
-    ): Promise<JSONObject>;
-    getDefaultIdTokenPayload(
-        user: User,
-        scopes: string[],
-        sessionHandle: string,
-        userContext: UserContext
-    ): Promise<JSONObject>;
-    getDefaultUserInfoPayload(
-        user: User,
-        accessTokenPayload: JSONObject,
-        scopes: string[],
-        tenantId: string,
-        userContext: UserContext
-    ): Promise<UserInfo>;
+    getDefaultAccessTokenPayload(user: User, scopes: string[], sessionHandle: string, userContext: UserContext): Promise<JSONObject>;
+    getDefaultIdTokenPayload(user: User, scopes: string[], sessionHandle: string, userContext: UserContext): Promise<JSONObject>;
+    getDefaultUserInfoPayload(user: User, accessTokenPayload: JSONObject, scopes: string[], tenantId: string, userContext: UserContext): Promise<UserInfo>;
 }

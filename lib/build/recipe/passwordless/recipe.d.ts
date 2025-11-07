@@ -18,64 +18,42 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
     smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config: TypeInput,
-        ingredients: {
-            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
-            smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
-        }
-    );
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput, ingredients: {
+        emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
+        smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
+    });
     static getInstanceOrThrowError(): Recipe;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (
-        id: string,
-        tenantId: string,
-        req: BaseRequest,
-        res: BaseResponse,
-        _: NormalisedURLPath,
-        __: HTTPMethod,
-        userContext: UserContext
-    ) => Promise<boolean>;
+    handleAPIRequest: (id: string, tenantId: string, req: BaseRequest, res: BaseResponse, _: NormalisedURLPath, __: HTTPMethod, userContext: UserContext) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    createMagicLink: (
-        input:
-            | {
-                  email: string;
-                  tenantId: string;
-                  session?: SessionContainerInterface;
-                  request: BaseRequest | undefined;
-                  userContext: UserContext;
-              }
-            | {
-                  phoneNumber: string;
-                  tenantId: string;
-                  session?: SessionContainerInterface;
-                  request: BaseRequest | undefined;
-                  userContext: UserContext;
-              }
-    ) => Promise<string>;
-    signInUp: (
-        input:
-            | {
-                  email: string;
-                  tenantId: string;
-                  session?: SessionContainerInterface;
-                  userContext: UserContext;
-              }
-            | {
-                  phoneNumber: string;
-                  tenantId: string;
-                  session?: SessionContainerInterface;
-                  userContext: UserContext;
-              }
-    ) => Promise<{
+    createMagicLink: (input: {
+        email: string;
+        tenantId: string;
+        session?: SessionContainerInterface;
+        request: BaseRequest | undefined;
+        userContext: UserContext;
+    } | {
+        phoneNumber: string;
+        tenantId: string;
+        session?: SessionContainerInterface;
+        request: BaseRequest | undefined;
+        userContext: UserContext;
+    }) => Promise<string>;
+    signInUp: (input: {
+        email: string;
+        tenantId: string;
+        session?: SessionContainerInterface;
+        userContext: UserContext;
+    } | {
+        phoneNumber: string;
+        tenantId: string;
+        session?: SessionContainerInterface;
+        userContext: UserContext;
+    }) => Promise<{
         status: string;
         createdNewRecipeUser: boolean;
         recipeUserId: import("../..").RecipeUserId;
