@@ -1,7 +1,7 @@
 services:
     core:
         # Uses `$SUPERTOKENS_CORE_VERSION` when available, else latest
-        image: supertokens/supertokens-core:dev-branch-${SUPERTOKENS_CORE_VERSION:-master}
+        image: supertokens/supertokens-dev-postgresql:${SUPERTOKENS_CORE_VERSION:-master}
         ports:
             # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3567 for local port
             - ${SUPERTOKENS_CORE_PORT:-3567}:3567

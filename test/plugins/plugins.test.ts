@@ -233,7 +233,7 @@ describe("Plugins", () => {
                     expectedApiOrder,
                     expectedConfigOrder,
                 },
-                testNo,
+                testNo
             ) => {
                 const plugins = pluginFactoryConfigs.map((pfc) => pluginFactory(pfc));
 
@@ -284,7 +284,7 @@ describe("Plugins", () => {
                     assert.deepEqual(apiOutput.message, "msg");
                     assert.deepEqual(configOutput.testProperty, expectedConfigOrder);
                 });
-            },
+            }
         );
     });
 
@@ -380,7 +380,7 @@ describe("Plugins", () => {
                     assert.deepEqual(apiOutput.message, "msg");
                     assert.deepEqual(configOutput.testProperty, expectedConfigOrder);
                 });
-            },
+            }
         );
     });
 
