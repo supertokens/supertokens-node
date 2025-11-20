@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [23.0.2] - 2025-11-20
+
+-   Updates custom framework to following correct CollectingResponse flow order (to ensure that subsequent calls to the `sendJSONResponse` doesn't overwrite the response).
+
 ## [23.0.1] - 2025-07-31
 
 -   Updated FDI support to 4.2
