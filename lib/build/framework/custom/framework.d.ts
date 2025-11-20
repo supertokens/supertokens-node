@@ -42,6 +42,7 @@ export declare class CollectingResponse extends BaseResponse {
     readonly headers: Headers;
     readonly cookies: CookieInfo[];
     body?: string;
+    private responseSet;
     constructor();
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;

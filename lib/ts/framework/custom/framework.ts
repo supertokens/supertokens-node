@@ -103,6 +103,7 @@ export class CollectingResponse extends BaseResponse {
     public readonly headers: Headers;
     public readonly cookies: CookieInfo[];
     public body?: string;
+    private responseSet: boolean;
 
     constructor() {
         super();
@@ -115,11 +116,15 @@ export class CollectingResponse extends BaseResponse {
         }
         this.statusCode = 200;
         this.cookies = [];
+        this.responseSet = false;
     }
 
     sendHTMLResponse = (html: string) => {
-        this.headers.set("Content-Type", "text/html");
-        this.body = html;
+        if (!this.responseSet) {
+            this.headers.set("Content-Type", "text/html");
+            this.body = html;
+            this.responseSet = true;
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
@@ -162,8 +167,11 @@ export class CollectingResponse extends BaseResponse {
     };
 
     sendJSONResponse = (content: any) => {
-        this.headers.set("Content-Type", "application/json");
-        this.body = JSON.stringify(content);
+        if (!this.responseSet) {
+            this.headers.set("Content-Type", "application/json");
+            this.body = JSON.stringify(content);
+            this.responseSet = true;
+        }
     };
 }
 
