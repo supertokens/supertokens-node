@@ -50,6 +50,7 @@ export type ProviderClientConfig = {
 
 type CommonProviderConfig = {
     thirdPartyId: string;
+    thirdPartyImplementation?: string;
     name?: string;
 
     authorizationEndpoint?: string;
@@ -102,22 +103,42 @@ export type TypeProvider = {
         clientType?: string;
         userContext?: UserContext;
     }) => Promise<ProviderConfigForClientType>;
-    getAuthorisationRedirectURL: (input: {
-        tenantId: string;
-        redirectURIOnProviderDashboard: string;
-        userContext?: UserContext;
-    }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
-    exchangeAuthCodeForOAuthTokens: (input: {
-        tenantId: string;
-        redirectURIInfo: {
-            redirectURIOnProviderDashboard: string;
-            redirectURIQueryParams: Record<string, string>;
-            pkceCodeVerifier?: string;
-        };
-        userContext?: UserContext;
-    }) => Promise<any>;
-    getUserInfo: (input: { tenantId: string; oAuthTokens: any; userContext?: UserContext }) => Promise<UserInfo>;
-};
+} & (
+    | {
+          type: "oauth2";
+
+          getAuthorisationRedirectURL: (input: {
+              tenantId: string;
+              redirectURIOnProviderDashboard: string;
+              userContext?: UserContext;
+          }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
+          exchangeAuthCodeForOAuthTokens: (input: {
+              tenantId: string;
+              redirectURIInfo: {
+                  redirectURIOnProviderDashboard: string;
+                  redirectURIQueryParams: Record<string, string>;
+                  pkceCodeVerifier?: string;
+              };
+              userContext?: UserContext;
+          }) => Promise<any>;
+          getUserInfo: (input: { tenantId: string; oAuthTokens: any; userContext?: UserContext }) => Promise<UserInfo>;
+      }
+    | {
+          type: "saml";
+
+          getAuthorisationRedirectURL: (input: {
+              tenantId: string;
+              redirectURIOnProviderDashboard: string;
+              userContext?: UserContext;
+          }) => Promise<{ urlWithQueryParams: string }>;
+
+          getUserInfo: (input: {
+              tenantId: string;
+              accessToken: string;
+              userContext?: UserContext;
+          }) => Promise<UserInfo>;
+      }
+);
 
 export type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];

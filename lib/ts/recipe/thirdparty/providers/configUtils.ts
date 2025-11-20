@@ -65,33 +65,35 @@ function createProvider(input: ProviderInput): TypeProvider {
     // interface for modification.
     const clonedInput = { ...input };
 
-    if (clonedInput.config.thirdPartyId.startsWith("active-directory")) {
+    const thirdPartyId = clonedInput.config.thirdPartyImplementation || clonedInput.config.thirdPartyId;
+
+    if (thirdPartyId.startsWith("active-directory")) {
         return ActiveDirectory(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("apple")) {
+    } else if (thirdPartyId.startsWith("apple")) {
         return Apple(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("bitbucket")) {
+    } else if (thirdPartyId.startsWith("bitbucket")) {
         return Bitbucket(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("discord")) {
+    } else if (thirdPartyId.startsWith("discord")) {
         return Discord(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("facebook")) {
+    } else if (thirdPartyId.startsWith("facebook")) {
         return Facebook(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("github")) {
+    } else if (thirdPartyId.startsWith("github")) {
         return Github(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("gitlab")) {
+    } else if (thirdPartyId.startsWith("gitlab")) {
         return Gitlab(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("google-workspaces")) {
+    } else if (thirdPartyId.startsWith("google-workspaces")) {
         return GoogleWorkspaces(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("google")) {
+    } else if (thirdPartyId.startsWith("google")) {
         return Google(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("okta")) {
+    } else if (thirdPartyId.startsWith("okta")) {
         return Okta(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("linkedin")) {
+    } else if (thirdPartyId.startsWith("linkedin")) {
         return Linkedin(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("twitter")) {
+    } else if (thirdPartyId.startsWith("twitter")) {
         return Twitter(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("boxy-saml")) {
+    } else if (thirdPartyId.startsWith("boxy-saml")) {
         return BoxySAML(clonedInput);
-    } else if (clonedInput.config.thirdPartyId.startsWith("saml")) {
+    } else if (thirdPartyId.startsWith("saml")) {
         return SAML(clonedInput);
     }
 

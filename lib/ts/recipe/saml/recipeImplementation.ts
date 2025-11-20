@@ -16,7 +16,6 @@
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import { TypeNormalisedInput } from "./types";
-import { UserContext } from "../../types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
@@ -28,12 +27,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             {
                 tenantId,
                 clientId,
-                spEntityId,
+                clientSecret,
                 redirectURIs,
                 defaultRedirectURI,
                 metadataXML,
-                metadataURL,
                 allowIDPInitiatedLogin,
+                enableRequestSigning,
                 userContext,
             }
         ) {
@@ -46,12 +45,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 },
                 {
                     clientId,
-                    spEntityId,
+                    clientSecret,
                     redirectURIs,
                     defaultRedirectURI,
                     metadataXML,
-                    metadataURL,
                     allowIDPInitiatedLogin,
+                    enableRequestSigning,
                 },
                 {},
                 userContext
@@ -80,16 +79,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 },
                 userContext
             );
-        },
-
-        verifyClientRedirectURI: async function (
-            this: RecipeInterface,
-            input: { clientId: string; redirectURI: string; userContext: UserContext }
-        ) {
-            return {
-                status: "OK",
-                info: `PLACEHOLDER_VALIDATION: ${input.clientId} -> ${input.redirectURI}`,
-            };
         },
 
         verifySAMLResponse: async function (
@@ -144,16 +133,17 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             };
         },
 
-        exchangeCodeForToken: async function ({ tenantId, code, userContext }) {
+        getUserInfo: async function ({ tenantId, accessToken, clientId, userContext }) {
             const resp = await querier.sendPostRequest(
                 {
-                    path: "/<tenantId>/recipe/saml/token",
+                    path: "/<tenantId>/recipe/saml/user",
                     params: {
                         tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                     },
                 },
                 {
-                    code,
+                    accessToken,
+                    clientId,
                 },
                 userContext
             );

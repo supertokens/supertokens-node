@@ -25,6 +25,9 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {
+        if (originalImplementation.type !== "oauth2") {
+            throw new Error(`Invalid provider type for Active Directory: ${originalImplementation.type}`);
+        }
         const oGetConfig = originalImplementation.getConfigForClientType;
         originalImplementation.getConfigForClientType = async function ({ tenantId, clientType, userContext }) {
             const config = await oGetConfig({ tenantId, clientType, userContext });

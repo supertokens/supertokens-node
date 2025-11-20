@@ -15,75 +15,11 @@
 
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
-import SuperTokens from "../../../supertokens";
-import NormalisedURLPath from "../../../normalisedURLPath";
-import SAMLRecipe from "../../saml/recipe";
 
 export default function SAML(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
         input.config.name = "SAML";
     }
 
-    input.config.userInfoMap = {
-        ...input.config.userInfoMap,
-        fromUserInfoAPI: {
-            userId: "id",
-            email: "email",
-            ...input.config.userInfoMap?.fromUserInfoAPI,
-        },
-    };
-
-    const supertokens = SuperTokens.getInstanceOrThrowError();
-    const appinfo = supertokens.appInfo;
-
-    const oOverride = input.override;
-
-    input.override = function (originalImplementation) {
-        const oGetConfig = originalImplementation.getConfigForClientType;
-        originalImplementation.getConfigForClientType = async function ({ tenantId, clientType, userContext }) {
-            const config = await oGetConfig({ tenantId, clientType, userContext });
-            config.jwksURI =
-                appinfo.apiDomain.getAsStringDangerous() +
-                appinfo.apiBasePath.appendPath(new NormalisedURLPath("/jwt/jwks.json")).getAsStringDangerous();
-            return config;
-        };
-
-        originalImplementation.getAuthorisationRedirectURL = async function (input) {
-            const queryParams = {
-                client_id: originalImplementation.config.clientId,
-                redirect_uri: input.redirectURIOnProviderDashboard,
-            };
-
-            // TODO: check clientId and redirect uri
-
-            return {
-                urlWithQueryParams:
-                    appinfo.apiDomain.getAsStringDangerous() +
-                    appinfo.apiBasePath
-                        .appendPath(new NormalisedURLPath(`/${input.tenantId}`))
-                        .appendPath(new NormalisedURLPath("/saml/login"))
-                        .getAsStringDangerous() +
-                    "?" +
-                    new URLSearchParams(queryParams).toString(),
-            };
-        };
-
-        originalImplementation.exchangeAuthCodeForOAuthTokens = async function (input) {
-            const samlRecipe = SAMLRecipe.getInstanceOrThrowError();
-            const res = await samlRecipe.recipeInterfaceImpl.exchangeCodeForToken({
-                tenantId: input.tenantId,
-                code: input.redirectURIInfo.redirectURIQueryParams.code as string,
-                userContext: input.userContext!,
-            });
-            return res;
-        };
-
-        if (oOverride !== undefined) {
-            originalImplementation = oOverride(originalImplementation);
-        }
-
-        return originalImplementation;
-    };
-
-    return NewProvider(input);
+    return NewProvider(input, "saml");
 }

@@ -236,8 +236,10 @@ export default async function getThirdPartyConfig(
                             isGetAuthorisationRedirectUrlOverridden = true;
                         }
                         if (
+                            beforeOverride.type === "oauth2" &&
+                            afterOverride.type === "oauth2" &&
                             beforeOverride.exchangeAuthCodeForOAuthTokens !==
-                            afterOverride.exchangeAuthCodeForOAuthTokens
+                                afterOverride.exchangeAuthCodeForOAuthTokens
                         ) {
                             isExchangeAuthCodeForOAuthTokensOverridden = true;
                         }

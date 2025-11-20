@@ -1106,7 +1106,7 @@ export interface paths {
                     Authorization?: components["parameters"]["api-key"];
                     /**
                      * @description X.Y of the X.Y.Z CDI version.
-                     * @example 5.2
+                     * @example 5.4
                      */
                     "cdi-version"?: components["parameters"]["cdi-version"];
                 };
@@ -3606,7 +3606,7 @@ export interface components {
         webauthnRid: string;
         /**
          * @description X.Y of the X.Y.Z CDI version.
-         * @example 5.2
+         * @example 5.4
          */
         "cdi-version": string;
         /** @example ZmE3YTA4NDEtY...MjM5MTgwMzIyMzE= */
@@ -3641,7 +3641,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3697,7 +3697,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3754,7 +3754,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3815,7 +3815,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3884,7 +3884,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3931,7 +3931,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3986,7 +3986,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4045,7 +4045,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4087,7 +4087,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4144,7 +4144,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4190,7 +4190,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4259,7 +4259,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4333,7 +4333,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4379,7 +4379,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4437,7 +4437,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4483,7 +4483,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4534,7 +4534,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4603,7 +4603,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4676,7 +4676,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4735,7 +4735,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4790,7 +4790,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4838,7 +4838,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4890,7 +4890,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4932,7 +4932,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4987,7 +4987,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5034,7 +5034,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5089,7 +5089,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5131,7 +5131,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5182,7 +5182,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5228,7 +5228,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5280,7 +5280,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5326,7 +5326,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5375,7 +5375,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5435,7 +5435,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5480,7 +5480,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5516,7 +5516,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5562,7 +5562,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5603,7 +5603,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5657,7 +5657,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5694,7 +5694,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5737,7 +5737,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5774,7 +5774,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5818,7 +5818,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5860,7 +5860,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5907,7 +5907,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5956,7 +5956,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5995,7 +5995,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6034,7 +6034,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6081,7 +6081,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6120,7 +6120,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6167,7 +6167,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6204,7 +6204,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6248,7 +6248,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6285,7 +6285,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6341,7 +6341,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6387,7 +6387,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6435,7 +6435,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6483,7 +6483,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6542,7 +6542,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6604,7 +6604,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6644,7 +6644,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6681,7 +6681,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6731,7 +6731,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6770,7 +6770,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6813,7 +6813,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6872,7 +6872,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6911,7 +6911,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6954,7 +6954,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7038,7 +7038,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7124,7 +7124,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7161,7 +7161,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7208,7 +7208,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7266,7 +7266,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7302,7 +7302,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7363,7 +7363,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7439,7 +7439,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7545,7 +7545,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7592,7 +7592,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7630,7 +7630,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7678,7 +7678,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7716,7 +7716,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7757,7 +7757,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7792,7 +7792,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7834,7 +7834,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7874,7 +7874,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7923,7 +7923,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7958,7 +7958,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8004,7 +8004,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8039,7 +8039,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8079,7 +8079,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8124,7 +8124,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8169,7 +8169,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8214,7 +8214,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8259,7 +8259,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8304,7 +8304,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8349,7 +8349,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8394,7 +8394,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8439,7 +8439,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8480,7 +8480,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8521,7 +8521,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8565,7 +8565,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8609,7 +8609,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8651,7 +8651,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8693,7 +8693,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8753,7 +8753,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8797,7 +8797,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8834,7 +8834,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8871,7 +8871,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8917,7 +8917,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8961,7 +8961,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9019,7 +9019,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9066,7 +9066,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9109,7 +9109,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9152,7 +9152,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9199,7 +9199,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9240,7 +9240,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9290,7 +9290,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9385,7 +9385,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9457,7 +9457,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9511,7 +9511,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9573,7 +9573,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9633,7 +9633,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9685,7 +9685,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9732,7 +9732,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9777,7 +9777,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9824,7 +9824,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9871,7 +9871,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9919,7 +9919,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10005,7 +10005,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10078,7 +10078,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10119,7 +10119,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10201,7 +10201,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10257,7 +10257,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10294,7 +10294,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10337,7 +10337,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10388,7 +10388,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10442,7 +10442,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10498,7 +10498,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10534,7 +10534,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10594,7 +10594,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10646,7 +10646,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10697,7 +10697,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10747,7 +10747,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10806,7 +10806,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10850,7 +10850,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10959,7 +10959,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11032,7 +11032,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11097,7 +11097,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11164,7 +11164,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11228,7 +11228,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11278,7 +11278,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11328,7 +11328,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11379,7 +11379,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11422,7 +11422,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.4
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };

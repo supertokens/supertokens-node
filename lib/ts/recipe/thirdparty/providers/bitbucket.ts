@@ -41,6 +41,10 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {
+        if (originalImplementation.type !== "oauth2") {
+            throw new Error(`Invalid provider type for Bitbucket: ${originalImplementation.type}`);
+        }
+
         const oGetConfig = originalImplementation.getConfigForClientType;
         originalImplementation.getConfigForClientType = async function (input) {
             const config = await oGetConfig(input);

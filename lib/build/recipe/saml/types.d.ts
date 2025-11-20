@@ -22,30 +22,30 @@ export type TypeNormalisedInput = {
 };
 export type SAMLClient = {
     clientId: string;
-    spEntityId: string;
     redirectURIs: string[];
     defaultRedirectURI: string;
     idpEntityId: string;
     idpSigningCertificate?: string;
     allowIDPInitiatedLogin: boolean;
+    enableRequestSigning: boolean;
 };
 export type RecipeInterface = {
     createOrUpdateClient: (input: {
         tenantId: string;
         clientId?: string;
-        spEntityId: string;
+        clientSecret?: string;
         redirectURIs: string[];
         defaultRedirectURI: string;
-        metadataXML?: string;
-        metadataURL?: string;
+        metadataXML: string;
         allowIDPInitiatedLogin?: boolean;
+        enableRequestSigning?: boolean;
         userContext: UserContext;
     }) => Promise<
         | ({
               status: "OK";
           } & SAMLClient)
         | {
-              status: "INVALID_METADATA_XML_ERROR";
+              status: "INVALID_METADATA_XML_ERROR" | "DUPLICATE_IDP_ENTITY_ERROR";
           }
     >;
     listClients: (input: { tenantId: string; userContext: UserContext }) => Promise<{
@@ -56,15 +56,6 @@ export type RecipeInterface = {
         status: "OK";
         didExist: boolean;
     }>;
-    verifyClientRedirectURI: (input: { clientId: string; redirectURI: string; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              info: string;
-          }
-        | {
-              status: "UNKNOWN_CLIENT" | "INVALID_REDIRECT_URI";
-          }
-    >;
     createLoginRequest: (input: {
         tenantId: string;
         clientId: string;
@@ -99,15 +90,20 @@ export type RecipeInterface = {
                   | "IDP_LOGIN_DISALLOWED_ERROR";
           }
     >;
-    exchangeCodeForToken: (input: { tenantId: string; code: string; userContext: UserContext }) => Promise<
+    getUserInfo: (input: {
+        tenantId: string;
+        accessToken: string;
+        clientId: string;
+        userContext: UserContext;
+    }) => Promise<
         | {
               status: "OK";
-              tokens: {
-                  idToken: string;
-              };
+              sub: string;
+              email: string;
+              claims: Record<string, any>;
           }
         | {
-              status: "INVALID_CODE_ERROR";
+              status: "INVALID_TOKEN_ERROR";
           }
     >;
 };
