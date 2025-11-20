@@ -163,7 +163,9 @@ export class CollectingResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.responseSet) {
+            this.statusCode = statusCode;
+        }
     };
 
     sendJSONResponse = (content: any) => {
