@@ -26,6 +26,9 @@ jobs:
             fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
             cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
             nodeVersions: '["20"]'
+            nodeFdiVersionMap: ${{ steps.node-versions.outputs.fdiVersions }}
+            websiteFdiVersionMap: ${{ steps.website-versions.outputs.fdiVersions }}
+            coreCdiVersionMap: ${{ steps.core-versions.outputs.cdiVersions }}
         steps:
             - uses: actions/checkout@v4
             - uses: supertokens/get-supported-versions-action@main
@@ -33,6 +36,27 @@ jobs:
               with:
                   has-fdi: true
                   has-cdi: true
+
+            - uses: supertokens/actions/get-versions-from-repo@main
+              id: website-versions
+              with:
+                  repo: supertokens-website
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+            - uses: supertokens/actions/get-versions-from-repo@main
+              id: node-versions
+              with:
+                  repo: supertokens-node
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+            - uses: supertokens/actions/get-versions-from-repo@main
+              id: core-versions
+              with:
+                  repo: supertokens-core
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  cdi-versions: ${{steps.versions.outputs.cdiVersions }}
 
     test:
         if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests')
@@ -61,16 +85,22 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
 
-            - uses: supertokens/get-versions-action@main
+            - name: Get versions from current FDI/CDI version
               id: versions
-              with:
-                  driver-name: python
-                  fdi-version: ${{ matrix.fdi-version }}
-              env:
-                  SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+              run: |
+                  latestCdiVersion=$(echo '${{ needs.define-versions.outputs.cdiVersions }}' | jq -r '.[-1]' | sed -e 's/"/\\"/g')
+                  coreVersion=$(echo '${{ needs.define-versions.outputs.coreCdiVersionMap }}' | jq -r ".[\"$latestCdiVersion\"]")
+                  nodeVersion=$(echo '${{ needs.define-versions.outputs.nodeFdiVersionMap }}' | jq -r '.["${{ matrix.fdi-version }}"]')
+                  websiteVersion=$(echo '${{ needs.define-versions.outputs.websiteFdiVersionMap }}' | jq -r '.["${{ matrix.fdi-version }}"]')
+
+                  echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
+                  echo "nodeVersion=${nodeVersion}" >> $GITHUB_OUTPUT
+                  echo "websiteVersion=${websiteVersion}" >> $GITHUB_OUTPUT
 
             - name: Start core
               working-directory: supertokens-node
+              env:
+                  SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersion }}
               run: docker compose up --wait
 
             - name: Install SDK dependencies
@@ -89,8 +119,8 @@ jobs:
 
             - uses: supertokens/website-testing-action@main
               with:
-                  version: ${{ steps.versions.outputs.frontendVersionXy }}
-                  node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
+                  version: ${{ steps.versions.outputs.websiteVersion }}
+                  node-sdk-version: ${{ steps.versions.outputs.nodeVersion }}
                   path: supertokens-website
                   check-name-suffix: "[Node=${{ matrix.node-version }}][FDI=${{ matrix.fdi-version }}]"
                   app-server-logs: ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}
