@@ -1078,21 +1078,20 @@ export default function getAPIImplementation(): APIInterface {
                 return generatedOptions;
             }
 
-            const email = generatedOptions.email;
-            if (email !== loginMethod.email) {
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (!generatedOptions.email) {
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
+                );
+            }
+
+            if (generatedOptions.email !== loginMethod.email) {
                 return {
                     status: "GENERAL_ERROR",
                     message: "Email mismatch",
                 };
-            }
-
-            // NOTE: Following checks will likely never throw an error as the
-            // check for type is done in a parent function but they are kept
-            // here to be on the safe side.
-            if (!email) {
-                throw new Error(
-                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
-                );
             }
 
             // we are using the email from the register options
@@ -1100,7 +1099,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnGeneratedOptionsId,
                 credential,
                 userContext,
-                recipeUserId: session.getRecipeUserId().getAsString(),
+                recipeUserId,
             });
 
             if (registerCredentialResponse.status !== "OK") {
