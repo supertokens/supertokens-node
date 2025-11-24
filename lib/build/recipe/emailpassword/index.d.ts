@@ -8,41 +8,92 @@ import { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signUp(tenantId: string, email: string, password: string, session?: undefined, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        user: User;
-        recipeUserId: RecipeUserId;
-    } | {
-        status: "EMAIL_ALREADY_EXISTS_ERROR";
-    }>;
-    static signUp(tenantId: string, email: string, password: string, session: SessionContainerInterface, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        user: User;
-        recipeUserId: RecipeUserId;
-    } | {
-        status: "EMAIL_ALREADY_EXISTS_ERROR";
-    } | {
-        status: "LINKING_TO_SESSION_USER_FAILED";
-        reason: "EMAIL_VERIFICATION_REQUIRED" | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-    }>;
-    static signIn(tenantId: string, email: string, password: string, session?: undefined, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        user: User;
-        recipeUserId: RecipeUserId;
-    } | {
-        status: "WRONG_CREDENTIALS_ERROR";
-    }>;
-    static signIn(tenantId: string, email: string, password: string, session: SessionContainerInterface, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        user: User;
-        recipeUserId: RecipeUserId;
-    } | {
-        status: "WRONG_CREDENTIALS_ERROR";
-    } | {
-        status: "LINKING_TO_SESSION_USER_FAILED";
-        reason: "EMAIL_VERIFICATION_REQUIRED" | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-    }>;
-    static verifyCredentials(tenantId: string, email: string, password: string, userContext?: Record<string, any>): Promise<{
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: undefined,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static signIn(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: undefined,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
+    static signIn(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static verifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ): Promise<{
         status: "OK" | "WRONG_CREDENTIALS_ERROR";
     }>;
     /**
@@ -56,25 +107,48 @@ export default class Wrapper {
      *
      * And we want to allow primaryUserId being passed in.
      */
-    static createResetPasswordToken(tenantId: string, userId: string, email: string, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        token: string;
-    } | {
-        status: "UNKNOWN_USER_ID_ERROR";
-    }>;
-    static resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: Record<string, any>): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    } | {
-        status: "PASSWORD_POLICY_VIOLATED_ERROR";
-        failureReason: string;
-    }>;
-    static consumePasswordResetToken(tenantId: string, token: string, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        email: string;
-        userId: string;
-    } | {
-        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>;
+    static createResetPasswordToken(
+        tenantId: string,
+        userId: string,
+        email: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
+    static resetPasswordUsingToken(
+        tenantId: string,
+        token: string,
+        newPassword: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
+    static consumePasswordResetToken(
+        tenantId: string,
+        token: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     static updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId;
         email?: string;
@@ -82,27 +156,46 @@ export default class Wrapper {
         userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-    } | {
-        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-        reason: string;
-    } | {
-        status: "PASSWORD_POLICY_VIOLATED_ERROR";
-        failureReason: string;
-    }>;
-    static createResetPasswordLink(tenantId: string, userId: string, email: string, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-        link: string;
-    } | {
-        status: "UNKNOWN_USER_ID_ERROR";
-    }>;
-    static sendResetPasswordEmail(tenantId: string, userId: string, email: string, userContext?: Record<string, any>): Promise<{
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
+    static createResetPasswordLink(
+        tenantId: string,
+        userId: string,
+        email: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
+    static sendResetPasswordEmail(
+        tenantId: string,
+        userId: string,
+        email: string,
+        userContext?: Record<string, any>
+    ): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";
     }>;
-    static sendEmail(input: TypeEmailPasswordEmailDeliveryInput & {
-        userContext?: Record<string, any>;
-    }): Promise<void>;
+    static sendEmail(
+        input: TypeEmailPasswordEmailDeliveryInput & {
+            userContext?: Record<string, any>;
+        }
+    ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

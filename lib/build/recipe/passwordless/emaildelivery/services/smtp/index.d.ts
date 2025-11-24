@@ -6,7 +6,9 @@ import { UserContext } from "../../../../../types";
 export default class SMTPService implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypePasswordlessEmailDeliveryInput>;
     constructor(config: TypeInput<TypePasswordlessEmailDeliveryInput>);
-    sendEmail: (input: TypePasswordlessEmailDeliveryInput & {
-        userContext: UserContext;
-    }) => Promise<void>;
+    sendEmail: (
+        input: TypePasswordlessEmailDeliveryInput & {
+            userContext: UserContext;
+        }
+    ) => Promise<void>;
 }

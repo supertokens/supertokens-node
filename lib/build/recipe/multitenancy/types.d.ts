@@ -7,14 +7,20 @@ import RecipeUserId from "../../recipeUserId";
 export type TypeInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type TypeNormalisedInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -29,10 +35,7 @@ export type TenantConfig = {
     };
 };
 export type RecipeInterface = {
-    getTenantId: (input: {
-        tenantIdFromFrontend: string;
-        userContext: UserContext;
-    }) => Promise<string>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
@@ -47,22 +50,17 @@ export type RecipeInterface = {
         status: "OK";
         createdNew: boolean;
     }>;
-    deleteTenant: (input: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    deleteTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         didExist: boolean;
     }>;
-    getTenant: (input: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<({
-        status: "OK";
-    } & TenantConfig) | undefined>;
-    listAllTenants: (input: {
-        userContext: UserContext;
-    }) => Promise<{
+    getTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<
+        | ({
+              status: "OK";
+          } & TenantConfig)
+        | undefined
+    >;
+    listAllTenants: (input: { userContext: UserContext }) => Promise<{
         status: "OK";
         tenants: (TenantConfig & {
             tenantId: string;
@@ -77,11 +75,7 @@ export type RecipeInterface = {
         status: "OK";
         createdNew: boolean;
     }>;
-    deleteThirdPartyConfig: (input: {
-        tenantId: string;
-        thirdPartyId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    deleteThirdPartyConfig: (input: { tenantId: string; thirdPartyId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         didConfigExist: boolean;
     }>;
@@ -89,15 +83,23 @@ export type RecipeInterface = {
         tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        wasAlreadyAssociated: boolean;
-    } | {
-        status: "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR" | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
-    } | {
-        status: "ASSOCIATION_NOT_ALLOWED_ERROR";
-        reason: string;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              wasAlreadyAssociated: boolean;
+          }
+        | {
+              status:
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
@@ -124,21 +126,24 @@ export type APIInterface = {
         clientType?: string;
         options: APIOptions;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        emailPassword: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: {
-                id: string;
-                name?: string;
-            }[];
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        firstFactors: string[];
-    } | GeneralErrorResponse>;
+    }) => Promise<
+        | {
+              status: "OK";
+              emailPassword: {
+                  enabled: boolean;
+              };
+              thirdParty: {
+                  enabled: boolean;
+                  providers: {
+                      id: string;
+                      name?: string;
+                  }[];
+              };
+              passwordless: {
+                  enabled: boolean;
+              };
+              firstFactors: string[];
+          }
+        | GeneralErrorResponse
+    >;
 };

@@ -16,18 +16,32 @@ type PartialNextRequest = {
     };
 };
 export default class NextJS {
-    static superTokensNextWrapper<T>(middleware: (next: (middlewareError?: any) => void) => Promise<T>, request: any, response: any): Promise<T>;
+    static superTokensNextWrapper<T>(
+        middleware: (next: (middlewareError?: any) => void) => Promise<T>,
+        request: any,
+        response: any
+    ): Promise<T>;
     static getAppDirRequestHandler(): (req: Request) => Promise<Response>;
-    static getSSRSession(cookies: Array<{
-        name: string;
-        value: string;
-    }>): Promise<{
+    static getSSRSession(
+        cookies: Array<{
+            name: string;
+            value: string;
+        }>
+    ): Promise<{
         accessTokenPayload: JWTPayload | undefined;
         hasToken: boolean;
         error: Error | undefined;
     }>;
-    static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(req: NextRequest, handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>, options?: VerifySessionOptions, userContext?: Record<string, any>): Promise<NextResponse>;
-    static withPreParsedRequestResponse<NextRequest extends PartialNextRequest, NextResponse extends Response>(req: NextRequest, handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>): Promise<NextResponse>;
+    static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
+        req: NextRequest,
+        handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>,
+        options?: VerifySessionOptions,
+        userContext?: Record<string, any>
+    ): Promise<NextResponse>;
+    static withPreParsedRequestResponse<NextRequest extends PartialNextRequest, NextResponse extends Response>(
+        req: NextRequest,
+        handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>
+    ): Promise<NextResponse>;
 }
 export declare let superTokensNextWrapper: typeof NextJS.superTokensNextWrapper;
 export declare let getAppDirRequestHandler: typeof NextJS.getAppDirRequestHandler;

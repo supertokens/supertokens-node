@@ -10,18 +10,32 @@ export declare function getPublicPlugin(plugin: SuperTokensPlugin): SuperTokensP
  * @param sdkVersion Current SDK version
  * @returns Resolved list of dependencies for the plugin
  */
-export declare function getPluginDependencies({ plugin, config, pluginsAbove, sdkVersion, normalisedAppInfo, }: {
+export declare function getPluginDependencies({
+    plugin,
+    config,
+    pluginsAbove,
+    sdkVersion,
+    normalisedAppInfo,
+}: {
     plugin: SuperTokensPlugin;
     config: SuperTokensConfig;
     normalisedAppInfo: NormalisedAppinfo;
     pluginsAbove: SuperTokensPlugin[];
     sdkVersion: string;
 }): SuperTokensPlugin[];
-export declare function applyPlugins<T extends keyof AllRecipeConfigs>(recipeId: T, config: AllRecipeConfigs[T] | undefined, plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]): AllRecipeConfigs[T];
+export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
+    recipeId: T,
+    config: AllRecipeConfigs[T] | undefined,
+    plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
+): AllRecipeConfigs[T];
 /**
  * Processes the list of plugins, resolving dependencies, applying overrides, and collecting route handlers.
  */
-export declare function loadPlugins({ plugins, config, normalisedAppInfo, }: {
+export declare function loadPlugins({
+    plugins,
+    config,
+    normalisedAppInfo,
+}: {
     plugins: SuperTokensPlugin[];
     config: TypeInput;
     normalisedAppInfo: NormalisedAppinfo;

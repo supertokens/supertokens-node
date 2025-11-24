@@ -6,7 +6,9 @@ import { UserContext } from "../../../../../types";
 export default class SMTPService implements EmailDeliveryInterface<TypeWebauthnEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeWebauthnEmailDeliveryInput>;
     constructor(config: TypeInput<TypeWebauthnEmailDeliveryInput>);
-    sendEmail: (input: TypeWebauthnEmailDeliveryInput & {
-        userContext: UserContext;
-    }) => Promise<void>;
+    sendEmail: (
+        input: TypeWebauthnEmailDeliveryInput & {
+            userContext: UserContext;
+        }
+    ) => Promise<void>;
 }
