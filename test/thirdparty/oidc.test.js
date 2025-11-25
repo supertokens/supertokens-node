@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -23,18 +23,11 @@ let ThirdParty = require("../../lib/build/recipe/thirdparty");
 
 describe(`oidcTest: ${printPath("[test/thirdparty/oidc.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("should use code challenge method S256 if supported by the provider", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -86,7 +79,7 @@ describe(`oidcTest: ${printPath("[test/thirdparty/oidc.test.js]")}`, function ()
     });
 
     it("should not use pkce if oidc response does not support S256", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
@@ -131,7 +124,7 @@ describe(`oidcTest: ${printPath("[test/thirdparty/oidc.test.js]")}`, function ()
     });
 
     it("should use pkce if oidc response does not support S256 but forcePKCE is true", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {

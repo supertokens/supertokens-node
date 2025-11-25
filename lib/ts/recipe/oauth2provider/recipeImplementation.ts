@@ -471,6 +471,16 @@ export default function getRecipeInterface(
                     return tokenInfo;
                 }
 
+                if (!tokenInfo.active) {
+                    return {
+                        status: "ERROR",
+                        statusCode: 400,
+                        error: "invalid_grant",
+                        errorDescription:
+                            "The provided refresh token is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.",
+                    };
+                }
+
                 if (tokenInfo.active === true) {
                     const sessionHandle = tokenInfo.sessionHandle as string;
 

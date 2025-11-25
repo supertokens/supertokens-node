@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, createCoreApplication, resetAll } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -26,18 +26,11 @@ let { middleware, errorHandler } = require("../../framework/express");
  */
 describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test config for thirdparty module, no provider passed", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         try {
             STExpress.init({
                 supertokens: {
@@ -63,7 +56,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
     });
 
     it("test minimum config for thirdparty module, custom provider", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
