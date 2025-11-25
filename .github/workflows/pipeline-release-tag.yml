@@ -43,6 +43,8 @@ jobs:
             - uses: actions/checkout@v4
               with:
                   ref: ${{ inputs.branch }}
+                  # Need a complete fetch to make the master merge check work
+                  fetch-depth: 0
                   fetch-tags: true
                   token: ${{ secrets.ALL_REPO_PAT }}
 
@@ -64,6 +66,39 @@ jobs:
                   echo "versionFolder=$packageVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
                   echo "artifactName=node-docs-$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
 
+            - name: Setup git
+              run: |
+                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git fetch origin master
+            - name: Check if branch needs master merge
+              run: |
+                  if [[ $(git log origin/master ^HEAD) != "" ]]; then
+                    echo "You need to merge master into this branch."
+                    exit 1
+                  fi
+            - name: Check tag and branch correctness
+              run: |
+                  if [[ "${{ steps.versions.outputs.packageVersion }}" != "${{ steps.versions.outputs.packageLockVersion }}" ]];
+                  then
+                    echo "Package version and package lock version mismatch"
+                    exit 1
+                  fi
+
+                  if [[ "${{ steps.versions.outputs.packageVersion }}" != ${{ inputs.branch }}* ]]
+                  then
+                    echo "Adding tag to wrong branch"
+                    exit 1
+                  fi
+
+                  if git rev-parse ${{ steps.versions.outputs.releaseTag }} >/dev/null 2>&1
+                  then
+                      echo "The released version of this tag already exists."
+                      exit 1
+                  fi
+
     mark-as-success:
         runs-on: ubuntu-latest
 
@@ -71,80 +106,14 @@ jobs:
             - setup
 
         steps:
-            - uses: actions/setup-python@v5
+            - name: Check tests passed
+              uses: supertokens/actions/check-tests-passed@main
               with:
-                  python-version: "3.13"
-
-            - name: Install dependencies
-              run: |
-                  pip install httpx
-
-            - if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
-              name: Get commit status
-              run: |
-                  python3 -c "$(cat << EOF
-
-                  from collections import defaultdict
-                  import httpx
-                  import sys
-
-                  check_runs_url = "https://api.github.com/repos/${{ github.repository }}/commits/tags/${{ needs.setup.outputs.devTag }}/check-runs?per_page=100&page={page}"
-                  jobs_url="https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs"
-
-                  current_jobs_response = httpx.get(jobs_url).json()
-                  current_job_ids = [job["id"] for job in current_jobs_response["jobs"]]
-
-                  page = 1
-                  total = 0
-
-                  status_map = defaultdict(int)
-                  conclusion_map = defaultdict(int)
-                  failures = []
-
-                  while True:
-                      response = httpx.get(check_runs_url.format(page=page)).json()
-
-                      if len(response["check_runs"]) == 0:
-                          break
-
-                      for run_info in response["check_runs"]:
-                          # Release pipeline jobs also show up in check-runs
-                          # We skip them from the checks to avoid pipeline failures
-                          if run_info["id"] in current_job_ids:
-                              continue
-
-                          if run_info["conclusion"] == "failure":
-                              failures.append(run_info["html_url"])
-
-                          status_map[run_info["status"]] += 1
-                          conclusion_map[run_info["conclusion"]] += 1
-                          total += 1
-
-                      page += 1
-
-                  print(f"{page=}")
-                  print(f"{total=}")
-                  print("Status Map =", dict(status_map))
-                  print("Conclusion Map =", dict(conclusion_map))
-                  print()
-
-                  # Possible values (from docs):
-                  # [completed, action_required, cancelled, failure, neutral, skipped, stale, success,
-                  # timed_out, in_progress, queued, requested, waiting, pending]
-                  if status_map["completed"] < total:
-                      print("Some checks not completed.")
-                      print(failures)
-                      sys.exit(1)
-
-                  # Possible values (from testing):
-                  # None, success, skipped, failure
-                  if conclusion_map.get("failure", 0) > 0:
-                      print("Some checks not successful.")
-                      print(failures)
-                      sys.exit(1)
-
-                  EOF
-                  )"
+                  ref: ${{ inputs.branch }}
+                  ref-type: branch
+                  repository: ${{ github.repository }}
+                  run_id: ${{ github.run_id }}
+                  setup-python: true
 
             - run: |
                   curl --fail-with-body -X PATCH \
@@ -205,20 +174,6 @@ jobs:
                       exit 1
                   fi
 
-            - name: Check if current commit is dev-tagged
-              run: |
-                  currentCommit=$(git log --format="%H" -n 1)
-                  currentTag=`git tag -l --points-at $currentCommit`
-                  expectedTag="${{ needs.setup.outputs.devTag }}"
-
-                  if [[ "$currentTag" != "$expectedTag" ]]
-                  then
-                      echo "Commit does not have the correct dev tag for this release"
-                      echo "Current: $currentTag"
-                      echo "Expected: $expectedTag"
-                      exit 1
-                  fi
-
             - name: Mark for release
               run: |
                   curl --fail-with-body -X PATCH \
@@ -232,15 +187,10 @@ jobs:
                           \"release\": true
                       }"
 
-            - name: Create release tag, delete dev tag
+            - name: Create release tag
               run: |
-                  # Add new release tag
                   git tag ${{ needs.setup.outputs.releaseTag }}
                   git push --tags
-
-                  # Delete current dev tag
-                  git tag --delete ${{ needs.setup.outputs.devTag }}
-                  git push --delete origin ${{ needs.setup.outputs.devTag }}
 
     merge:
         runs-on: ubuntu-latest
