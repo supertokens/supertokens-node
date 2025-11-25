@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## [23.0.2] - 2025-11-20
+## [23.1.0] - 2025-11-25
 
+-   Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
 -   Updates custom framework to following correct CollectingResponse flow order (to ensure that subsequent calls to the `sendJSONResponse` doesn't overwrite the response).
 
 ## [23.0.1] - 2025-07-31
@@ -19,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Fix WebAuthn credential listing and removal to work even when the WebAuthn user is not the primary user and when there are multiple WebAuthn users linked
 -   Prevent removal of WebAuthn credentials unless all session claims are satisfied
 -   Change how sessions are fetched before listing, removing and adding WebAuthn credentials
--   Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
 
 ## [23.0.0] - 2025-07-21
 
