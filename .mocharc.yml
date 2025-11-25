@@ -6,4 +6,4 @@ timeout: 40000
 reporter: mocha-multi-reporters
 require: test/hooks.js
 reporter-option:
-  - configFile=mocha-multi-reporters.json
+    - configFile=mocha-multi-reporters.json

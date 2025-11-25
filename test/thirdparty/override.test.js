@@ -269,7 +269,8 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
-                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                    recipeUserId:
+                                                        response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };

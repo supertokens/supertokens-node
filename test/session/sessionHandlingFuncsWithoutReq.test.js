@@ -434,7 +434,8 @@ describe(`Session handling functions without modifying response: ${printPath(
                 tokensAfterRefresh.refreshToken,
                 true
             );
-            const tokensAfterRefreshWithDisable = sessionAfterRefreshWithDisabledAntiCsrf.getAllSessionTokensDangerously();
+            const tokensAfterRefreshWithDisable =
+                sessionAfterRefreshWithDisabledAntiCsrf.getAllSessionTokensDangerously();
             assert.strictEqual(tokensAfterRefreshWithDisable.accessAndFrontTokenUpdated, true);
         });
 

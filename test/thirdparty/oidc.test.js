@@ -26,7 +26,6 @@ describe(`oidcTest: ${printPath("[test/thirdparty/oidc.test.js]")}`, function ()
         ProcessState.getInstance().reset();
     });
 
-
     it("should use code challenge method S256 if supported by the provider", async function () {
         const connectionURI = await createCoreApplicationWithMultitenancy();
 

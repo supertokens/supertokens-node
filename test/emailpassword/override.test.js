@@ -97,7 +97,8 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
-                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                    recipeUserId:
+                                                        response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
@@ -116,7 +117,8 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
-                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                    recipeUserId:
+                                                        response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
@@ -234,7 +236,8 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
-                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                    recipeUserId:
+                                                        response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
@@ -253,7 +256,8 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
-                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                    recipeUserId:
+                                                        response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };

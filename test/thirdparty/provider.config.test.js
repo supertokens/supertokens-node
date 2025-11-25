@@ -73,7 +73,9 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         });
 
         for (let i = 0; i < 10; i++) {
-            await (await ThirdParty.getProvider("public", "google")).getAuthorisationRedirectURL({
+            await (
+                await ThirdParty.getProvider("public", "google")
+            ).getAuthorisationRedirectURL({
                 redirectURIOnProviderDashboard: "http://localhost:8080",
                 userContext: {},
             });
