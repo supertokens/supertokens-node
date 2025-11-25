@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../..");
@@ -24,8 +24,6 @@ const sinon = require("sinon");
 
 describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
@@ -34,14 +32,10 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
             await this.server.close();
         } catch (err) {}
     });
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
 
     // - check if session verify middleware responds with a nice error even without the global error handler
     it("test session verify middleware without error handler added", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "custom",
             supertokens: {
@@ -75,7 +69,7 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
 
     // check basic usage of session
     it("test basic usage of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "custom",
             supertokens: {

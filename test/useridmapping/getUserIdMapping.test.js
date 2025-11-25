@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
@@ -10,19 +10,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMapping.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("getUserIdMappingTest", () => {
         it("get userId mapping", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -115,7 +108,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
         });
 
         it("get userId mapping when mapping does not exist", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -165,7 +158,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
         });
 
         it("get userId mapping when externalUserIdInfo does not exist", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
