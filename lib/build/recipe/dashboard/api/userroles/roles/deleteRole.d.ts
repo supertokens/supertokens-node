@@ -1,11 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../../types";
-declare const deleteRole: (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    __: any
-) => Promise<
+import { APIFunction } from "../../../types";
+declare const deleteRole: ({ stInstance, options, userContext }: Parameters<APIFunction>[0]) => Promise<
     | {
           status: "OK";
           didRoleExist: boolean;

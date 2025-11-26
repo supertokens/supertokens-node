@@ -1,6 +1,6 @@
 import * as jose from "jose";
 import { logDebugMessage } from "./logger";
-import { doFetch } from "./utils";
+import { doFetch } from "./querier";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 

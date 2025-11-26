@@ -14,10 +14,10 @@
  */
 
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, TenantConfig } from "./types";
-import MultitenancyRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
 import { FactorIds } from "../multifactorauth/types";
+import type SuperTokens from "../../supertokens";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -33,6 +33,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
 }
 
 export const isValidFirstFactor = async function (
+    stInstance: SuperTokens,
     tenantId: string,
     factorId: string,
     userContext: UserContext
@@ -47,7 +48,7 @@ export const isValidFirstFactor = async function (
           status: "TENANT_NOT_FOUND_ERROR";
       }
 > {
-    const mtRecipe = MultitenancyRecipe.getInstance();
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
     if (mtRecipe === undefined) {
         throw new Error("Should never happen");
     }

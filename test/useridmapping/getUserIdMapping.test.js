@@ -29,13 +29,6 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signUpResponse.status, "OK");
@@ -122,13 +115,6 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             {
                 let getUserIdMappingResponse = await STExpress.getUserIdMapping({
                     userId: "unknownId",
@@ -171,13 +157,6 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");

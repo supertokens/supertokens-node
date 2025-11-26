@@ -12,9 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication } = require("./utils");
+const { printPath, createCoreApplication, getQuerierInstance, getCoreUrl } = require("./utils");
 let ST = require("../");
-let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let Session = require("../recipe/session");
@@ -33,7 +32,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     // Check that once the API version is there, it doesn't need to query again
     it("test that if that once API version is there, it doesn't need to query again", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await getCoreUrl();
         ST.init({
             supertokens: {
                 connectionURI,
@@ -45,7 +44,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-        let q = Querier.getNewInstanceOrThrowError(undefined);
+        let q = getQuerierInstance();
         await q.getAPIVersion();
 
         let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -66,7 +65,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     // Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
     it("test that rid is added to the header if it's a recipe request", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await getCoreUrl();
         ST.init({
             supertokens: {
                 connectionURI,
@@ -79,17 +78,19 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError().getRecipeId());
+        let querier = getQuerierInstance(SessionRecipe.getInstanceOrThrowError().getRecipeId());
 
+        await querier.getAPIVersion({});
+        console.log("connectionURI", "/recipe");
         nock(connectionURI, {
-            allowUnmocked: true,
+            allowUnmocked: false,
         })
             .get("/recipe")
             .reply(200, function (uri, requestBody) {
                 return this.req.headers;
             });
 
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {}, {});
+        let response = await querier.sendGetRequest("/recipe", {}, {});
         assert.deepStrictEqual(response.rid, ["session"]);
 
         nock(connectionURI, {
@@ -100,7 +101,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response2 = await querier.sendGetRequest(new NormalisedURLPath("/recipe/random"), {}, {});
+        let response2 = await querier.sendGetRequest("/recipe/random", {}, {});
         assert.deepStrictEqual(response2.rid, ["session"]);
 
         nock(connectionURI, {
@@ -111,7 +112,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response3 = await querier.sendGetRequest(new NormalisedURLPath("/test"), {}, {});
+        let response3 = await querier.sendGetRequest("/test", {}, {});
         assert.strictEqual(response3.rid, undefined);
     });
 
@@ -128,8 +129,8 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         try {
-            let q = Querier.getNewInstanceOrThrowError(undefined);
-            await q.sendGetRequest(new NormalisedURLPath("", "/"), {}, {});
+            let q = getQuerierInstance();
+            await q.sendGetRequest(("", "/"), {}, {});
             throw new Error();
         } catch (err) {
             if (err.message !== "No SuperTokens core available to query") {
@@ -155,12 +156,12 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
-        assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("/hello"), {}, undefined, {}), "Hello\n");
+        let q = getQuerierInstance();
+        assert.equal(await q.sendGetRequest("/hello", {}, {}), "Hello\n");
+        assert.equal(await q.sendDeleteRequest("/hello", {}, undefined, {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendGetRequest("/hello", {}, {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
         assert.equal(hostsAlive.has(connectionURI), true);
@@ -183,12 +184,12 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
-        assert.equal(await q.sendPostRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
+        let q = getQuerierInstance();
+        assert.equal(await q.sendGetRequest("/hello", {}, {}), "Hello\n");
+        assert.equal(await q.sendPostRequest("/hello", {}, {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}, {}, {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendPutRequest("/hello", {}, {}, {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
         assert.equal(hostsAlive.has(connectionURI), true);
@@ -197,7 +198,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no connectionURI given, but recipe used throws an error", async function () {
-        const connectionURI = await createCoreApplication();
         ST.init({
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -219,7 +219,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no connectionURI given, recipe override and used doesn't thrown an error", async function () {
-        const connectionURI = await createCoreApplication();
         ST.init({
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -371,7 +370,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no-cache header is added when querying the core", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await getCoreUrl();
         ST.init({
             supertokens: {
                 connectionURI,
@@ -384,7 +383,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError().getRecipeId());
+        let querier = getQuerierInstance(SessionRecipe.getInstanceOrThrowError().getRecipeId());
 
         nock(connectionURI, {
             allowUnmocked: true,
@@ -394,7 +393,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {}, {});
+        let response = await querier.sendGetRequest("/recipe", {}, {});
         assert.deepStrictEqual(response.rid, ["session"]);
         let noCacheHeaderAdded = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH,

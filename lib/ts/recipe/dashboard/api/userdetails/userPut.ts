@@ -1,18 +1,11 @@
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import EmailPasswordRecipe from "../../../emailpassword/recipe";
-import PasswordlessRecipe from "../../../passwordless/recipe";
-import WebAuthnRecipe from "../../../webauthn/recipe";
-import EmailPassword from "../../../emailpassword";
-import Passwordless from "../../../passwordless";
-import WebAuthn from "../../../webauthn";
 import { isValidRecipeId, getUserForRecipeId } from "../../utils";
-import UserMetadataRecipe from "../../../usermetadata/recipe";
-import UserMetadata from "../../../usermetadata";
 import { FORM_FIELD_EMAIL_ID } from "../../../emailpassword/constants";
 import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../passwordless/utils";
 import RecipeUserId from "../../../../recipeUserId";
 import { UserContext } from "../../../../types";
+import type SuperTokens from "../../../../supertokens";
 
 type Response =
     | {
@@ -42,6 +35,7 @@ type Response =
       };
 
 const updateEmailForRecipeId = async (
+    stInstance: SuperTokens,
     recipeId: "emailpassword" | "passwordless" | "thirdparty" | "webauthn",
     recipeUserId: RecipeUserId,
     email: string,
@@ -64,9 +58,9 @@ const updateEmailForRecipeId = async (
       }
 > => {
     if (recipeId === "emailpassword") {
-        let emailFormFields = EmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
-            (field) => field.id === FORM_FIELD_EMAIL_ID
-        );
+        let emailFormFields = stInstance
+            .getRecipeInstanceOrThrow("emailpassword")
+            .config.signUpFeature.formFields.filter((field) => field.id === FORM_FIELD_EMAIL_ID);
 
         let validationError = await emailFormFields[0].validate(email, tenantId, userContext);
 
@@ -77,11 +71,14 @@ const updateEmailForRecipeId = async (
             };
         }
 
-        const emailUpdateResponse = await EmailPassword.updateEmailOrPassword({
-            recipeUserId,
-            email,
-            userContext,
-        });
+        const emailUpdateResponse = await stInstance
+            .getRecipeInstanceOrThrow("emailpassword")
+            .recipeInterfaceImpl.updateEmailOrPassword({
+                recipeUserId,
+                email,
+                userContext,
+                tenantIdForPasswordPolicy: tenantId,
+            });
 
         if (emailUpdateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
             return {
@@ -105,7 +102,8 @@ const updateEmailForRecipeId = async (
         let isValidEmail = true;
         let validationError = "";
 
-        const passwordlessConfig = PasswordlessRecipe.getInstanceOrThrowError().config;
+        const passwordlessRecipe = stInstance.getRecipeInstanceOrThrow("passwordless");
+        const passwordlessConfig = passwordlessRecipe.config;
 
         if (passwordlessConfig.contactMethod === "PHONE") {
             const validationResult = await defaultValidateEmail(email);
@@ -130,7 +128,7 @@ const updateEmailForRecipeId = async (
             };
         }
 
-        const updateResult = await Passwordless.updateUser({
+        const updateResult = await passwordlessRecipe.recipeInterfaceImpl.updateUser({
             recipeUserId,
             email,
             userContext,
@@ -162,11 +160,8 @@ const updateEmailForRecipeId = async (
     }
 
     if (recipeId === "webauthn") {
-        let validationError = await WebAuthnRecipe.getInstanceOrThrowError().config.validateEmailAddress(
-            email,
-            tenantId,
-            userContext
-        );
+        const webauthnRecipe = stInstance.getRecipeInstanceOrThrow("webauthn");
+        let validationError = await webauthnRecipe.config.validateEmailAddress(email, tenantId, userContext);
 
         if (validationError !== undefined) {
             return {
@@ -175,7 +170,7 @@ const updateEmailForRecipeId = async (
             };
         }
 
-        const emailUpdateResponse = await WebAuthn.updateUserEmail({
+        const emailUpdateResponse = await webauthnRecipe.recipeInterfaceImpl.updateUserEmail({
             email,
             recipeUserId: recipeUserId.getAsString(),
             tenantId,
@@ -202,6 +197,7 @@ const updateEmailForRecipeId = async (
 };
 
 const updatePhoneForRecipeId = async (
+    stInstance: SuperTokens,
     recipeUserId: RecipeUserId,
     phone: string,
     tenantId: string,
@@ -225,7 +221,8 @@ const updatePhoneForRecipeId = async (
     let isValidPhone = true;
     let validationError = "";
 
-    const passwordlessConfig = PasswordlessRecipe.getInstanceOrThrowError().config;
+    const passwordlessRecipe = stInstance.getRecipeInstanceOrThrow("passwordless");
+    const passwordlessConfig = passwordlessRecipe.config;
 
     if (passwordlessConfig.contactMethod === "EMAIL") {
         const validationResult = await defaultValidatePhoneNumber(phone);
@@ -250,7 +247,7 @@ const updatePhoneForRecipeId = async (
         };
     }
 
-    const updateResult = await Passwordless.updateUser({
+    const updateResult = await passwordlessRecipe.recipeInterfaceImpl.updateUser({
         recipeUserId,
         phoneNumber: phone,
         userContext,
@@ -277,12 +274,12 @@ const updatePhoneForRecipeId = async (
     };
 };
 
-export const userPut = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userPut = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
     const recipeId = requestBody.recipeId;
@@ -340,22 +337,16 @@ export const userPut = async (
         });
     }
 
-    let userResponse = await getUserForRecipeId(new RecipeUserId(recipeUserId), recipeId, userContext);
+    let userResponse = await getUserForRecipeId(stInstance, new RecipeUserId(recipeUserId), recipeId, userContext);
 
     if (userResponse.user === undefined || userResponse.recipe === undefined) {
         throw new Error("Should never come here");
     }
 
     if (firstName.trim() !== "" || lastName.trim() !== "") {
-        let isRecipeInitialised = false;
-        try {
-            UserMetadataRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {
-            // no op
-        }
+        let usermetadataRecipe = stInstance.getRecipeInstance("usermetadata");
 
-        if (isRecipeInitialised) {
+        if (usermetadataRecipe) {
             let metaDataUpdate: any = {};
 
             if (firstName.trim() !== "") {
@@ -366,12 +357,17 @@ export const userPut = async (
                 metaDataUpdate["last_name"] = lastName.trim();
             }
 
-            await UserMetadata.updateUserMetadata(userResponse.user.id, metaDataUpdate, userContext);
+            await usermetadataRecipe.recipeInterfaceImpl.updateUserMetadata({
+                userId: userResponse.user.id,
+                metadataUpdate: metaDataUpdate,
+                userContext,
+            });
         }
     }
 
     if (email.trim() !== "") {
         const emailUpdateResponse = await updateEmailForRecipeId(
+            stInstance,
             userResponse.recipe,
             new RecipeUserId(recipeUserId),
             email.trim(),
@@ -393,6 +389,7 @@ export const userPut = async (
 
     if (phone.trim() !== "") {
         const phoneUpdateResponse = await updatePhoneForRecipeId(
+            stInstance,
             new RecipeUserId(recipeUserId),
             phone.trim(),
             tenantId,

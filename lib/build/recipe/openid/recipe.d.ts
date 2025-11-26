@@ -5,17 +5,18 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type SuperTokens from "../../supertokens";
 export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID: "openid";
     private static instance;
     config: TypeNormalisedInput;
     recipeImplementation: RecipeInterface;
     apiImpl: APIInterface;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
+    constructor(stInstance: SuperTokens, recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
     static getInstanceOrThrowError(): OpenIdRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
-    static getIssuer(userContext: UserContext): Promise<string>;
+    getIssuer(userContext: UserContext): Promise<string>;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,

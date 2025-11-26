@@ -1462,12 +1462,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(FastifyFramework.plugin);
         let resp = await this.server.inject({
             method: "get",
@@ -1513,12 +1507,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(FastifyFramework.plugin);
         await createUsers(EmailPassword);
@@ -1567,12 +1555,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(FastifyFramework.plugin);
         await createUsers(EmailPassword);
         let resp = await this.server.inject({
@@ -1619,12 +1601,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(FastifyFramework.plugin);
         await createUsers(EmailPassword);
@@ -1676,12 +1652,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await createUsers(null, Passwordless);
         await this.server.register(FastifyFramework.plugin);
         let resp = await this.server.inject({
@@ -1731,12 +1701,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await createUsers(null, null);
         await this.server.register(FastifyFramework.plugin);
@@ -1828,12 +1792,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await createUsers(null, null, ThirdParty);
         await this.server.register(FastifyFramework.plugin);
@@ -1929,12 +1887,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await createUsers(null, Passwordless, ThirdParty);
         await this.server.register(FastifyFramework.plugin);

@@ -14,16 +14,20 @@
  */
 
 import { APIInterface } from "../";
-import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
 import SessionError from "../../session/error";
 import { updateAndGetMFARelatedInfoInSession } from "../utils";
-import Multitenancy from "../../multitenancy";
-import { getUser } from "../../..";
+import type SuperTokens from "../../../supertokens";
+import { MultiFactorAuthClaimClass } from "../multiFactorAuthClaim";
 
-export default function getAPIInterface(): APIInterface {
+export default function getAPIInterface(
+    stInstance: SuperTokens,
+    multiFactorAuthClaim: MultiFactorAuthClaimClass
+): APIInterface {
     return {
         resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
-            const sessionUser = await getUser(session.getUserId(), userContext);
+            const sessionUser = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: session.getUserId(), userContext });
 
             if (sessionUser === undefined) {
                 throw new SessionError({
@@ -34,13 +38,16 @@ export default function getAPIInterface(): APIInterface {
 
             const mfaInfo = await updateAndGetMFARelatedInfoInSession({
                 session,
+                stInstance,
                 userContext,
             });
             const factorsSetUpForUser = await options.recipeImplementation.getFactorsSetupForUser({
                 user: sessionUser,
                 userContext,
             });
-            const tenantInfo = await Multitenancy.getTenant(session.getTenantId(userContext), userContext);
+            const tenantInfo = await stInstance
+                .getRecipeInstanceOrThrow("multitenancy")
+                .recipeInterfaceImpl.getTenant({ tenantId: session.getTenantId(userContext), userContext });
             if (tenantInfo === undefined) {
                 throw new SessionError({
                     type: SessionError.UNAUTHORISED,
@@ -73,7 +80,7 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+            const nextSetOfUnsatisfiedFactors = multiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
                 mfaInfo.completedFactors,
                 mfaInfo.mfaRequirementsForAuth
             );

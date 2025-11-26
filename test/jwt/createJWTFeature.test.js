@@ -27,13 +27,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             recipeList: [JWTRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         try {
             await JWTRecipe.createJWT({}, 0);
             assert.fail();
@@ -55,13 +48,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             },
             recipeList: [JWTRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let jwt = undefined;
 
@@ -87,13 +73,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             },
             recipeList: [JWTRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let currentTimeInSeconds = Date.now() / 1000;
         let jwt = (await JWTRecipe.createJWT({})).jwt.split(".")[1];
@@ -127,13 +106,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             ],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         let currentTimeInSeconds = Date.now() / 1000;
         let jwt = (await JWTRecipe.createJWT({})).jwt.split(".")[1];
         let decodedJWTPayload = Buffer.from(jwt, "base64").toString("utf-8");
@@ -165,13 +137,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
                 }),
             ],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let currentTimeInSeconds = Date.now() / 1000;
         let targetExpiryDuration = 500; // 100 years in seconds

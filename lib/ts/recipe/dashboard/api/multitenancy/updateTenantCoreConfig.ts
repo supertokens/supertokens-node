@@ -12,27 +12,25 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 
 export type Response =
     | { status: "OK" }
     | { status: "UNKNOWN_TENANT_ERROR" }
     | { status: "INVALID_CONFIG_ERROR"; message: string };
 
-export default async function updateTenantCoreConfig(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function updateTenantCoreConfig({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { name, value } = requestBody;
 
-    const mtRecipe = MultitenancyRecipe.getInstance();
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
 
-    const tenantRes = await mtRecipe!.recipeInterfaceImpl.getTenant({ tenantId, userContext });
+    const tenantRes = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
     if (tenantRes === undefined) {
         return {
             status: "UNKNOWN_TENANT_ERROR",
@@ -40,7 +38,7 @@ export default async function updateTenantCoreConfig(
     }
 
     try {
-        await mtRecipe!.recipeInterfaceImpl.createOrUpdateTenant({
+        await mtRecipe.recipeInterfaceImpl.createOrUpdateTenant({
             tenantId,
             config: {
                 coreConfig: {

@@ -16,12 +16,14 @@
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
-import { AllowedDomainsClaim } from "./allowedDomainsClaim";
+import { AllowedDomainsClaimClass } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
 import { getUserContext } from "../../utils";
 
 export default class Wrapper {
     static init = Recipe.init;
+
+    static AllowedDomainsClaim = new AllowedDomainsClaimClass(() => Recipe.getInstanceOrThrowError());
 
     static async createOrUpdateTenant(
         tenantId: string,
@@ -73,9 +75,7 @@ export default class Wrapper {
         });
     }
 
-    static async listAllTenants(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static async listAllTenants(userContext?: Record<string, any>): Promise<{
         status: "OK";
         tenants: ({
             tenantId: string;
@@ -180,5 +180,5 @@ export let deleteThirdPartyConfig = Wrapper.deleteThirdPartyConfig;
 export let associateUserToTenant = Wrapper.associateUserToTenant;
 export let disassociateUserFromTenant = Wrapper.disassociateUserFromTenant;
 
-export { AllowedDomainsClaim };
+export const AllowedDomainsClaim = Wrapper.AllowedDomainsClaim;
 export type { RecipeInterface, APIOptions, APIInterface };

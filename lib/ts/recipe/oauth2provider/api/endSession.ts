@@ -16,11 +16,12 @@
 import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
-import Session from "../../session";
 import SuperTokensError from "../../../error";
 import SessionError from "../../../recipe/session/error";
+import type SuperTokens from "../../../supertokens";
 
 export async function endSessionGET(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -33,6 +34,7 @@ export async function endSessionGET(
     const params = new URLSearchParams(splitURL[1]);
 
     return endSessionCommon(
+        stInstance,
         Object.fromEntries(params.entries()),
         apiImplementation.endSessionGET,
         options,
@@ -41,6 +43,7 @@ export async function endSessionGET(
 }
 
 export async function endSessionPOST(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -50,10 +53,11 @@ export async function endSessionPOST(
     }
     const params = await options.req.getBodyAsJSONOrFormData();
 
-    return endSessionCommon(params, apiImplementation.endSessionPOST, options, userContext);
+    return endSessionCommon(stInstance, params, apiImplementation.endSessionPOST, options, userContext);
 }
 
 async function endSessionCommon(
+    stInstance: SuperTokens,
     params: Record<string, string>,
     apiImplementation: APIInterface["endSessionGET"] | APIInterface["endSessionPOST"],
     options: APIOptions,
@@ -65,7 +69,12 @@ async function endSessionCommon(
 
     let session, shouldTryRefresh;
     try {
-        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
+        session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+            req: options.req,
+            res: options.res,
+            options: { sessionRequired: false },
+            userContext,
+        });
         shouldTryRefresh = false;
     } catch (error) {
         // We can handle this as if the session is not present, because then we redirect to the frontend,

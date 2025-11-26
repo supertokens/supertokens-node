@@ -8,11 +8,14 @@ import {
     VerifySessionOptions,
     SessionClaimValidator,
     SessionClaim,
+    SessionContainerInterface,
 } from "./types";
 import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod, UserContext } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
+import type SuperTokens from "../../supertokens";
+import { RecipeUserId } from "../..";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: "session";
@@ -22,7 +25,13 @@ export default class SessionRecipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    );
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
@@ -53,5 +62,25 @@ export default class SessionRecipe extends RecipeModule {
         request: BaseRequest,
         response: BaseResponse,
         userContext: UserContext
-    ) => Promise<import("./types").SessionContainerInterface | undefined>;
+    ) => Promise<SessionContainerInterface | undefined>;
+    getRequiredClaimValidators: (
+        session: SessionContainerInterface,
+        overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+        userContext: UserContext
+    ) => Promise<SessionClaimValidator[]>;
+    createNewSession: (input: {
+        req: any;
+        res: any;
+        tenantId: string;
+        recipeUserId: RecipeUserId;
+        accessTokenPayload: any;
+        sessionDataInDatabase: any;
+        userContext: UserContext;
+    }) => Promise<SessionContainerInterface>;
+    getSession: (input: {
+        req: any;
+        res: any;
+        options?: VerifySessionOptions;
+        userContext: UserContext;
+    }) => Promise<SessionContainerInterface | undefined>;
 }

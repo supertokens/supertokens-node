@@ -36,17 +36,15 @@ import { applyPlugins } from "../../plugins";
 import emailExistsAPI from "./api/emailExists";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { Querier } from "../../querier";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import MultiFactorAuthRecipe from "../multifactorauth/recipe";
-import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -63,6 +61,7 @@ export default class Recipe extends RecipeModule {
     emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
 
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
@@ -71,18 +70,18 @@ export default class Recipe extends RecipeModule {
             emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput> | undefined;
         }
     ) {
-        super(recipeId, appInfo);
+        super(stInstance, recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         {
             const getEmailPasswordConfig = () => this.config;
             let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), getEmailPasswordConfig)
+                RecipeImplementation(this.stInstance, this.querier, getEmailPasswordConfig)
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
@@ -96,7 +95,7 @@ export default class Recipe extends RecipeModule {
                 : ingredients.emailDelivery;
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
             if (mfaInstance !== undefined) {
                 mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes(() => {
                     return ["emailpassword"];
@@ -215,7 +214,7 @@ export default class Recipe extends RecipeModule {
                 });
             }
 
-            const mtRecipe = MultitenancyRecipe.getInstance();
+            const mtRecipe = stInstance.getRecipeInstance("multitenancy");
             if (mtRecipe !== undefined) {
                 mtRecipe.allAvailableFirstFactors.push(FactorIds.EMAILPASSWORD);
             }
@@ -230,9 +229,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -319,9 +319,9 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this.apiImpl, tenantId, options, userContext);
+            return await signUpAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.apiImpl, tenantId, options, userContext);
+            return await signInAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
             return await generatePasswordResetTokenAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === PASSWORD_RESET_API) {

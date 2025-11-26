@@ -45,13 +45,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                 ],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a Passwordless user
             const email = "test@example.com";
             const codeInfo = await PasswordlessRecipe.createCode({
@@ -130,13 +123,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                 ],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a Passwordless user
             const email = "test@example.com";
             const codeInfo = await PasswordlessRecipe.createCode({
@@ -200,13 +186,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const email = "test@example.com";
@@ -274,13 +253,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                 ],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a Passwordless user
             const phoneNumber = "+911234566789";
             const codeInfo = await PasswordlessRecipe.createCode({
@@ -346,13 +318,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const phoneNumber = "+911234566789";

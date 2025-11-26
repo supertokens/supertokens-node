@@ -1,4 +1,3 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { UserContext } from "../../../types";
-export default function signIn(_: APIInterface, options: APIOptions, userContext: UserContext): Promise<boolean>;
+import { APIFunction } from "../types";
+export default function signIn(input: Parameters<APIFunction>[0]): Promise<boolean>;

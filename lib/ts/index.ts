@@ -16,7 +16,6 @@
 import SuperTokens from "./supertokens";
 import SuperTokensError, { SuperTokensPluginError } from "./error";
 import { UserContext, User as UserType } from "./types";
-import AccountLinking from "./recipe/accountlinking/recipe";
 import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
@@ -63,11 +62,13 @@ export default class SuperTokensWrapper {
         users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
-            timeJoinedOrder: "ASC",
-            ...input,
-            userContext: getUserContext(input.userContext),
-        });
+        return SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUsers({
+                timeJoinedOrder: "ASC",
+                ...input,
+                userContext: getUserContext(input.userContext),
+            });
     }
 
     static getUsersNewestFirst(input: {
@@ -81,11 +82,13 @@ export default class SuperTokensWrapper {
         users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
-            timeJoinedOrder: "DESC",
-            ...input,
-            userContext: getUserContext(input.userContext),
-        });
+        return SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUsers({
+                timeJoinedOrder: "DESC",
+                ...input,
+                userContext: getUserContext(input.userContext),
+            });
     }
 
     static createUserIdMapping(input: {
@@ -137,10 +140,12 @@ export default class SuperTokensWrapper {
     }
 
     static async getUser(userId: string, userContext?: Record<string, any>) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
-            userId,
-            userContext: getUserContext(userContext),
-        });
+        return await SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({
+                userId,
+                userContext: getUserContext(userContext),
+            });
     }
 
     static async listUsersByAccountInfo(
@@ -149,23 +154,27 @@ export default class SuperTokensWrapper {
         doUnionOfAccountInfo: boolean = false,
         userContext?: Record<string, any>
     ) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-            tenantId,
-            accountInfo,
-            doUnionOfAccountInfo,
-            userContext: getUserContext(userContext),
-        });
+        return await SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId,
+                accountInfo,
+                doUnionOfAccountInfo,
+                userContext: getUserContext(userContext),
+            });
     }
     static async deleteUser(
         userId: string,
         removeAllLinkedAccounts: boolean = true,
         userContext?: Record<string, any>
     ) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
-            userId,
-            removeAllLinkedAccounts,
-            userContext: getUserContext(userContext),
-        });
+        return await SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.deleteUser({
+                userId,
+                removeAllLinkedAccounts,
+                userContext: getUserContext(userContext),
+            });
     }
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId {
         return new RecipeUserId(recipeUserId);

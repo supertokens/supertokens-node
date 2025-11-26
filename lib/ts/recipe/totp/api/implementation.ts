@@ -14,22 +14,21 @@
  */
 
 import { APIInterface } from "../";
-import MultiFactorAuth, { MultiFactorAuthClaim } from "../../multifactorauth";
-import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import SessionError from "../../session/error";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIInterface(): APIInterface {
+export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
     return {
         createDevicePOST: async function ({ deviceName, options, session, userContext }) {
             const userId = session.getUserId();
 
-            let mfaInstance = MultiFactorAuthRecipe.getInstance();
+            let mfaInstance = stInstance.getRecipeInstance("multifactorauth");
 
             if (mfaInstance === undefined) {
                 throw new Error("should never come here"); // If TOTP initialised, MFA is auto initialised. This should never happen.
             }
 
-            await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
+            await mfaInstance.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
 
             const createDeviceRes = await options.recipeImplementation.createDevice({
                 userId,
@@ -65,7 +64,11 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (deviceList.devices.some((device) => device.name === deviceName && device.verified)) {
-                await session.assertClaims([MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()]);
+                await session.assertClaims([
+                    stInstance
+                        .getRecipeInstanceOrThrow("multifactorauth")
+                        .multiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth(),
+                ]);
             }
 
             return await options.recipeImplementation.removeDevice({
@@ -79,13 +82,13 @@ export default function getAPIInterface(): APIInterface {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
 
             if (mfaInstance === undefined) {
                 throw new Error("should never come here"); // If TOTP initialised, MFA is auto initialised. This should never happen.
             }
 
-            await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
+            await mfaInstance.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
 
             const res = await options.recipeImplementation.verifyDevice({
                 tenantId,
@@ -110,7 +113,7 @@ export default function getAPIInterface(): APIInterface {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
             if (mfaInstance === undefined) {
                 throw new Error("should never come here"); // If TOTP initialised, MFA is auto initialised. This should never happen.
             }

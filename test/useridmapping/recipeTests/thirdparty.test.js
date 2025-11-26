@@ -48,13 +48,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                 ],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
                 "public",
@@ -122,13 +115,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                 ],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
                 "public",
@@ -189,13 +175,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                 ],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
                 "public",
@@ -255,13 +234,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a thirdParty user
             const thirdPartyId = "google";

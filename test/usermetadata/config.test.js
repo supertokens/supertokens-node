@@ -25,13 +25,6 @@ describe(`configTest: ${printPath("[test/usermetadata/config.test.js]")}`, funct
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
-
             await UserMetadataRecipe.getInstanceOrThrowError();
         });
     });

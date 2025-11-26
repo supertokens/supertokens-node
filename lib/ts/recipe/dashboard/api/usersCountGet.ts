@@ -13,22 +13,19 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
-import SuperTokens from "../../../supertokens";
-import { UserContext } from "../../../types";
+import { APIFunction } from "../types";
 
 export type Response = {
     status: "OK";
     count: number;
 };
 
-export default async function usersCountGet(
-    _: APIInterface,
-    tenantId: string,
-    __: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
-    const count = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
+export default async function usersCountGet({
+    stInstance,
+    tenantId,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
+    const count = await stInstance.getUserCount(undefined, tenantId, userContext);
 
     return {
         status: "OK",

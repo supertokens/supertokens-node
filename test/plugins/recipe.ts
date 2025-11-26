@@ -31,8 +31,8 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv;
 
-    constructor(recipeId, appInfo, isInServerlessEnv, config) {
-        super(recipeId, appInfo);
+    constructor(stInstance, recipeId, appInfo, isInServerlessEnv, config) {
+        super(stInstance, recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormalizeUserInput(appInfo, config);
         {
@@ -56,9 +56,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config) {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,

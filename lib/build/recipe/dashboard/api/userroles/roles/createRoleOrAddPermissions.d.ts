@@ -1,11 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../../types";
-declare const createRoleOrAddPermissions: (
-    _: APIInterface,
-    __: string,
-    options: APIOptions,
-    ___: any
-) => Promise<
+import { APIFunction } from "../../../types";
+declare const createRoleOrAddPermissions: ({ stInstance, options, userContext }: Parameters<APIFunction>[0]) => Promise<
     | {
           status: "OK";
           createdNewRole: boolean;

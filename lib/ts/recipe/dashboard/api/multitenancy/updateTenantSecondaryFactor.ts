@@ -12,14 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
+import { APIFunction } from "../../types";
 import {
     getFactorNotAvailableMessage,
     getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit,
 } from "./utils";
-import { UserContext } from "../../../../types";
 
 export type Response =
     | { status: "OK"; isMFARequirementsForAuthOverridden: boolean }
@@ -27,17 +24,17 @@ export type Response =
     | { status: "MFA_NOT_INITIALIZED_ERROR" }
     | { status: "UNKNOWN_TENANT_ERROR" };
 
-export default async function updateTenantSecondaryFactor(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function updateTenantSecondaryFactor({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { factorId, enable } = requestBody;
 
-    const mtRecipe = MultitenancyRecipe.getInstance();
-    const mfaInstance = MultifactorAuthRecipe.getInstance();
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
+    const mfaInstance = stInstance.getRecipeInstanceOrThrow("multifactorauth");
 
     if (mfaInstance === undefined) {
         return {
@@ -64,7 +61,10 @@ export default async function updateTenantSecondaryFactor(
         }
     }
 
-    let secondaryFactors = getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit(tenantRes);
+    let secondaryFactors = getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit(
+        stInstance,
+        tenantRes
+    );
 
     if (enable === true) {
         if (!secondaryFactors.includes(factorId)) {

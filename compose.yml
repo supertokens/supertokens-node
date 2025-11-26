@@ -2,11 +2,16 @@ services:
     core:
         # Uses `$SUPERTOKENS_CORE_VERSION` when available, else latest
         image: supertokens/supertokens-dev-postgresql:${SUPERTOKENS_CORE_VERSION:-master}
-        entrypoint: [
-          "/usr/lib/supertokens/jre/bin/java",
-          "-classpath", "/usr/lib/supertokens/core/*:/usr/lib/supertokens/plugin-interface/*:/usr/lib/supertokens/ee/*",
-          "io.supertokens.Main", "/usr/lib/supertokens/", "DEV", "test_mode"
-        ]
+        entrypoint:
+            [
+                "/usr/lib/supertokens/jre/bin/java",
+                "-classpath",
+                "/usr/lib/supertokens/core/*:/usr/lib/supertokens/plugin-interface/*:/usr/lib/supertokens/ee/*",
+                "io.supertokens.Main",
+                "/usr/lib/supertokens/",
+                "DEV",
+                "test_mode",
+            ]
         ports:
             # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3567 for local port
             - ${SUPERTOKENS_CORE_PORT:-3567}:3567

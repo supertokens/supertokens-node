@@ -13,19 +13,17 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import { Querier } from "../../../../querier";
-import { UserContext } from "../../../../types";
 
 type TagsResponse = { status: "OK"; tags: string[] };
 
-export const getSearchTags = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<TagsResponse> => {
-    let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
+export const getSearchTags = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<TagsResponse> => {
+    let querier = Querier.getNewInstanceOrThrowError(stInstance, options.recipeId);
     let tagsResponse = await querier.sendGetRequest("/user/search/tags", {}, userContext);
     return tagsResponse;
 };

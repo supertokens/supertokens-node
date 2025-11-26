@@ -1,15 +1,13 @@
-import { APIInterface, APIOptions } from "../../types";
-import UserRolesRecipe from "../../../userroles/recipe";
-import UserRoles from "../../../userroles";
+import { APIFunction } from "../../types";
 
 import STError from "../../../../error";
 
-const addRoleToUser = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-): Promise<
+const addRoleToUser = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<
     | {
           status: "OK";
           didUserAlreadyHaveRole: boolean;
@@ -18,8 +16,9 @@ const addRoleToUser = async (
           status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
       }
 > => {
+    let userrolesRecipe = undefined;
     try {
-        UserRolesRecipe.getInstanceOrThrowError();
+        userrolesRecipe = stInstance.getRecipeInstanceOrThrow("userroles");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
@@ -45,7 +44,7 @@ const addRoleToUser = async (
         });
     }
 
-    const response = await UserRoles.addRoleToUser(tenantId, userId, role);
+    const response = await userrolesRecipe.recipeInterfaceImpl.addRoleToUser({ userId, role, tenantId, userContext });
 
     return response;
 };

@@ -1219,13 +1219,6 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             ],
         });
 
-        let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.7") === "2.7") {
-            // we don't run the tests below for older versions of the core since it
-            // was introduced in >= 2.8 CDI
-            return;
-        }
-
         const app = express();
 
         app.use(middleware());

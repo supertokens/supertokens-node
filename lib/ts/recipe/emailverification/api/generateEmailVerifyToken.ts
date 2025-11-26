@@ -15,10 +15,11 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import Session from "../../session";
 import { UserContext } from "../../../types";
+import type SuperTokens from "../../../supertokens";
 
 export default async function generateEmailVerifyToken(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -28,16 +29,16 @@ export default async function generateEmailVerifyToken(
     if (apiImplementation.generateEmailVerifyTokenPOST === undefined) {
         return false;
     }
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [] },
-        userContext
-    );
+    const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+        req: options.req,
+        res: options.res,
+        options: { overrideGlobalClaimValidators: () => [] },
+        userContext,
+    });
 
     const result = await apiImplementation.generateEmailVerifyTokenPOST({
         options,
-        session: session,
+        session: session!,
         userContext,
     });
 

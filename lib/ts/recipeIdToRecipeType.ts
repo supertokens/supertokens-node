@@ -1,0 +1,35 @@
+import SessionRecipe from "./recipe/session/recipe";
+import JwtRecipe from "./recipe/jwt/recipe";
+import MultifactorAuthRecipe from "./recipe/multifactorauth/recipe";
+import MultitenancyRecipe from "./recipe/multitenancy/recipe";
+import OAuth2ProviderRecipe from "./recipe/oauth2provider/recipe";
+import OpenIdRecipe from "./recipe/openid/recipe";
+import PasswordlessRecipe from "./recipe/passwordless/recipe";
+import ThirdPartyRecipe from "./recipe/thirdparty/recipe";
+import TotpRecipe from "./recipe/totp/recipe";
+import UserMetadataRecipe from "./recipe/usermetadata/recipe";
+import UserRolesRecipe from "./recipe/userroles/recipe";
+import WebauthnRecipe from "./recipe/webauthn/recipe";
+import AccountLinkingRecipe from "./recipe/accountlinking/recipe";
+import DashboardRecipe from "./recipe/dashboard/recipe";
+import EmailPasswordRecipe from "./recipe/emailpassword/recipe";
+import EmailVerificationRecipe from "./recipe/emailverification/recipe";
+
+export type RecipeIdToRecipeTypeMap = {
+    [SessionRecipe.RECIPE_ID]: SessionRecipe;
+    [JwtRecipe.RECIPE_ID]: JwtRecipe;
+    [MultifactorAuthRecipe.RECIPE_ID]: MultifactorAuthRecipe;
+    [MultitenancyRecipe.RECIPE_ID]: MultitenancyRecipe;
+    [OAuth2ProviderRecipe.RECIPE_ID]: OAuth2ProviderRecipe;
+    [OpenIdRecipe.RECIPE_ID]: OpenIdRecipe;
+    [PasswordlessRecipe.RECIPE_ID]: PasswordlessRecipe;
+    [ThirdPartyRecipe.RECIPE_ID]: ThirdPartyRecipe;
+    [TotpRecipe.RECIPE_ID]: TotpRecipe;
+    [UserMetadataRecipe.RECIPE_ID]: UserMetadataRecipe;
+    [UserRolesRecipe.RECIPE_ID]: UserRolesRecipe;
+    [WebauthnRecipe.RECIPE_ID]: WebauthnRecipe;
+    [AccountLinkingRecipe.RECIPE_ID]: AccountLinkingRecipe;
+    [DashboardRecipe.RECIPE_ID]: DashboardRecipe;
+    [EmailPasswordRecipe.RECIPE_ID]: EmailPasswordRecipe;
+    [EmailVerificationRecipe.RECIPE_ID]: EmailVerificationRecipe;
+};

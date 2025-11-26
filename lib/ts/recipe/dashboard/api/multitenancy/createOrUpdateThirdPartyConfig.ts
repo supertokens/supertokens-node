@@ -12,10 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import Multitenancy from "../../../multitenancy";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { doPostRequest } from "../../../../thirdpartyUtils";
@@ -30,16 +27,17 @@ export type Response =
     | { status: "UNKNOWN_TENANT_ERROR" }
     | { status: "BOXY_ERROR"; message: string };
 
-export default async function createOrUpdateThirdPartyConfig(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function createOrUpdateThirdPartyConfig({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { providerConfig } = requestBody;
 
-    let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
+    let mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
+    let tenantRes = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
     if (tenantRes === undefined) {
         return {
@@ -49,19 +47,17 @@ export default async function createOrUpdateThirdPartyConfig(
 
     if (tenantRes.thirdParty.providers.length === 0) {
         // This means that the tenant was using the static list of providers, we need to add them all before adding the new one
-        const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         for (const provider of staticProviders.filter(
             (provider) => provider.includeInNonPublicTenantsByDefault === true || tenantId === DEFAULT_TENANT_ID
         )) {
-            await Multitenancy.createOrUpdateThirdPartyConfig(
+            await mtRecipe.recipeInterfaceImpl.createOrUpdateThirdPartyConfig({
                 tenantId,
-                {
+                config: {
                     thirdPartyId: provider.config.thirdPartyId,
                 },
-                undefined,
-                userContext
-            );
+                userContext,
+            });
             // delay after each provider to avoid rate limiting
             await new Promise((r) => setTimeout(r, 500)); // 500ms
         }
@@ -129,12 +125,11 @@ export default async function createOrUpdateThirdPartyConfig(
         }
     }
 
-    const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
+    const thirdPartyRes = await mtRecipe.recipeInterfaceImpl.createOrUpdateThirdPartyConfig({
         tenantId,
-        providerConfig,
-        undefined,
-        userContext
-    );
+        config: providerConfig,
+        userContext,
+    });
 
     return thirdPartyRes;
 }

@@ -29,13 +29,13 @@ import Recipe from "./recipe";
 import OpenIdRecipe from "../openid/recipe";
 import JWTRecipe from "../jwt/recipe";
 import { JSONObject, UserContext } from "../../types";
-import { getRequiredClaimValidators } from "./utils";
-import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
+import { refreshSessionInRequest } from "./sessionRequestFunctions";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { protectedProps } from "./constants";
 import { getUserContext } from "../../utils";
+import SuperTokens from "../../supertokens";
 
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -52,25 +52,13 @@ export default class SessionWrapper {
         userContext?: Record<string, any>
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
-        const config = recipeInstance.config;
-        const appInfo = recipeInstance.getAppInfo();
 
-        let user = await getUser(recipeUserId.getAsString(), userContext);
-        let userId = recipeUserId.getAsString();
-        if (user !== undefined) {
-            userId = user.id;
-        }
-
-        return await createNewSessionInRequest({
+        return await recipeInstance.createNewSession({
             req,
             res,
             userContext: getUserContext(userContext),
-            recipeInstance,
             accessTokenPayload,
-            userId,
             recipeUserId,
-            config,
-            appInfo,
             sessionDataInDatabase,
             tenantId,
         });
@@ -87,7 +75,7 @@ export default class SessionWrapper {
         const ctx = getUserContext(userContext);
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
-        const issuer = await OpenIdRecipe.getIssuer(ctx);
+        const issuer = await OpenIdRecipe.getInstanceOrThrowError().getIssuer(ctx);
 
         let finalAccessTokenPayload = {
             ...accessTokenPayload,
@@ -215,16 +203,11 @@ export default class SessionWrapper {
     ): Promise<SessionContainer | undefined>;
     static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: Record<string, any>) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
-        const config = recipeInstance.config;
-        const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
-
-        return getSessionFromRequest({
+        return await recipeInstance.getSession({
             req,
             res,
-            recipeInterfaceImpl,
-            config,
             options,
-            userContext: getUserContext(userContext), // userContext is normalized inside the function
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -286,7 +269,7 @@ export default class SessionWrapper {
         });
 
         if (session !== undefined) {
-            const claimValidators = await getRequiredClaimValidators(
+            const claimValidators = await Recipe.getInstanceOrThrowError().getRequiredClaimValidators(
                 session,
                 options?.overrideGlobalClaimValidators,
                 ctx
@@ -312,6 +295,7 @@ export default class SessionWrapper {
         return refreshSessionInRequest({
             res,
             req,
+            stInstance: SuperTokens.getInstanceOrThrowError(),
             userContext: getUserContext(userContext),
             config,
             recipeInterfaceImpl,

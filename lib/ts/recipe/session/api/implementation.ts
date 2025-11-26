@@ -4,8 +4,10 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse, UserContext } from "../../../types";
 import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
+import type SessionRecipe from "../recipe";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIInterface(): APIInterface {
+export default function getAPIInterface(stInstance: SuperTokens, recipeInstance: SessionRecipe): APIInterface {
     return {
         refreshPOST: async function ({
             options,
@@ -20,6 +22,7 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
                 config: options.config,
                 recipeInterfaceImpl: options.recipeImplementation,
+                stInstance,
             });
         },
 
@@ -48,6 +51,7 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                     config: options.config,
                     recipeInterfaceImpl: options.recipeImplementation,
+                    stInstance,
                 });
             } else {
                 return getSessionFromRequest({
@@ -56,6 +60,8 @@ export default function getAPIInterface(): APIInterface {
                     options: verifySessionOptions,
                     config: options.config,
                     recipeInterfaceImpl: options.recipeImplementation,
+                    recipeInstance,
+                    stInstance,
                     userContext,
                 });
             }

@@ -12,18 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { UserContext } from "../../../types";
 import RecipeError from "../error";
-import { APIFunction, APIInterface, APIOptions } from "../types";
+import { APIFunction } from "../types";
 import { sendUnauthorisedAccess } from "../utils";
 
 export default async function apiKeyProtector(
-    apiImplementation: APIInterface,
-    tenantId: string,
-    options: APIOptions,
     apiFunction: APIFunction,
-    userContext: UserContext
+    input: Parameters<APIFunction>[0]
 ): Promise<boolean> {
+    const options = input.options;
+    const userContext = input.userContext;
+
     let shouldAllowAccess = false;
 
     try {
@@ -49,7 +48,7 @@ export default async function apiKeyProtector(
         return true;
     }
 
-    const response = await apiFunction(apiImplementation, tenantId, options, userContext);
+    const response = await apiFunction(input);
     options.res.sendJSONResponse(response);
     return true;
 }

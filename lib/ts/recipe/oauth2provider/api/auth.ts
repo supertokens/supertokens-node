@@ -17,10 +17,11 @@ import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import setCookieParser from "set-cookie-parser";
-import Session from "../../session";
 import SessionError from "../../../recipe/session/error";
+import type SuperTokens from "../../../supertokens";
 
 export default async function authGET(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -33,7 +34,12 @@ export default async function authGET(
     const params = new URLSearchParams(splitURL[1]);
     let session, shouldTryRefresh;
     try {
-        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
+        session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+            req: options.req,
+            res: options.res,
+            options: { sessionRequired: false },
+            userContext,
+        });
         shouldTryRefresh = false;
     } catch (error) {
         session = undefined;
@@ -50,7 +56,7 @@ export default async function authGET(
         options,
         params: Object.fromEntries(params.entries()),
         cookie: options.req.getHeaderValue("cookie"),
-        session,
+        session: session,
         shouldTryRefresh,
         userContext,
     });

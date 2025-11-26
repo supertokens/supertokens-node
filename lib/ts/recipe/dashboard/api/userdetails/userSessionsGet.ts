@@ -1,7 +1,6 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import Session from "../../../session";
-import { UserContext } from "../../../../types";
+import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 
 type SessionType = {
     sessionDataInDatabase: any;
@@ -17,12 +16,11 @@ type Response = {
     sessions: SessionType[];
 };
 
-export const userSessionsGet: APIFunction = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userSessionsGet: APIFunction = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 
     if (userId === undefined || userId === "") {
@@ -32,7 +30,14 @@ export const userSessionsGet: APIFunction = async (
         });
     }
 
-    const response = await Session.getAllSessionHandlesForUser(userId, undefined, undefined, userContext);
+    const sessionRecipe = stInstance.getRecipeInstanceOrThrow("session");
+    const response = await sessionRecipe.recipeInterfaceImpl.getAllSessionHandlesForUser({
+        userId,
+        fetchSessionsForAllLinkedAccounts: true,
+        tenantId: DEFAULT_TENANT_ID,
+        fetchAcrossAllTenants: true,
+        userContext,
+    });
 
     let sessions: SessionType[] = [];
     let sessionInfoPromises: Promise<void>[] = [];
@@ -41,7 +46,10 @@ export const userSessionsGet: APIFunction = async (
         sessionInfoPromises.push(
             new Promise(async (res, rej) => {
                 try {
-                    const sessionResponse = await Session.getSessionInformation(response[i], userContext);
+                    const sessionResponse = await sessionRecipe.recipeInterfaceImpl.getSessionInformation({
+                        sessionHandle: response[i],
+                        userContext,
+                    });
 
                     if (sessionResponse !== undefined) {
                         const accessTokenPayload = sessionResponse.customClaimsInAccessTokenPayload;

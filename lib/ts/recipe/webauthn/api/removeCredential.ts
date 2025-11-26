@@ -17,9 +17,10 @@ import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import STError from "../error";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import type SuperTokens from "../../../supertokens";
 
 export default async function removeCredentialAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     _: string,
     options: APIOptions,
@@ -29,12 +30,12 @@ export default async function removeCredentialAPI(
         return false;
     }
 
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
-        userContext
-    );
+    const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+        req: options.req,
+        res: options.res,
+        options: { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext,
+    });
 
     const requestBody = await options.req.getJSONBody();
     const webauthnCredentialId = requestBody.webauthnCredentialId;
@@ -49,7 +50,7 @@ export default async function removeCredentialAPI(
         webauthnCredentialId,
         options,
         userContext: userContext,
-        session,
+        session: session!,
     });
 
     send200Response(options.res, result);

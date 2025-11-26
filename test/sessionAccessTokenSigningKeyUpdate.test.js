@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication } = require("./utils");
+const { printPath, createCoreApplication, getQuerierInstance } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
@@ -395,8 +395,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
@@ -651,7 +649,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
+        let q = getQuerierInstance();
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8 since the fix for this test is in core with CDI >= 2.8

@@ -25,12 +25,10 @@ import {
     ErrorOAuth2,
 } from "./types";
 import { OAuth2Client } from "./OAuth2Client";
-import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
-import SessionRecipe from "../session/recipe";
-import OpenIdRecipe from "../openid/recipe";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { decodeBase64 } from "../../utils";
+import type SuperTokens from "../../supertokens";
 
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
     return redirectTo.replace(
@@ -51,6 +49,7 @@ function copyAndCleanRequestBodyInput(input: any): any {
 }
 
 export default function getRecipeInterface(
+    stInstance: SuperTokens,
     querier: Querier,
     _config: TypeNormalisedInput,
     appInfo: NormalisedAppinfo,
@@ -187,7 +186,7 @@ export default function getRecipeInterface(
                     grantAccessTokenAudience: input.grantAccessTokenAudience,
                     grantScope: input.grantScope,
                     handledAt: input.handledAt,
-                    iss: await OpenIdRecipe.getIssuer(input.userContext),
+                    iss: await stInstance.getRecipeInstanceOrThrow("openid").getIssuer(input.userContext),
                     tId: input.tenantId,
                     rsub: input.rsub,
                     sessionHandle: input.sessionHandle,
@@ -286,7 +285,9 @@ export default function getRecipeInterface(
                 }
                 const client = clientInfo.client;
 
-                const user = await getUser(input.session.getUserId());
+                const user = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.getUser({ userId: input.session.getUserId(), userContext: input.userContext });
                 if (!user) {
                     return {
                         status: "ERROR",
@@ -331,7 +332,7 @@ export default function getRecipeInterface(
                         ...input.params,
                         scope: scopes.join(" "),
                     },
-                    iss: await OpenIdRecipe.getIssuer(input.userContext),
+                    iss: await stInstance.getRecipeInstanceOrThrow("openid").getIssuer(input.userContext),
                     cookies: input.cookies,
                     session: payloads,
                 },
@@ -402,7 +403,7 @@ export default function getRecipeInterface(
                 authorizationHeader: input.authorizationHeader,
             };
 
-            body.iss = await OpenIdRecipe.getIssuer(input.userContext);
+            body.iss = await stInstance.getRecipeInstanceOrThrow("openid").getIssuer(input.userContext);
 
             if (input.body.grant_type === "password") {
                 return {
@@ -497,7 +498,12 @@ export default function getRecipeInterface(
                         };
                     }
                     const client = clientInfo.client;
-                    const user = await getUser(tokenInfo.sub as string);
+                    const user = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .recipeInterfaceImpl.getUser({
+                            userId: tokenInfo.sub as string,
+                            userContext: input.userContext,
+                        });
                     if (!user) {
                         return {
                             status: "ERROR",
@@ -711,7 +717,10 @@ export default function getRecipeInterface(
         },
         validateOAuth2AccessToken: async function (input) {
             const payload = (
-                await jose.jwtVerify(input.token, getCombinedJWKS(SessionRecipe.getInstanceOrThrowError().config))
+                await jose.jwtVerify(
+                    input.token,
+                    getCombinedJWKS(querier, stInstance.getRecipeInstanceOrThrow("session").config)
+                )
             ).payload;
 
             if (payload.stt !== 1) {

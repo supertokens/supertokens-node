@@ -23,8 +23,10 @@ import { APIInterface, APIOptions } from "../";
 import STError from "../error";
 import { UserContext } from "../../../types";
 import { AuthUtils } from "../../../authUtils";
+import type SuperTokens from "../../../supertokens";
 
 export default async function signUpAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -52,6 +54,7 @@ export default async function signUpAPI(
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
 
     const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        stInstance,
         options.req,
         options.res,
         shouldTryLinkingWithSessionUser,

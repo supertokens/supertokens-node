@@ -1,8 +1,10 @@
 // @ts-nocheck
 import { TypeInput, TypeNormalisedInput, TenantConfig } from "./types";
 import { UserContext } from "../../types";
+import type SuperTokens from "../../supertokens";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare const isValidFirstFactor: (
+    stInstance: SuperTokens,
     tenantId: string,
     factorId: string,
     userContext: UserContext

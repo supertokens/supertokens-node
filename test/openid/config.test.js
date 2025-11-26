@@ -26,14 +26,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
             recipeList: [OpenIdRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
-        assert((await OpenIdRecipe.getIssuer()) === "https://api.supertokens.io/auth");
+        assert((await OpenIdRecipe.getInstanceOrThrowError().getIssuer()) === "https://api.supertokens.io/auth");
     });
 
     it("Test that the default config sets values correctly for OpenID recipe with apiBasePath", async function () {
@@ -51,14 +44,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
             recipeList: [OpenIdRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
-        assert((await OpenIdRecipe.getIssuer()) === "https://api.supertokens.io");
+        assert((await OpenIdRecipe.getInstanceOrThrowError().getIssuer()) === "https://api.supertokens.io");
     });
 
     it("Test that the config sets values correctly for OpenID recipe with issuer", async function () {
@@ -91,14 +77,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
             ],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
-        assert((await OpenIdRecipe.getIssuer()) === "https://customissuer.com");
+        assert((await OpenIdRecipe.getInstanceOrThrowError().getIssuer()) === "https://customissuer.com");
     });
 
     it("Test that issuer with gateway path works fine", async function () {
@@ -116,13 +95,9 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
             recipeList: [OpenIdRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
-        assert.equal(await OpenIdRecipe.getIssuer(), "https://api.supertokens.io/gateway/auth");
+        assert.equal(
+            await OpenIdRecipe.getInstanceOrThrowError().getIssuer(),
+            "https://api.supertokens.io/gateway/auth"
+        );
     });
 });

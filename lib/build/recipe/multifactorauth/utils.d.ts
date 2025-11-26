@@ -3,6 +3,7 @@ import { TypeInput, TypeNormalisedInput, MFAClaimValue, MFARequirementList } fro
 import { UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 import { RecipeUserId } from "../..";
+import type SuperTokens from "../../supertokens";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare const updateAndGetMFARelatedInfoInSession: (
     input: (
@@ -16,6 +17,7 @@ export declare const updateAndGetMFARelatedInfoInSession: (
           }
     ) & {
         updatedFactorId?: string;
+        stInstance: SuperTokens;
         userContext: UserContext;
     }
 ) => Promise<{

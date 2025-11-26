@@ -2,10 +2,11 @@
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
-import { AllowedDomainsClaim } from "./allowedDomainsClaim";
+import { AllowedDomainsClaimClass } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
+    static AllowedDomainsClaim: AllowedDomainsClaimClass;
     static createOrUpdateTenant(
         tenantId: string,
         config?: {
@@ -98,5 +99,5 @@ export declare let createOrUpdateThirdPartyConfig: typeof Wrapper.createOrUpdate
 export declare let deleteThirdPartyConfig: typeof Wrapper.deleteThirdPartyConfig;
 export declare let associateUserToTenant: typeof Wrapper.associateUserToTenant;
 export declare let disassociateUserFromTenant: typeof Wrapper.disassociateUserFromTenant;
-export { AllowedDomainsClaim };
+export declare const AllowedDomainsClaim: AllowedDomainsClaimClass;
 export type { RecipeInterface, APIOptions, APIInterface };

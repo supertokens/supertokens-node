@@ -17,7 +17,6 @@ import SuperTokensError from "../../error";
 import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 
@@ -26,14 +25,13 @@ import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import SessionRecipe from "../session/recipe";
-import OAuth2Recipe from "../oauth2provider/recipe";
 import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
 import { User } from "../../user";
 import { getSessionInformation } from "../session";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "userroles" as const;
@@ -43,22 +41,28 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(RecipeImplementation(this.querier));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             if (!this.config.skipAddingRolesToAccessToken) {
-                SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(UserRoleClaim);
+                stInstance.getRecipeInstanceOrThrow("session").addClaimFromOtherRecipe(UserRoleClaim);
             }
             if (!this.config.skipAddingPermissionsToAccessToken) {
-                SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(PermissionClaim);
+                stInstance.getRecipeInstanceOrThrow("session").addClaimFromOtherRecipe(PermissionClaim);
             }
 
             const tokenPayloadBuilder = async (
@@ -116,11 +120,14 @@ export default class Recipe extends RecipeModule {
                 return payload;
             };
 
-            OAuth2Recipe.getInstanceOrThrowError().addAccessTokenBuilderFromOtherRecipe(tokenPayloadBuilder);
-            OAuth2Recipe.getInstanceOrThrowError().addIdTokenBuilderFromOtherRecipe(tokenPayloadBuilder);
+            stInstance
+                .getRecipeInstanceOrThrow("oauth2provider")
+                .addAccessTokenBuilderFromOtherRecipe(tokenPayloadBuilder);
+            stInstance.getRecipeInstanceOrThrow("oauth2provider").addIdTokenBuilderFromOtherRecipe(tokenPayloadBuilder);
 
-            OAuth2Recipe.getInstanceOrThrowError().addUserInfoBuilderFromOtherRecipe(
-                async (user, _accessTokenPayload, scopes, tenantId, userContext) => {
+            stInstance
+                .getRecipeInstanceOrThrow("oauth2provider")
+                .addUserInfoBuilderFromOtherRecipe(async (user, _accessTokenPayload, scopes, tenantId, userContext) => {
                     let userInfo: {
                         roles?: string[];
                         permissions?: string[];
@@ -166,8 +173,7 @@ export default class Recipe extends RecipeModule {
                     }
 
                     return userInfo;
-                }
-            );
+                });
         });
     }
 
@@ -183,9 +189,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,

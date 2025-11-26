@@ -17,12 +17,18 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import { TypeNormalisedInput } from "./types";
 import { UserContext } from "../../types";
-import { getUser } from "../..";
+import SuperTokens from "../../supertokens";
 
-export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
+export default function getRecipeInterface(
+    stInstance: SuperTokens,
+    querier: Querier,
+    config: TypeNormalisedInput
+): RecipeInterface {
     return {
         getUserIdentifierInfoForUserId: async function (this: RecipeInterface, { userId, userContext }) {
-            let user = await getUser(userId, userContext);
+            let user = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId, userContext });
 
             if (user === undefined) {
                 return {

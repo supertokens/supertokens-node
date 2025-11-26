@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";

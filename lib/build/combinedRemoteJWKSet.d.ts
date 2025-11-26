@@ -1,4 +1,5 @@
 // @ts-nocheck
+import type { Querier } from "./querier";
 /**
  * We need this to reset the combinedJWKS in tests because we need to create a new instance of the combinedJWKS
  * for each test to avoid caching issues.
@@ -13,9 +14,12 @@ export declare function resetCombinedJWKS(): void;
     Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
     token verification. Otherwise, the result of session verification would depend on which core is currently available.
 */
-export declare function getCombinedJWKS(config: {
-    jwksRefreshIntervalSec: number;
-}): (
+export declare function getCombinedJWKS(
+    querier: Querier,
+    config: {
+        jwksRefreshIntervalSec: number;
+    }
+): (
     protectedHeader?: import("jose").JWSHeaderParameters,
     token?: import("jose").FlattenedJWSInput
 ) => Promise<import("jose").KeyLike>;

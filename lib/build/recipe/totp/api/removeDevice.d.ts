@@ -1,7 +1,9 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
+import SuperTokens from "../../../supertokens";
 export default function removeDeviceAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext

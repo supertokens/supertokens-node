@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../../types";
-import { User } from "../../../../../types";
-import RecipeUserId from "../../../../../recipeUserId";
+import { APIFunction } from "../../../types";
+import type { User } from "../../../../../types";
+import type RecipeUserId from "../../../../../recipeUserId";
 type Response =
     | {
           status: string;
@@ -20,10 +20,10 @@ type Response =
           status: "PHONE_VALIDATION_ERROR";
           message: string;
       };
-export declare const createPasswordlessUser: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-) => Promise<Response>;
+export declare const createPasswordlessUser: ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]) => Promise<Response>;
 export {};

@@ -30,13 +30,6 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a new EmailPassword User
             const email = "test@example.com";
             const password = "testPass123";
@@ -113,13 +106,6 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create multiple users
             const email = ["test@example.com", "test1@example.com", "test2@example.com", "test3@example.com"];

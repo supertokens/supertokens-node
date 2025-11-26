@@ -230,14 +230,6 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init(), JWT.init()],
             });
 
-            let q = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await q.getAPIVersion();
-
-            // Only run test for >= 3.0 CDI (3.0 is after 2.21)
-            if (maxVersion(apiVersion, "2.21") === "2.21") {
-                return;
-            }
-
             const session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
                 SuperTokens.convertToRecipeUserId("testId")

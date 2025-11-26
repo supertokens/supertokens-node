@@ -1,19 +1,18 @@
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
-import { convertToRecipeUserId, getUser } from "../../../..";
-import { UserContext } from "../../../../types";
+import { convertToRecipeUserId } from "../../../..";
 
 type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
 };
 
-export const userEmailVerifyTokenPost = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userEmailVerifyTokenPost = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
 
@@ -23,7 +22,9 @@ export const userEmailVerifyTokenPost = async (
             type: STError.BAD_INPUT_ERROR,
         });
     }
-    const user = await getUser(recipeUserId, userContext);
+    const user = await stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
 
     if (!user) {
         throw new STError({

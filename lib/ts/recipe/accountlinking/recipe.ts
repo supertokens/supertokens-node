@@ -22,16 +22,15 @@ import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRe
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
-import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
 import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import { LoginMethod } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -43,27 +42,27 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
 
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         config: TypeInput | undefined,
         _recipes: {},
         _ingredients: {}
     ) {
-        super(recipeId, appInfo);
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(appInfo, config);
 
         {
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, this)
-            );
+            let builder = new OverrideableBuilder(RecipeImplementation(this.querier, this.config, this));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, _isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, _isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     applyPlugins(Recipe.RECIPE_ID, config, plugins ?? []),
@@ -690,9 +689,8 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: UserContext;
     }) => {
-        try {
-            EmailVerificationRecipe.getInstanceOrThrowError();
-        } catch (ignored) {
+        let emailVerificationInstance = this.stInstance.getRecipeInstance("emailverification");
+        if (emailVerificationInstance === undefined) {
             // if email verification recipe is not initialized, we do a no-op
             return;
         }
@@ -727,30 +725,25 @@ export default class Recipe extends RecipeModule {
                 });
 
                 if (shouldVerifyEmail) {
-                    let resp =
-                        await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
-                            {
-                                // While the token we create here is tenant specific, the verification status is not
-                                // So we can use any tenantId the user is associated with here as long as we use the
-                                // same in the verifyEmailUsingToken call
-                                tenantId: input.user.tenantIds[0],
-                                recipeUserId: input.recipeUserId,
-                                email: recipeUserEmail,
-                                userContext: input.userContext,
-                            }
-                        );
+                    let resp = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
+                        // While the token we create here is tenant specific, the verification status is not
+                        // So we can use any tenantId the user is associated with here as long as we use the
+                        // same in the verifyEmailUsingToken call
+                        tenantId: input.user.tenantIds[0],
+                        recipeUserId: input.recipeUserId,
+                        email: recipeUserEmail,
+                        userContext: input.userContext,
+                    });
                     if (resp.status === "OK") {
                         // we purposely pass in false below cause we don't want account
                         // linking to happen
-                        await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken(
-                            {
-                                // See comment about tenantId in the createEmailVerificationToken params
-                                tenantId: input.user.tenantIds[0],
-                                token: resp.token,
-                                attemptAccountLinking: false,
-                                userContext: input.userContext,
-                            }
-                        );
+                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            // See comment about tenantId in the createEmailVerificationToken params
+                            tenantId: input.user.tenantIds[0],
+                            token: resp.token,
+                            attemptAccountLinking: false,
+                            userContext: input.userContext,
+                        });
                     }
                 }
             }

@@ -1,8 +1,10 @@
 // @ts-nocheck
+import type SuperTokens from "../../../supertokens";
 import { UserContext } from "../../../types";
 import { SessionContainerInterface } from "../../session/types";
 import { ErrorOAuth2, RecipeInterface } from "../types";
 export declare function loginGET({
+    stInstance,
     recipeImplementation,
     loginChallenge,
     shouldTryRefresh,
@@ -11,6 +13,7 @@ export declare function loginGET({
     isDirectCall,
     userContext,
 }: {
+    stInstance: SuperTokens;
     recipeImplementation: RecipeInterface;
     loginChallenge: string;
     session?: SessionContainerInterface;
@@ -32,6 +35,7 @@ export declare function loginGET({
       }
 >;
 export declare function handleLoginInternalRedirects({
+    stInstance,
     response,
     recipeImplementation,
     session,
@@ -39,6 +43,7 @@ export declare function handleLoginInternalRedirects({
     cookie,
     userContext,
 }: {
+    stInstance: SuperTokens;
     response: {
         redirectTo: string;
         cookies?: string[];
@@ -56,11 +61,13 @@ export declare function handleLoginInternalRedirects({
     | ErrorOAuth2
 >;
 export declare function handleLogoutInternalRedirects({
+    stInstance,
     response,
     recipeImplementation,
     session,
     userContext,
 }: {
+    stInstance: SuperTokens;
     response: {
         redirectTo: string;
     };

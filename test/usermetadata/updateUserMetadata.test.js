@@ -33,13 +33,6 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
-
             const updateResult = await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata);
 
             const getResult = await UserMetadataRecipe.getUserMetadata(testUserId);
@@ -70,13 +63,6 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
-
             const updateResult = await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata);
 
             const getResult = await UserMetadataRecipe.getUserMetadata(testUserId);
@@ -106,13 +92,6 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
-
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
 
             await UserMetadataRecipe.updateUserMetadata(testUserId, { test: "asdf" });
             await UserMetadataRecipe.clearUserMetadata(testUserId);
@@ -168,13 +147,6 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
-
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
 
             await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata);
             const updateResult = await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadataUpdate);

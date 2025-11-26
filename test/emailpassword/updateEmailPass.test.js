@@ -43,11 +43,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         const express = require("express");
         const app = express();
 
@@ -103,11 +98,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             ],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         const express = require("express");
         const app = express();
 
@@ -161,11 +151,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             ],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         const express = require("express");
         const app = express();
 
@@ -199,11 +184,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
-
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         const express = require("express");
         const app = express();

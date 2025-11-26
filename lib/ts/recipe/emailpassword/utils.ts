@@ -28,7 +28,7 @@ import { NormalisedAppinfo, UserContext } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
-import { BaseRequest } from "../../framework";
+import type { BaseRequest } from "../../framework";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,

@@ -7,13 +7,14 @@
 import { serialize } from "cookie";
 import { CollectingResponse, errorHandler, middleware, PreParsedRequest } from "./framework/custom";
 import Session, { SessionContainer, VerifySessionOptions } from "./recipe/session";
-import SessionRecipe from "./recipe/session/recipe";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
 import { JWTPayload } from "jose";
 import { HTTPMethod } from "./types";
 import { getInfoFromAccessToken } from "./recipe/session/accessToken";
 import { getCombinedJWKS } from "./combinedRemoteJWKSet";
-import { BaseRequest } from "./framework";
+import type { BaseRequest } from "./framework";
+import { Querier } from "./querier";
+import SuperTokens from "./supertokens";
 
 export interface ParsableRequest {
     url: string;
@@ -137,8 +138,12 @@ export async function getSessionForSSRUsingAccessToken(accessToken: string | und
 }> {
     const hasToken = !!accessToken;
     try {
-        const sessionRecipe = SessionRecipe.getInstanceOrThrowError();
-        const jwksToUse = getCombinedJWKS(sessionRecipe.config);
+        const sessionRecipe = SuperTokens.getInstanceOrThrowError().getRecipeInstanceOrThrow("session");
+        const querier = Querier.getNewInstanceOrThrowError(
+            SuperTokens.getInstanceOrThrowError(),
+            sessionRecipe.getRecipeId()
+        );
+        const jwksToUse = getCombinedJWKS(querier, sessionRecipe.config);
 
         try {
             if (accessToken) {

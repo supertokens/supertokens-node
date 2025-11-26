@@ -29,13 +29,6 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const role = "role";
             const permissions = ["permission1", "permission2", "permission3"];
 
@@ -75,13 +68,6 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             // remove permission from an unknown role
             const result = await UserRolesRecipe.removePermissionsFromRole("unknownRole");

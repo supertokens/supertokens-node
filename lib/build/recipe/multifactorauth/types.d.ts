@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
 import { User } from "../../user";

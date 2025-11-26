@@ -29,13 +29,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const userId = "userId";
             const role = "role";
 
@@ -91,13 +84,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const userId = "userId";
             const role = "role";
 
@@ -130,13 +116,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const userId = "userId";
             const role = "unknownRole";

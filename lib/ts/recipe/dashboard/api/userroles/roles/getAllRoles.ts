@@ -1,7 +1,4 @@
-import UserRoles from "../../../../userroles";
-import UserRolesRecipe from "../../../../userroles/recipe";
-
-import { APIFunction, APIInterface } from "../../../types";
+import { APIFunction } from "../../../types";
 
 type Response =
     | {
@@ -12,16 +9,17 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
-const getAllRoles: APIFunction = async (_: APIInterface, __: string, ____: any): Promise<Response> => {
+const getAllRoles: APIFunction = async ({ stInstance, userContext }: Parameters<APIFunction>[0]): Promise<Response> => {
+    let userrolesRecipe = undefined;
     try {
-        UserRolesRecipe.getInstanceOrThrowError();
+        userrolesRecipe = stInstance.getRecipeInstanceOrThrow("userroles");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
         };
     }
 
-    const response = await UserRoles.getAllRoles();
+    const response = await userrolesRecipe.recipeInterfaceImpl.getAllRoles({ userContext });
     return {
         status: "OK",
         roles: response.roles,

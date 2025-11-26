@@ -2,8 +2,9 @@ import { APIInterface } from "../";
 import { isValidFirstFactor } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
 import { DEFAULT_TENANT_ID } from "../constants";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIInterface(): APIInterface {
+export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
     return {
         loginMethodsGET: async function ({ tenantId, clientType, options, userContext }) {
             const tenantConfigRes = await options.recipeImplementation.getTenant({
@@ -72,7 +73,7 @@ export default function getAPIInterface(): APIInterface {
             // enabled recipes in all cases irrespective of whether they are using MFA or not
             let validFirstFactors: string[] = [];
             for (const factorId of firstFactors) {
-                let validRes = await isValidFirstFactor(tenantId, factorId, userContext);
+                let validRes = await isValidFirstFactor(stInstance, tenantId, factorId, userContext);
                 if (validRes.status === "OK") {
                     validFirstFactors.push(factorId);
                 }

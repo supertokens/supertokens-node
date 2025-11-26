@@ -376,7 +376,7 @@ const consoleOptions = {
 };
 
 module.exports.signUPRequest = async function (app, email, password) {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         request(app)
             .post("/auth/signup")
             .set("st-auth-mode", "cookie")
@@ -394,7 +394,7 @@ module.exports.signUPRequest = async function (app, email, password) {
             })
             .end((err, res) => {
                 if (err) {
-                    resolve(undefined);
+                    reject(undefined);
                 } else {
                     resolve(res);
                 }
@@ -512,7 +512,8 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
 };
 
 module.exports.isCDIVersionCompatible = async function (compatibleCDIVersion) {
-    let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+    const querier = module.exports.getQuerierInstance();
+    let currCDIVersion = await querier.getAPIVersion();
 
     if (
         maxVersion(currCDIVersion, compatibleCDIVersion) === compatibleCDIVersion &&
@@ -521,6 +522,10 @@ module.exports.isCDIVersionCompatible = async function (compatibleCDIVersion) {
         return false;
     }
     return true;
+};
+
+module.exports.getQuerierInstance = function (rid) {
+    return Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError(), rid);
 };
 
 module.exports.generateRandomCode = function (size) {

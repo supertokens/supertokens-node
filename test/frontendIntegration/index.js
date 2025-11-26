@@ -34,6 +34,7 @@ let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
 const { Querier } = require("../../lib/build/querier");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+const { getQuerierInstance } = require("../utils");
 let supertokens_node_version = require("../../lib/build/version").version;
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
@@ -276,7 +277,7 @@ app.post("/login-2.18", async (req, res) => {
     Querier.apiVersion = "2.18";
     const payload = req.body.payload || {};
     const userId = req.body.userId;
-    const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+    const legacySessionResp = await getQuerierInstance("session").sendPostRequest(
         "/recipe/session",
         {
             userId,

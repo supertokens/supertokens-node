@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CollectingResponse, PreParsedRequest } from "./framework/custom";
+import type { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import { JWTPayload } from "jose";
 type PartialNextRequest = {

@@ -1,15 +1,13 @@
-import { APIInterface, APIOptions } from "../../types";
-import UserRolesRecipe from "../../../userroles/recipe";
-import UserRoles from "../../../userroles";
+import { APIFunction } from "../../types";
 
 import STError from "../../../../error";
 
-const removeUserRole = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-): Promise<
+const removeUserRole = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<
     | {
           status: "OK";
           didUserHaveRole: boolean;
@@ -18,8 +16,9 @@ const removeUserRole = async (
           status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
       }
 > => {
+    let userrolesRecipe = undefined;
     try {
-        UserRolesRecipe.getInstanceOrThrowError();
+        userrolesRecipe = stInstance.getRecipeInstanceOrThrow("userroles");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
@@ -43,7 +42,7 @@ const removeUserRole = async (
         });
     }
 
-    const response = await UserRoles.removeUserRole(tenantId, userId, role);
+    const response = await userrolesRecipe.recipeInterfaceImpl.removeUserRole({ userId, role, tenantId, userContext });
     return response;
 };
 

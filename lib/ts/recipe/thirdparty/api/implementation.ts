@@ -1,11 +1,10 @@
 import { APIInterface } from "../";
-import EmailVerification from "../../emailverification";
-import EmailVerificationRecipe from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { logDebugMessage } from "../../../logger";
 import { decodeBase64 } from "../../../utils";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIInterface(): APIInterface {
+export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
     return {
         authorisationUrlGET: async function ({ provider, redirectURIOnProviderDashboard, userContext }) {
             const authUrl = await provider.getAuthorisationRedirectURL({
@@ -78,6 +77,7 @@ export default function getAPIInterface(): APIInterface {
             };
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                stInstance,
                 accountInfo: {
                     thirdParty: {
                         userId: userInfo.thirdPartyUserId,
@@ -107,16 +107,18 @@ export default function getAPIInterface(): APIInterface {
 
                 const recipeUserId = authenticatingUser.loginMethod.recipeUserId;
 
-                if (!emailInfo.isVerified && EmailVerificationRecipe.getInstance() !== undefined) {
-                    emailInfo.isVerified = await EmailVerification.isEmailVerified(
-                        recipeUserId!,
-                        emailInfo.id,
-                        userContext
-                    );
+                const emailVerificationRecipe = stInstance.getRecipeInstance("emailverification");
+                if (!emailInfo.isVerified && emailVerificationRecipe !== undefined) {
+                    emailInfo.isVerified = await emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
+                        recipeUserId: recipeUserId!,
+                        email: emailInfo.id,
+                        userContext,
+                    });
                 }
             }
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     recipeId,
                     email: emailInfo.id,
@@ -183,6 +185,7 @@ export default function getAPIInterface(): APIInterface {
             // of the user), it's OK to do this check here cause the preAuthChecks checks
             // conditions related to account linking
             const postAuthChecks = await AuthUtils.postAuthChecks({
+                stInstance,
                 factorId: "thirdparty",
                 isSignUp,
                 authenticatedUser: response.user,

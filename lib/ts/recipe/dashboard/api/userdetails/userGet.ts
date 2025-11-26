@@ -1,9 +1,6 @@
-import { APIFunction, APIInterface, APIOptions, UserWithFirstAndLastName } from "../../types";
+import { APIFunction, UserWithFirstAndLastName } from "../../types";
 import STError from "../../../../error";
-import UserMetaDataRecipe from "../../../usermetadata/recipe";
-import UserMetaData from "../../../usermetadata";
-import { getUser } from "../../../..";
-import { User, UserContext } from "../../../../types";
+import { User } from "../../../../types";
 
 type Response =
     | {
@@ -14,12 +11,11 @@ type Response =
           user: UserWithFirstAndLastName;
       };
 
-export const userGet: APIFunction = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userGet: APIFunction = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 
     if (userId === undefined || userId === "") {
@@ -29,7 +25,9 @@ export const userGet: APIFunction = async (
         });
     }
 
-    let user: User | undefined = await getUser(userId, userContext);
+    let user: User | undefined = await stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.getUser({ userId, userContext });
 
     if (user === undefined) {
         return {
@@ -37,9 +35,8 @@ export const userGet: APIFunction = async (
         };
     }
 
-    try {
-        UserMetaDataRecipe.getInstanceOrThrowError();
-    } catch (_) {
+    let usermetadataRecipe = stInstance.getRecipeInstance("usermetadata");
+    if (usermetadataRecipe === undefined) {
         return {
             status: "OK",
             user: {
@@ -50,7 +47,7 @@ export const userGet: APIFunction = async (
         };
     }
 
-    const userMetaData = await UserMetaData.getUserMetadata(userId, userContext);
+    const userMetaData = await usermetadataRecipe.recipeInterfaceImpl.getUserMetadata({ userId, userContext });
     const { first_name, last_name } = userMetaData.metadata;
 
     return {

@@ -12,10 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
-import { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -30,12 +29,7 @@ export type Response =
           message: string;
       };
 
-export default async function createTenant(
-    _: APIInterface,
-    __: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function createTenant({ options, userContext }: Parameters<APIFunction>[0]): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { tenantId, ...config } = requestBody;
 

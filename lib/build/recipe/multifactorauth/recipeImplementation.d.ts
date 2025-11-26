@@ -1,4 +1,8 @@
 // @ts-nocheck
 import { RecipeInterface } from "./";
 import type MultiFactorAuthRecipe from "./recipe";
-export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface;
+import type SuperTokens from "../../supertokens";
+export default function getRecipeInterface(
+    stInstance: SuperTokens,
+    recipeInstance: MultiFactorAuthRecipe
+): RecipeInterface;

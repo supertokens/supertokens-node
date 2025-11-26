@@ -27,13 +27,6 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             recipeList: [OpenIdRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         let discoveryConfig = await OpenId.getOpenIdDiscoveryConfiguration();
 
         assert.equal(discoveryConfig.issuer, "https://api.supertokens.io/auth");
@@ -54,13 +47,6 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             },
             recipeList: [OpenIdRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let discoveryConfig = await OpenId.getOpenIdDiscoveryConfiguration();
 
@@ -97,13 +83,6 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
                 }),
             ],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let discoveryConfig = await OpenId.getOpenIdDiscoveryConfiguration();
 

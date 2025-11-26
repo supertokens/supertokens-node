@@ -15,7 +15,7 @@
 
 import { send200Response } from "../../../utils";
 import STError from "../error";
-import { APIInterface, APIOptions } from "../";
+import type { APIInterface, APIOptions } from "../types";
 import { UserContext } from "../../../types";
 
 export default async function emailExists(

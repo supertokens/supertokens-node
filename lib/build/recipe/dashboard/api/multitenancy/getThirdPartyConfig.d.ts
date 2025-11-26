@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import { ProviderConfig } from "../../../thirdparty/types";
-import { UserContext } from "../../../../types";
 export type Response =
     | {
           status: "OK";
@@ -14,9 +13,9 @@ export type Response =
     | {
           status: "UNKNOWN_TENANT_ERROR";
       };
-export default function getThirdPartyConfig(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response>;
+export default function getThirdPartyConfig({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response>;

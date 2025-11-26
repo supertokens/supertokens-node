@@ -1,25 +1,21 @@
-import { APIInterface, APIOptions } from "../../types";
-import UserMetadaRecipe from "../../../usermetadata/recipe";
-import UserMetaData from "../../../usermetadata";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";
 };
 
-export const userMetadataPut = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userMetadataPut = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const data = requestBody.data;
 
     // This is to throw an error early in case the recipe has not been initialised
-    UserMetadaRecipe.getInstanceOrThrowError();
+    const usermetadataRecipe = stInstance.getRecipeInstanceOrThrow("usermetadata");
 
     if (userId === undefined || typeof userId !== "string") {
         throw new STError({
@@ -68,8 +64,12 @@ export const userMetadataPut = async (
      *
      * Removing first ensures that the final data is exactly what the user wanted it to be
      */
-    await UserMetaData.clearUserMetadata(userId, userContext);
-    await UserMetaData.updateUserMetadata(userId, JSON.parse(data), userContext);
+    await usermetadataRecipe.recipeInterfaceImpl.clearUserMetadata({ userId, userContext });
+    await usermetadataRecipe.recipeInterfaceImpl.updateUserMetadata({
+        userId,
+        metadataUpdate: JSON.parse(data),
+        userContext,
+    });
 
     return {
         status: "OK",

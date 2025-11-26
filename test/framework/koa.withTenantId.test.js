@@ -1592,12 +1592,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -1650,12 +1644,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1715,12 +1703,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -1778,12 +1760,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1846,12 +1822,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -1912,12 +1882,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -2020,12 +1984,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -2132,12 +2090,6 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());

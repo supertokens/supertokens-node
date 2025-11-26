@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 export type Response =
     | {
           status: "OK";
@@ -9,9 +8,8 @@ export type Response =
     | {
           status: "CANNOT_DELETE_PUBLIC_TENANT_ERROR";
       };
-export default function deleteTenant(
-    _: APIInterface,
-    tenantId: string,
-    __: APIOptions,
-    userContext: UserContext
-): Promise<Response>;
+export default function deleteTenant({
+    stInstance,
+    tenantId,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response>;

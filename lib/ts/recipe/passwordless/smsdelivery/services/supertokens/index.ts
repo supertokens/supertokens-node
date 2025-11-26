@@ -16,7 +16,7 @@ import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdeliv
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import Supertokens from "../../../../../supertokens";
-import { postWithFetch } from "../../../../../utils";
+import { postWithFetch } from "../../../../../querier";
 
 export default class SupertokensService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     private apiKey: string;

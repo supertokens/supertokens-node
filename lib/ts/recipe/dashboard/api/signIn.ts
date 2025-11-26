@@ -13,13 +13,14 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
+import { APIFunction } from "../types";
 import { send200Response } from "../../../utils";
 import STError from "../../../error";
 import { Querier } from "../../../querier";
-import { UserContext } from "../../../types";
 
-export default async function signIn(_: APIInterface, options: APIOptions, userContext: UserContext): Promise<boolean> {
+export default async function signIn(input: Parameters<APIFunction>[0]): Promise<boolean> {
+    const options = input.options;
+    const userContext = input.userContext;
     const { email, password } = await options.req.getJSONBody();
 
     if (email === undefined) {
@@ -36,7 +37,7 @@ export default async function signIn(_: APIInterface, options: APIOptions, userC
         });
     }
 
-    let querier = Querier.getNewInstanceOrThrowError(undefined);
+    let querier = Querier.getNewInstanceOrThrowError(input.stInstance);
     const signInResponse = await querier.sendPostRequest(
         "/recipe/dashboard/signin",
         {

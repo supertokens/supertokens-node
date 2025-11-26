@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 type Response =
     | {
           status: "OK";
@@ -27,10 +26,10 @@ type Response =
           status: "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
           error: string;
       };
-export declare const userPut: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-) => Promise<Response>;
+export declare const userPut: ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]) => Promise<Response>;
 export {};

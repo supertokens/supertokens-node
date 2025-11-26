@@ -16,7 +16,6 @@
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
-import { getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
 
@@ -38,7 +37,11 @@ export default class Wrapper {
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
-        const user = await getUser(recipeUserId.getAsString(), userContext);
+        const ctx = getUserContext(userContext);
+        const user = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId: recipeUserId.getAsString(),
+            userContext: ctx,
+        });
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
@@ -47,7 +50,7 @@ export default class Wrapper {
             tenantId,
             inputUser: user,
             session,
-            userContext: getUserContext(userContext),
+            userContext: ctx,
         });
         if (linkRes.status === "NO_LINK") {
             return user;
@@ -69,7 +72,11 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
     ) {
-        const user = await getUser(recipeUserId.getAsString(), userContext);
+        const ctx = getUserContext(userContext);
+        const user = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId: recipeUserId.getAsString(),
+            userContext: ctx,
+        });
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
@@ -77,7 +84,7 @@ export default class Wrapper {
         return await Recipe.getInstanceOrThrowError().getPrimaryUserThatCanBeLinkedToRecipeUserId({
             tenantId,
             user,
-            userContext: getUserContext(userContext),
+            userContext: ctx,
         });
     }
 
@@ -140,7 +147,11 @@ export default class Wrapper {
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
-        const user = await getUser(recipeUserId.getAsString(), userContext);
+        const ctx = getUserContext(userContext);
+        const user = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId: recipeUserId.getAsString(),
+            userContext: ctx,
+        });
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
@@ -152,7 +163,7 @@ export default class Wrapper {
             session,
             tenantId,
             signInVerifiesLoginMethod: false,
-            userContext: getUserContext(userContext),
+            userContext: ctx,
         });
     }
 
@@ -163,7 +174,11 @@ export default class Wrapper {
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
-        const user = await getUser(recipeUserId.getAsString(), userContext);
+        const ctx = getUserContext(userContext);
+        const user = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId: recipeUserId.getAsString(),
+            userContext: ctx,
+        });
 
         if (user === undefined) {
             throw new Error("Passed in recipe user id does not exist");
@@ -174,7 +189,7 @@ export default class Wrapper {
             newEmail,
             isVerified,
             session,
-            userContext: getUserContext(userContext),
+            userContext: ctx,
         });
         return res.allowed;
     }

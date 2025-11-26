@@ -14,27 +14,27 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import SessionRecipe from "../session/recipe";
 import { ProviderInput } from "../thirdparty/types";
 import { LOGIN_METHODS_API } from "./constants";
-import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
+import { AllowedDomainsClaimClass } from "./allowedDomainsClaim";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
+    public allowedDomainsClaim: AllowedDomainsClaimClass;
     static RECIPE_ID = "multitenancy" as const;
 
     config: TypeNormalisedInput;
@@ -52,18 +52,25 @@ export default class Recipe extends RecipeModule {
 
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(config);
         this.isInServerlessEnv = isInServerlessEnv;
+        this.allowedDomainsClaim = new AllowedDomainsClaimClass(() => this);
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(RecipeImplementation(this.querier));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
 
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
@@ -82,9 +89,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -94,7 +102,9 @@ export default class Recipe extends RecipeModule {
                 if (Recipe.instance.getAllowedDomainsForTenantId !== undefined) {
                     PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                         try {
-                            SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(AllowedDomainsClaim);
+                            stInstance
+                                .getRecipeInstanceOrThrow("session")
+                                .addClaimFromOtherRecipe(Recipe.instance!.allowedDomainsClaim);
                         } catch {
                             // Skip adding claims if session recipe is not initialised
                         }

@@ -121,11 +121,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
-        if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
-            return;
-        }
-
         const randomValue = Math.random();
         const emails = [
             Math.random() + "@gmail.com",
@@ -242,11 +237,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         app.use(middleware());
 
         app.use(errorHandler());
-
-        const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
-        if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
-            return;
-        }
 
         const randomValue = Math.random();
         const emails = [

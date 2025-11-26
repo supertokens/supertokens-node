@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions, CoreConfigFieldInfo } from "../../types";
-import { UserContext } from "../../../../types";
+import { APIFunction, CoreConfigFieldInfo } from "../../types";
 export type Response =
     | {
           status: "OK";
@@ -21,9 +20,9 @@ export type Response =
     | {
           status: "UNKNOWN_TENANT_ERROR";
       };
-export default function getTenantInfo(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response>;
+export default function getTenantInfo({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response>;

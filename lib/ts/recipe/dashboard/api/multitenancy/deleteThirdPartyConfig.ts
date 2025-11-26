@@ -12,12 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import Multitenancy from "../../../multitenancy";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { APIFunction } from "../../types";
 import SuperTokensError from "../../../../error";
 import { FactorIds } from "../../../multifactorauth";
-import { UserContext } from "../../../../types";
 import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 
 export type Response =
@@ -29,12 +26,12 @@ export type Response =
           status: "UNKNOWN_TENANT_ERROR";
       };
 
-export default async function deleteThirdPartyConfig(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function deleteThirdPartyConfig({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
 
     if (typeof tenantId !== "string" || tenantId === "" || typeof thirdPartyId !== "string" || thirdPartyId === "") {
@@ -44,7 +41,8 @@ export default async function deleteThirdPartyConfig(
         });
     }
 
-    const tenantRes = await Multitenancy.getTenant(tenantId, userContext);
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
+    const tenantRes = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
     if (tenantRes === undefined) {
         return {
             status: "UNKNOWN_TENANT_ERROR",
@@ -55,44 +53,51 @@ export default async function deleteThirdPartyConfig(
 
     if (thirdPartyIdsFromCore.length === 0) {
         // this means that the tenant was using the static list of providers, we need to add them all before deleting one
-        const mtRecipe = MultitenancyRecipe.getInstance();
+        const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
         for (const provider of staticProviders.filter(
             (provider) => provider.includeInNonPublicTenantsByDefault === true || tenantId === DEFAULT_TENANT_ID
         )) {
             const providerId = provider.config.thirdPartyId;
-            await Multitenancy.createOrUpdateThirdPartyConfig(
+            await mtRecipe.recipeInterfaceImpl.createOrUpdateThirdPartyConfig({
                 tenantId,
-                {
+                config: {
                     thirdPartyId: providerId,
                 },
-                undefined,
-                userContext
-            );
+                userContext,
+            });
             // delay after each provider to avoid rate limiting
             await new Promise((r) => setTimeout(r, 500)); // 500ms
         }
     } else if (thirdPartyIdsFromCore.length === 1 && thirdPartyIdsFromCore[0] === thirdPartyId) {
         if (tenantRes.firstFactors === undefined) {
             // add all static first factors except thirdparty
-            await Multitenancy.createOrUpdateTenant(tenantId, {
-                firstFactors: [
-                    FactorIds.EMAILPASSWORD,
-                    FactorIds.OTP_PHONE,
-                    FactorIds.OTP_EMAIL,
-                    FactorIds.LINK_PHONE,
-                    FactorIds.LINK_EMAIL,
-                ],
+            await mtRecipe.recipeInterfaceImpl.createOrUpdateTenant({
+                tenantId,
+                config: {
+                    firstFactors: [
+                        FactorIds.EMAILPASSWORD,
+                        FactorIds.OTP_PHONE,
+                        FactorIds.OTP_EMAIL,
+                        FactorIds.LINK_PHONE,
+                        FactorIds.LINK_EMAIL,
+                    ],
+                },
+                userContext,
             });
         } else if (tenantRes.firstFactors.includes("thirdparty")) {
             // add all static first factors except thirdparty
             const newFirstFactors = tenantRes.firstFactors.filter((factor) => factor !== "thirdparty");
-            await Multitenancy.createOrUpdateTenant(tenantId, {
-                firstFactors: newFirstFactors,
+            await mtRecipe.recipeInterfaceImpl.createOrUpdateTenant({
+                tenantId,
+                config: {
+                    firstFactors: newFirstFactors,
+                },
+                userContext,
             });
         }
     }
 
-    return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
+    return await mtRecipe.recipeInterfaceImpl.deleteThirdPartyConfig({ tenantId, thirdPartyId, userContext });
 }

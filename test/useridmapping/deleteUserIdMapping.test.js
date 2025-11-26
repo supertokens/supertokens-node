@@ -30,13 +30,6 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             {
                 let response = await STExpress.deleteUserIdMapping({ userId: "unknown", userIdType: "SUPERTOKENS" });
                 assert.strictEqual(Object.keys(response).length, 2);
@@ -73,13 +66,6 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
@@ -128,13 +114,6 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signUpResponse.status, "OK");
@@ -181,13 +160,6 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
@@ -262,13 +234,6 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user and map their userId
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");

@@ -15,17 +15,17 @@
 
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
-import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { updateAndGetMFARelatedInfoInSession } from "./utils";
 import { FactorIds } from "./types";
-
+import SuperTokens from "../../supertokens";
+import { MultiFactorAuthClaimClass } from "./multiFactorAuthClaim";
 export default class Wrapper {
     static init = Recipe.init;
 
-    static MultiFactorAuthClaim = MultiFactorAuthClaim;
+    static MultiFactorAuthClaim = new MultiFactorAuthClaimClass(() => SuperTokens.getInstanceOrThrowError());
     static FactorIds = FactorIds;
 
     static async assertAllowedToSetupFactorElseThrowInvalidClaimError(
@@ -35,23 +35,10 @@ export default class Wrapper {
     ) {
         let ctx = getUserContext(userContext);
 
-        const mfaInfo = await updateAndGetMFARelatedInfoInSession({
+        await Recipe.getInstanceOrThrowError().assertAllowedToSetupFactorElseThrowInvalidClaimError(
             session,
-            userContext: ctx,
-        });
-        const factorsSetUpForUser = await Wrapper.getFactorsSetupForUser(session.getUserId(), ctx);
-        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
-            {
-                session,
-                factorId,
-                get factorsSetUpForUser() {
-                    return Promise.resolve(factorsSetUpForUser);
-                },
-                get mfaRequirementsForAuth() {
-                    return Promise.resolve(mfaInfo.mfaRequirementsForAuth);
-                },
-                userContext: ctx,
-            }
+            factorId,
+            ctx
         );
     }
 
@@ -59,6 +46,7 @@ export default class Wrapper {
         let ctx = getUserContext(userContext);
 
         const mfaInfo = await updateAndGetMFARelatedInfoInSession({
+            stInstance: SuperTokens.getInstanceOrThrowError(),
             session,
             userContext: ctx,
         });
@@ -134,6 +122,6 @@ export let getMFARequirementsForAuth = Wrapper.getMFARequirementsForAuth;
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 
-export { MultiFactorAuthClaim };
+export const MultiFactorAuthClaim = Wrapper.MultiFactorAuthClaim;
 export { FactorIds };
 export type { RecipeInterface, APIOptions, APIInterface };

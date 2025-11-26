@@ -1,14 +1,12 @@
 import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
-import AccountLinking from "../accountlinking/recipe";
-import EmailVerification from "../emailverification/recipe";
 import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
-import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { AuthUtils } from "../../authUtils";
+import type SuperTokens from "../../supertokens";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(stInstance: SuperTokens, querier: Querier): RecipeInterface {
     function copyAndRemoveUserContextAndTenantId(input: any): any {
         let result = {
             ...input,
@@ -48,6 +46,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             let updatedUser = userAsObj;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                stInstance,
                 tenantId: input.tenantId,
                 inputUser: userAsObj,
                 recipeUserId: recipeUserIdAsObj,
@@ -198,15 +197,18 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return { status: "OK" };
         },
         updateUser: async function (input) {
-            const accountLinking = AccountLinking.getInstanceOrThrowError();
+            const accountLinking = stInstance.getRecipeInstanceOrThrow("accountlinking");
             if (input.email) {
-                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+                const user = await stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
+                    userId: input.recipeUserId.getAsString(),
+                    userContext: input.userContext,
+                });
 
                 if (user === undefined) {
                     return { status: "UNKNOWN_USER_ID_ERROR" };
                 }
 
-                const evInstance = EmailVerification.getInstance();
+                const evInstance = stInstance.getRecipeInstance("emailverification");
 
                 let isEmailVerified = false;
                 if (evInstance) {
@@ -242,18 +244,23 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             if (response.status !== "OK") {
                 return response;
             }
-            const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+            const user = await stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
+                userId: input.recipeUserId.getAsString(),
+                userContext: input.userContext,
+            });
             if (user === undefined) {
                 // This means that the user was deleted between the put and get requests
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
                 };
             }
-            await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                user,
-                recipeUserId: input.recipeUserId,
-                userContext: input.userContext,
-            });
+            await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    user,
+                    recipeUserId: input.recipeUserId,
+                    userContext: input.userContext,
+                });
             return response;
         },
     };

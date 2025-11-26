@@ -13,13 +13,13 @@
  * under the License.
  */
 
-import OAuth2ProviderRecipe from "../recipe";
 import { send200Response, sendNon200ResponseWithMessage } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { JSONObject, UserContext } from "../../../types";
-import { getUser } from "../../..";
+import SuperTokens from "../../../supertokens";
 
 export default async function userInfoGET(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -41,11 +41,10 @@ export default async function userInfoGET(
     let accessTokenPayload: JSONObject;
 
     try {
-        const validateTokenResponse =
-            await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
-                token: accessToken,
-                userContext,
-            });
+        const validateTokenResponse = await options.recipeImplementation.validateOAuth2AccessToken({
+            token: accessToken,
+            userContext,
+        });
 
         accessTokenPayload = validateTokenResponse.payload;
     } catch (error) {
@@ -69,7 +68,9 @@ export default async function userInfoGET(
 
     const userId = accessTokenPayload.sub;
 
-    const user = await getUser(userId, userContext);
+    const user = await stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.getUser({ userId, userContext });
 
     if (user === undefined) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);

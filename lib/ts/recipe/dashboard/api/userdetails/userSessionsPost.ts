@@ -1,18 +1,15 @@
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import Session from "../../../session";
-import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";
 };
 
-export const userSessionsPost = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userSessionsPost = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const sessionHandles = requestBody.sessionHandles;
 
@@ -23,7 +20,8 @@ export const userSessionsPost = async (
         });
     }
 
-    await Session.revokeMultipleSessions(sessionHandles, userContext);
+    const sessionRecipe = stInstance.getRecipeInstanceOrThrow("session");
+    await sessionRecipe.recipeInterfaceImpl.revokeMultipleSessions({ sessionHandles, userContext });
     return {
         status: "OK",
     };
