@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## [23.1.0] - 2025-11-25
+## [23.1.0] - 2025-11-27
 
 -   Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
 -   Updates custom framework to following correct CollectingResponse flow order (to ensure that subsequent calls to the `sendJSONResponse` doesn't overwrite the response).
+-   Updated/expanded plugin support.
+-   Reworked internals to avoid dynamic requires and circular dependencies
 
 ## [23.0.1] - 2025-07-31
 
