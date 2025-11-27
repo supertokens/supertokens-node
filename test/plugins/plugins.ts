@@ -92,7 +92,7 @@ export function pluginFactory({
 
     return {
         id: identifier,
-        compatibleSDKVersions: ["23.0.x"],
+        compatibleSDKVersions: ["23.0.x", ">23.0.1"],
         overrideMap,
         init: addInit ? initFactory(identifier) : undefined,
         dependencies: dependencyFactory(dependencies),
