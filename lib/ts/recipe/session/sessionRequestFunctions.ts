@@ -1,4 +1,3 @@
-import Recipe from "./recipe";
 import {
     VerifySessionOptions,
     RecipeInterface,
@@ -7,10 +6,8 @@ import {
     SessionContainerInterface,
 } from "./types";
 import frameworks from "../../framework";
-import SuperTokens from "../../supertokens";
-import OpenIdRecipe from "../openid/recipe";
-import { getRequiredClaimValidators } from "./utils";
-import { getRidFromHeader, isAnIpAddress, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
+import type SuperTokens from "../../supertokens";
+import { getRidFromHeader, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods, protectedProps } from "./constants";
 import {
@@ -27,6 +24,8 @@ import { validateAccessTokenStructure } from "./accessToken";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
+import { isAnIpAddress } from "../../normalisedURLDomain";
+import type SessionRecipe from "./recipe";
 
 // We are defining this here (and not exporting it) to reduce the scope of legacy code
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
@@ -36,6 +35,8 @@ export async function getSessionFromRequest({
     res,
     config,
     recipeInterfaceImpl,
+    recipeInstance,
+    stInstance,
     options,
     userContext,
 }: {
@@ -43,12 +44,14 @@ export async function getSessionFromRequest({
     res: any;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    recipeInstance: SessionRecipe;
+    stInstance: SuperTokens;
     options?: VerifySessionOptions;
     userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
 
-    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    const configuredFramework = stInstance.framework;
     if (configuredFramework !== "custom") {
         if (!req.wrapperUsed) {
             req = frameworks[configuredFramework].wrapRequest(req);
@@ -137,7 +140,7 @@ export async function getSessionFromRequest({
     });
 
     if (session !== undefined) {
-        const claimValidators = await getRequiredClaimValidators(
+        const claimValidators = await recipeInstance.getRequiredClaimValidators(
             session,
             options?.overrideGlobalClaimValidators,
             userContext
@@ -239,15 +242,17 @@ export async function refreshSessionInRequest({
     userContext,
     config,
     recipeInterfaceImpl,
+    stInstance,
 }: {
     res: any;
     req: any;
     userContext: UserContext;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    stInstance: SuperTokens;
 }) {
     logDebugMessage("refreshSession: Started");
-    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    const configuredFramework = stInstance.framework;
     if (configuredFramework !== "custom") {
         if (!req.wrapperUsed) {
             req = frameworks[configuredFramework].wrapRequest(req);
@@ -419,6 +424,7 @@ export async function createNewSessionInRequest({
     res,
     userContext,
     recipeInstance,
+    stInstance,
     accessTokenPayload,
     userId,
     recipeUserId,
@@ -430,7 +436,8 @@ export async function createNewSessionInRequest({
     req: any;
     res: any;
     userContext: UserContext;
-    recipeInstance: Recipe;
+    recipeInstance: SessionRecipe;
+    stInstance: SuperTokens;
     accessTokenPayload: any;
     userId: string;
     recipeUserId: RecipeUserId;
@@ -440,7 +447,7 @@ export async function createNewSessionInRequest({
     tenantId: string;
 }) {
     logDebugMessage("createNewSession: Started");
-    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    const configuredFramework = stInstance.framework;
     if (configuredFramework !== "custom") {
         if (!req.wrapperUsed) {
             req = frameworks[configuredFramework].wrapRequest(req);
@@ -455,7 +462,7 @@ export async function createNewSessionInRequest({
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
     const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
-    const issuer = await OpenIdRecipe.getIssuer(userContext);
+    const issuer = await stInstance.getRecipeInstanceOrThrow("openid").getIssuer(userContext);
 
     let finalAccessTokenPayload = {
         ...accessTokenPayload,

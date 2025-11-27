@@ -1,13 +1,16 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { ProviderInput } from "../thirdparty/types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type SuperTokens from "../../supertokens";
+import { AllowedDomainsClaimClass } from "./allowedDomainsClaim";
 export default class Recipe extends RecipeModule {
     private static instance;
+    allowedDomainsClaim: AllowedDomainsClaimClass;
     static RECIPE_ID: "multitenancy";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
@@ -17,7 +20,13 @@ export default class Recipe extends RecipeModule {
     allAvailableFirstFactors: string[];
     staticFirstFactors: string[] | undefined;
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    );
     static getInstanceOrThrowError(): Recipe;
     static getInstance(): Recipe | undefined;
     static init(config?: TypeInput): RecipeListFunction;

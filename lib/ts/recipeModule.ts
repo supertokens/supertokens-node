@@ -16,15 +16,20 @@
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod, UserContext } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./framework";
+import type { BaseRequest, BaseResponse } from "./framework";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
+import { Querier } from "./querier";
+import type SuperTokens from "./supertokens";
 
 export default abstract class RecipeModule {
     private recipeId: string;
-
     protected appInfo: NormalisedAppinfo;
+    protected stInstance: SuperTokens;
+    protected querier: Querier;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
+    constructor(stInstance: SuperTokens, recipeId: string, appInfo: NormalisedAppinfo) {
+        this.stInstance = stInstance;
+        this.querier = Querier.getNewInstanceOrThrowError(stInstance, recipeId);
         this.recipeId = recipeId;
         this.appInfo = appInfo;
     }
@@ -57,11 +62,7 @@ export default abstract class RecipeModule {
             remainingPath = new NormalisedURLPath(match[2]);
         }
 
-        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
-        // so that there is no circular dependency. Otherwise there would be cyclic dependency
-        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
-        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
-        const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+        const mtRecipe = this.stInstance.getRecipeInstanceOrThrow("multitenancy");
 
         for (let i = 0; i < apisHandled.length; i++) {
             let currAPI = apisHandled[i];

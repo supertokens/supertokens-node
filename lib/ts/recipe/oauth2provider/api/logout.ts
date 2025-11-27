@@ -15,11 +15,12 @@
 
 import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
-import Session from "../../session";
 import { UserContext } from "../../../types";
 import SuperTokensError from "../../../error";
+import type SuperTokens from "../../../supertokens";
 
 export async function logoutPOST(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -30,7 +31,12 @@ export async function logoutPOST(
 
     let session;
     try {
-        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
+        session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+            req: options.req,
+            res: options.res,
+            options: { sessionRequired: false },
+            userContext,
+        });
     } catch {
         session = undefined;
     }

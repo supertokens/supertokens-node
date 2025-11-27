@@ -116,7 +116,7 @@ export async function getSession(
          */
         accessTokenInfo = await getInfoFromAccessToken(
             parsedAccessToken,
-            getCombinedJWKS(config),
+            getCombinedJWKS(helpers.querier, config),
             helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN" && doAntiCsrfCheck
         );
     } catch (err) {

@@ -1,19 +1,22 @@
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import { deleteUser } from "../../../..";
 
 type Response = {
     status: "OK";
 };
 
-export const userDelete = async (_: APIInterface, ___: string, options: APIOptions, __: any): Promise<Response> => {
+export const userDelete = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
     let removeAllLinkedAccountsQueryValue = options.req.getKeyValueFromQuery("removeAllLinkedAccounts");
     if (removeAllLinkedAccountsQueryValue !== undefined) {
         removeAllLinkedAccountsQueryValue = removeAllLinkedAccountsQueryValue.trim().toLowerCase();
     }
     const removeAllLinkedAccounts =
-        removeAllLinkedAccountsQueryValue === undefined ? undefined : removeAllLinkedAccountsQueryValue === "true";
+        removeAllLinkedAccountsQueryValue === undefined ? true : removeAllLinkedAccountsQueryValue === "true";
 
     if (userId === undefined || userId === "") {
         throw new STError({
@@ -22,7 +25,9 @@ export const userDelete = async (_: APIInterface, ___: string, options: APIOptio
         });
     }
 
-    await deleteUser(userId, removeAllLinkedAccounts);
+    await stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.deleteUser({ userId, removeAllLinkedAccounts, userContext });
 
     return {
         status: "OK",

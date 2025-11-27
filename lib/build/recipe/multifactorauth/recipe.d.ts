@@ -1,9 +1,10 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import { MultiFactorAuthClaimClass } from "./multiFactorAuthClaim";
 import {
     APIInterface,
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
@@ -16,10 +17,12 @@ import {
 } from "./types";
 import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
-import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
+import type SuperTokens from "../../supertokens";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
+    multiFactorAuthClaim: MultiFactorAuthClaimClass;
     static RECIPE_ID: "multifactorauth";
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[];
     getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc[];
@@ -30,8 +33,13 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    querier: Querier;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    );
     static getInstanceOrThrowError(): Recipe;
     static getInstance(): Recipe | undefined;
     static init(config?: TypeInput): RecipeListFunction;
@@ -78,4 +86,9 @@ export default class Recipe extends RecipeModule {
         | {
               status: "UNKNOWN_SESSION_RECIPE_USER_ID";
           };
+    assertAllowedToSetupFactorElseThrowInvalidClaimError(
+        session: SessionContainerInterface,
+        factorId: string,
+        userContext: UserContext
+    ): Promise<void>;
 }

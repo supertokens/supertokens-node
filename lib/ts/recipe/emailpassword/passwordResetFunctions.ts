@@ -14,7 +14,8 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { isTestEnv, postWithFetch } from "../../utils";
+import { isTestEnv } from "../../utils";
+import { postWithFetch } from "../../querier";
 
 export async function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,

@@ -4,7 +4,8 @@ import { UserContext } from "./types";
 import { LoginMethod, User } from "./user";
 import RecipeUserId from "./recipeUserId";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
-import { BaseRequest, BaseResponse } from "./framework";
+import type { BaseRequest, BaseResponse } from "./framework";
+import type SuperTokens from "./supertokens";
 export declare const AuthUtils: {
     /**
      * This helper function can be used to map error statuses (w/ an optional reason) to error responses with human readable reasons.
@@ -45,6 +46,7 @@ export declare const AuthUtils: {
      * if the session user should become primary but we couldn't make it primary because of a conflicting primary user.
      */
     preAuthChecks: ({
+        stInstance,
         authenticatingAccountInfo,
         tenantId,
         isSignUp,
@@ -57,6 +59,7 @@ export declare const AuthUtils: {
         shouldTryLinkingWithSessionUser,
         userContext,
     }: {
+        stInstance: SuperTokens;
         authenticatingAccountInfo: AccountInfoWithRecipeId;
         authenticatingUser: User | undefined;
         tenantId: string;
@@ -103,6 +106,7 @@ export declare const AuthUtils: {
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     postAuthChecks: ({
+        stInstance,
         authenticatedUser,
         recipeUserId,
         isSignUp,
@@ -113,6 +117,7 @@ export declare const AuthUtils: {
         tenantId,
         userContext,
     }: {
+        stInstance: SuperTokens;
         authenticatedUser: User;
         recipeUserId: RecipeUserId;
         tenantId: string;
@@ -143,6 +148,7 @@ export declare const AuthUtils: {
      * most importantly, this way all secondary factors are app-wide instead of mixing app-wide (totp) and tenant-wide (password) factors.
      */
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({
+        stInstance,
         recipeId,
         accountInfo,
         checkCredentialsOnTenant,
@@ -150,6 +156,7 @@ export declare const AuthUtils: {
         session,
         userContext,
     }: {
+        stInstance: SuperTokens;
         recipeId: string;
         accountInfo:
             | {
@@ -206,6 +213,7 @@ export declare const AuthUtils: {
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     checkAuthTypeAndLinkingStatus: (
+        stInstance: SuperTokens,
         session: SessionContainerInterface | undefined,
         shouldTryLinkingWithSessionUser: boolean | undefined,
         accountInfo: AccountInfoWithRecipeId,
@@ -250,6 +258,7 @@ export declare const AuthUtils: {
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: ({
+        stInstance,
         tenantId,
         inputUser,
         recipeUserId,
@@ -257,6 +266,7 @@ export declare const AuthUtils: {
         shouldTryLinkingWithSessionUser,
         userContext,
     }: {
+        stInstance: SuperTokens;
         tenantId: string;
         inputUser: User;
         recipeUserId: RecipeUserId;
@@ -288,6 +298,7 @@ export declare const AuthUtils: {
      * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
      */
     tryAndMakeSessionUserIntoAPrimaryUser: (
+        stInstance: SuperTokens,
         session: SessionContainerInterface,
         skipSessionUserUpdateInCore: boolean,
         userContext: UserContext
@@ -317,12 +328,14 @@ export declare const AuthUtils: {
      * if the session user is not primary. This can be resolved by making it primary and retrying the call.
      */
     tryLinkingBySession: ({
+        stInstance,
         linkingToSessionUserRequiresVerification,
         authLoginMethod,
         authenticatedUser,
         sessionUser,
         userContext,
     }: {
+        stInstance: SuperTokens;
         authenticatedUser: User;
         linkingToSessionUserRequiresVerification: boolean;
         sessionUser: User;
@@ -346,12 +359,14 @@ export declare const AuthUtils: {
           }
     >;
     filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: (
+        stInstance: SuperTokens,
         factorIds: string[],
         tenantId: string,
         hasSession: boolean,
         userContext: UserContext
     ) => Promise<string[]>;
     loadSessionInAuthAPIIfNeeded: (
+        stInstance: SuperTokens,
         req: BaseRequest,
         res: BaseResponse,
         shouldTryLinkingWithSessionUser: boolean | undefined,

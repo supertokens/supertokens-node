@@ -4,7 +4,13 @@ import * as supertokens from "../../../lib/build";
 import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { logger } from "./logger";
 import { getFunc } from "./testFunctionMapper";
-import { convertRequestSessionToSessionObject, deserializeClaim, deserializeValidator, maxVersion } from "./utils";
+import {
+    convertRequestSessionToSessionObject,
+    deserializeClaim,
+    deserializeValidator,
+    maxVersion,
+    serializeResponseSession,
+} from "./utils";
 import { logOverrideEvent } from "./overrideLogging";
 
 const namespace = "com.supertokens:node-test-server:session";
@@ -34,7 +40,8 @@ const router = Router()
                 req.body.disableAntiCsrf,
                 req.body.userContext
             );
-            res.json(response);
+
+            res.json(serializeResponseSession(response));
         } catch (e) {
             next(e);
         }
@@ -48,7 +55,7 @@ const router = Router()
                 req.body.options,
                 req.body.userContext
             );
-            res.json(response);
+            res.json(serializeResponseSession(response));
         } catch (e) {
             next(e);
         }
@@ -85,8 +92,9 @@ const router = Router()
                 req.body.antiCsrfToken,
                 req.body.userContext
             );
-            res.json(response);
+            res.json(serializeResponseSession(response));
         } catch (e) {
+            console.error(e);
             // we do not call next(e) here so that the proper error response is sent back to the client
             // otherwise the supertokens error handler will send a different type of response.
             res.status(500).json({ ...e, message: e.message });
@@ -166,7 +174,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.revokeSession(req.body.userContext); // : Promise<void>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.revokesession", "RES", retVal);
         } catch (e) {
@@ -183,7 +191,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getSessionDataFromDatabase(req.body.userContext); // : Promise<any>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getsessiondatafromdatabase", "RES", retVal);
         } catch (e) {
@@ -200,7 +208,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.updateSessionDataInDatabase(req.body.newSessionData, req.body.userContext); // : Promise<any>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.updatesessiondataindatabase", "RES", retVal);
         } catch (e) {
@@ -217,7 +225,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getUserId(req.body.userContext); // : string;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getuserid", "RES", retVal);
         } catch (e) {
@@ -234,7 +242,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getRecipeUserId(req.body.userContext); // : RecipeUserId;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getrecipeuserid", "RES", retVal);
         } catch (e) {
@@ -251,7 +259,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getTenantId(req.body.userContext); // : string;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.gettenantid", "RES", retVal);
         } catch (e) {
@@ -268,7 +276,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getAccessTokenPayload(req.body.userContext); // : any;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getaccesstokenpayload", "RES", retVal);
         } catch (e) {
@@ -285,7 +293,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getHandle(req.body.userContext); // : string;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.gethandle", "RES", retVal);
         } catch (e) {
@@ -302,7 +310,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getAllSessionTokensDangerously(); // : Promise<{}>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getallsessiontokensdangerously", "RES", retVal);
         } catch (e) {
@@ -319,7 +327,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getAccessToken(req.body.userContext); // : string;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getaccesstoken", "RES", retVal);
         } catch (e) {
@@ -339,7 +347,7 @@ const router = Router()
                 req.body.accessTokenPayloadUpdate,
                 req.body.userContext
             ); // : Promise<void>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.mergeintoaccesstokenpayload", "RES", retVal);
         } catch (e) {
@@ -356,7 +364,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getTimeCreated(req.body.userContext); // : Promise<number>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.gettimecreated", "RES", retVal);
         } catch (e) {
@@ -373,7 +381,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getExpiry(req.body.userContext); // : Promise<number>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getexpiry", "RES", retVal);
         } catch (e) {
@@ -393,7 +401,7 @@ const router = Router()
                 req.body.claimValidators.map(deserializeValidator),
                 req.body.userContext
             ); // : Promise<void>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.assertclaims", "RES", retVal);
         } catch (e) {
@@ -411,7 +419,7 @@ const router = Router()
             }
 
             const retVal = await session.fetchAndSetClaim(deserializeClaim(req.body.claim), req.body.userContext); // : Promise<void>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.fetchandsetclaim", "RES", retVal);
         } catch (e) {
@@ -432,7 +440,7 @@ const router = Router()
                 req.body.value,
                 req.body.userContext
             ); // : Promise<void>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.setclaimvalue", "RES", retVal);
         } catch (e) {
@@ -449,7 +457,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             await session.removeClaim(deserializeClaim(req.body.claim), req.body.userContext); // : Promise<void>;
-            res.json({ updatedSession: { ...session } });
+            res.json({ updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.removeClaim", "RES", undefined);
         } catch (e) {
@@ -466,7 +474,7 @@ const router = Router()
                 throw new Error("This should never happen: failed to deserialize session");
             }
             const retVal = await session.getClaimValue(deserializeClaim(req.body.claim), req.body.userContext); // : Promise<void>;
-            res.json({ retVal, updatedSession: { ...session } });
+            res.json({ retVal, updatedSession: serializeResponseSession(session) });
 
             logOverrideEvent("sessionobject.getclaimvalue", "RES", retVal);
         } catch (e) {

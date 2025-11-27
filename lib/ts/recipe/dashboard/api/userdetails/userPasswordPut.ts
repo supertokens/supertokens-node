@@ -1,8 +1,6 @@
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import EmailPassword from "../../../emailpassword";
 import RecipeUserId from "../../../../recipeUserId";
-import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -13,12 +11,12 @@ type Response =
           error: string;
       };
 
-export const userPasswordPut = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userPasswordPut = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
     const newPassword = requestBody.newPassword;
@@ -37,7 +35,8 @@ export const userPasswordPut = async (
         });
     }
 
-    const updateResponse = await EmailPassword.updateEmailOrPassword({
+    const emailpasswordRecipe = stInstance.getRecipeInstanceOrThrow("emailpassword");
+    const updateResponse = await emailpasswordRecipe.recipeInterfaceImpl.updateEmailOrPassword({
         recipeUserId: new RecipeUserId(recipeUserId),
         password: newPassword,
         tenantIdForPasswordPolicy: tenantId,

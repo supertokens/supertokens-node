@@ -28,7 +28,7 @@ import {
 } from "./types";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { RecipeInterface, APIInterface } from "./types";
-import { BaseRequest } from "../../framework";
+import type { BaseRequest } from "../../framework";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(

@@ -1,15 +1,15 @@
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
 import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
-import { TenantConfig } from "../../../multitenancy/types";
-import { FactorIds } from "../../../multifactorauth";
+import type { TenantConfig } from "../../../multitenancy/types";
+import { FactorIds } from "../../../multifactorauth/types";
+import type SuperTokens from "../../../../supertokens";
 
 export function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
+    stInstance: SuperTokens,
     tenantDetailsFromCore: TenantConfig
 ): string[] {
     let firstFactors: string[];
 
-    let mtInstance = MultitenancyRecipe.getInstanceOrThrowError();
+    let mtInstance = stInstance.getRecipeInstanceOrThrow("multitenancy");
     if (tenantDetailsFromCore.firstFactors !== undefined) {
         firstFactors = tenantDetailsFromCore.firstFactors; // highest priority, config from core
     } else if (mtInstance.staticFirstFactors !== undefined) {
@@ -42,9 +42,10 @@ export function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
 }
 
 export function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit(
+    stInstance: SuperTokens,
     tenantDetailsFromCore: TenantConfig
 ): string[] {
-    const mfaInstance = MultifactorAuthRecipe.getInstance();
+    const mfaInstance = stInstance.getRecipeInstanceOrThrow("multifactorauth");
 
     if (mfaInstance === undefined) {
         return [];

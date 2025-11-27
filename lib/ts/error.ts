@@ -13,9 +13,14 @@
  * under the License.
  */
 
+import { logDebugMessage } from "./logger";
+
 export default class SuperTokensError extends Error {
     private static errMagic = "ndskajfasndlfkj435234krjdsa";
+
     static BAD_INPUT_ERROR: "BAD_INPUT_ERROR" = "BAD_INPUT_ERROR";
+    static UNKNOWN_ERROR: "UNKNOWN_ERROR" = "UNKNOWN_ERROR";
+    static PLUGIN_ERROR: "PLUGIN_ERROR" = "PLUGIN_ERROR";
 
     public type: string;
     public payload: any;
@@ -49,7 +54,29 @@ export default class SuperTokensError extends Error {
         this.errMagic = SuperTokensError.errMagic;
     }
 
-    static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
+    static isErrorFromSuperTokens(obj: any): obj is SuperTokensError | SuperTokensPluginError {
         return obj.errMagic === SuperTokensError.errMagic;
     }
 }
+
+export class SuperTokensPluginError extends SuperTokensError {
+    public code: number;
+
+    constructor(options: { message: string; payload?: any; code?: number }) {
+        super({ ...options, type: SuperTokensError.PLUGIN_ERROR });
+        this.code = options.code || 400;
+    }
+}
+
+export const transformErrorToSuperTokensError = (err: any): SuperTokensError => {
+    // passthrough for errors from SuperTokens - let errorHandler handle them
+    if (SuperTokensError.isErrorFromSuperTokens(err)) {
+        return err;
+    }
+
+    logDebugMessage(
+        `transformErrorToSuperTokensError: Transforming error to SuperTokensError. Error: ${err?.message}.\nStack:\n${err?.stack}`
+    );
+    // mask the original stack trace by not copying it on the new error
+    return new SuperTokensError({ message: "Unknown error", type: SuperTokensError.UNKNOWN_ERROR });
+};

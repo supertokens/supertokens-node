@@ -26,13 +26,6 @@ describe(`configTest: ${printPath("[test/oauth2/config.test.js]")}`, function ()
             recipeList: [OAuth2ProviderRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         OAuth2ProviderRecipe.getInstanceOrThrowError();
     });
 });

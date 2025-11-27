@@ -14,9 +14,8 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
@@ -39,9 +38,9 @@ import listDevicesAPI from "./api/listDevices";
 import removeDeviceAPI from "./api/removeDevice";
 import { User } from "../..";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -55,32 +54,38 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
-            );
+            let builder = new OverrideableBuilder(RecipeImplementation(this.stInstance, this.querier, this.config));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
 
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
+        const instance = this;
+
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = this.stInstance.getRecipeInstance("multifactorauth");
             if (mfaInstance !== undefined) {
                 mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes(() => {
                     return ["totp"];
                 });
                 mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(
                     async (user: User, userContext: UserContext) => {
-                        const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+                        const deviceRes = await instance.recipeInterfaceImpl.listDevices({
                             userId: user.id,
                             userContext,
                         });
@@ -108,9 +113,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -186,15 +192,15 @@ export default class Recipe extends RecipeModule {
             res,
         };
         if (id === CREATE_TOTP_DEVICE) {
-            return await createDeviceAPI(this.apiImpl, options, userContext);
+            return await createDeviceAPI(this.stInstance, this.apiImpl, options, userContext);
         } else if (id === LIST_TOTP_DEVICES) {
-            return await listDevicesAPI(this.apiImpl, options, userContext);
+            return await listDevicesAPI(this.stInstance, this.apiImpl, options, userContext);
         } else if (id === REMOVE_TOTP_DEVICE) {
-            return await removeDeviceAPI(this.apiImpl, options, userContext);
+            return await removeDeviceAPI(this.stInstance, this.apiImpl, options, userContext);
         } else if (id === VERIFY_TOTP_DEVICE) {
-            return await verifyDeviceAPI(this.apiImpl, options, userContext);
+            return await verifyDeviceAPI(this.stInstance, this.apiImpl, options, userContext);
         } else if (id === VERIFY_TOTP) {
-            return await verifyTOTPAPI(this.apiImpl, options, userContext);
+            return await verifyTOTPAPI(this.stInstance, this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
     };

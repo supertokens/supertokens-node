@@ -31,13 +31,6 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const result = await UserRolesRecipe.createNewRoleOrAddPermissions("newRole", []);
             assert.strictEqual(result.status, "OK");
             assert(result.createdNewRole);
@@ -59,13 +52,6 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             {
                 const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, []);
@@ -98,13 +84,6 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             {
                 const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, permissions);
                 assert.strictEqual(result.status, "OK");
@@ -136,13 +115,6 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             {
                 const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, permissions);
@@ -188,13 +160,6 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             {
                 const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, permissions);

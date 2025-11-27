@@ -12,9 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import Multitenancy from "../../../multitenancy";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 
 export type Response =
     | {
@@ -25,14 +23,15 @@ export type Response =
           status: "CANNOT_DELETE_PUBLIC_TENANT_ERROR";
       };
 
-export default async function deleteTenant(
-    _: APIInterface,
-    tenantId: string,
-    __: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function deleteTenant({
+    stInstance,
+    tenantId,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     try {
-        const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
+        const deleteTenantRes = await stInstance
+            .getRecipeInstanceOrThrow("multitenancy")
+            .recipeInterfaceImpl.deleteTenant({ tenantId, userContext });
 
         return deleteTenantRes;
     } catch (err) {

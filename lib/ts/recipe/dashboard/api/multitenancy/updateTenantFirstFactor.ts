@@ -12,29 +12,27 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { APIFunction } from "../../types";
 import { getFactorNotAvailableMessage, getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
-import { UserContext } from "../../../../types";
 
 export type Response =
     | { status: "OK" }
     | { status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"; message: string }
     | { status: "UNKNOWN_TENANT_ERROR" };
 
-export default async function updateTenantFirstFactor(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function updateTenantFirstFactor({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { factorId, enable } = requestBody;
 
-    const mtRecipe = MultitenancyRecipe.getInstance();
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
 
     if (enable === true) {
-        if (!mtRecipe?.allAvailableFirstFactors.includes(factorId)) {
+        if (!mtRecipe.allAvailableFirstFactors.includes(factorId)) {
             return {
                 status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR",
                 message: getFactorNotAvailableMessage(factorId, mtRecipe!.allAvailableFirstFactors),
@@ -50,7 +48,7 @@ export default async function updateTenantFirstFactor(
         };
     }
 
-    let firstFactors = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(tenantRes);
+    let firstFactors = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(stInstance, tenantRes);
 
     if (enable === true) {
         if (!firstFactors.includes(factorId)) {

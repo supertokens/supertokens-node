@@ -16,10 +16,11 @@
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import Session from "../../session";
 import { UserContext } from "../../../types";
+import SuperTokens from "../../../supertokens";
 
 export default async function emailVerify(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -50,12 +51,12 @@ export default async function emailVerify(
             });
         }
 
-        const session = await Session.getSession(
-            options.req,
-            options.res,
-            { overrideGlobalClaimValidators: () => [], sessionRequired: false },
-            userContext
-        );
+        const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+            req: options.req,
+            res: options.res,
+            options: { overrideGlobalClaimValidators: () => [], sessionRequired: false },
+            userContext,
+        });
 
         let response = await apiImplementation.verifyEmailPOST({
             token,
@@ -77,15 +78,16 @@ export default async function emailVerify(
             return false;
         }
 
-        const session = await Session.getSession(
-            options.req,
-            options.res,
-            { overrideGlobalClaimValidators: () => [] },
-            userContext
-        );
+        const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+            req: options.req,
+            res: options.res,
+            options: { overrideGlobalClaimValidators: () => [] },
+            userContext,
+        });
+
         result = await apiImplementation.isEmailVerifiedGET({
             options,
-            session,
+            session: session!,
             userContext,
         });
     }

@@ -15,10 +15,11 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
-import Session from "../../session";
 import { UserContext } from "../../../types";
+import SuperTokens from "../../../supertokens";
 
 export default async function removeDeviceAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -27,15 +28,12 @@ export default async function removeDeviceAPI(
         return false;
     }
 
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            overrideGlobalClaimValidators: () => [],
-            sessionRequired: true,
-        },
-        userContext
-    );
+    const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+        req: options.req,
+        res: options.res,
+        options: { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext,
+    });
 
     const bodyParams = await options.req.getJSONBody();
     const deviceName = bodyParams.deviceName;
@@ -47,7 +45,7 @@ export default async function removeDeviceAPI(
     let response = await apiImplementation.removeDevicePOST({
         deviceName,
         options,
-        session,
+        session: session!,
         userContext,
     });
     send200Response(options.res, response);

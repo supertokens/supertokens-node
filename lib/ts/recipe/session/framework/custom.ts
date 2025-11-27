@@ -16,8 +16,8 @@ import Session from "../recipe";
 import type { VerifySessionOptions } from "..";
 import SuperTokens from "../../../supertokens";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
-import { BaseRequest, BaseResponse } from "../../../framework";
-import { NextFunction } from "../../../framework/custom/framework";
+import type { BaseRequest, BaseResponse } from "../../../framework";
+import type { NextFunction } from "../../../framework/custom/framework";
 import { SessionContainerInterface } from "../types";
 
 export function verifySession<T extends BaseRequest & { session?: SessionContainerInterface }>(

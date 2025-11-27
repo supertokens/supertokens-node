@@ -1,8 +1,5 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import UserMetaDataRecipe from "../../../usermetadata/recipe";
-import UserMetaData from "../../../usermetadata";
-import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -13,12 +10,11 @@ type Response =
           data: any;
       };
 
-export const userMetaDataGet: APIFunction = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userMetaDataGet: APIFunction = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 
     if (userId === undefined || userId === "") {
@@ -28,15 +24,16 @@ export const userMetaDataGet: APIFunction = async (
         });
     }
 
+    let usermetadataRecipe = undefined;
     try {
-        UserMetaDataRecipe.getInstanceOrThrowError();
+        usermetadataRecipe = stInstance.getRecipeInstanceOrThrow("usermetadata");
     } catch (e) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
         };
     }
 
-    const metaDataResponse = UserMetaData.getUserMetadata(userId, userContext);
+    const metaDataResponse = usermetadataRecipe.recipeInterfaceImpl.getUserMetadata({ userId, userContext });
     return {
         status: "OK",
         data: (await metaDataResponse).metadata,

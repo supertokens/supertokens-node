@@ -9,6 +9,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
+import type SuperTokens from "../../supertokens";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: "emailverification";
@@ -18,6 +19,7 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,

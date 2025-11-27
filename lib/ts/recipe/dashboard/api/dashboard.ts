@@ -13,22 +13,17 @@
  * under the License.
  */
 
-import { UserContext } from "../../../types";
-import { APIInterface, APIOptions } from "../types";
+import { APIFunction } from "../types";
 
-export default async function dashboard(
-    apiImplementation: APIInterface,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<boolean> {
-    if (apiImplementation.dashboardGET === undefined) {
+export default async function dashboard(input: Parameters<APIFunction>[0]): Promise<boolean> {
+    const options = input.options;
+    const userContext = input.userContext;
+
+    if (input.apiImplementation?.dashboardGET === undefined) {
         return false;
     }
 
-    const htmlString = await apiImplementation.dashboardGET({
-        options,
-        userContext,
-    });
+    const htmlString = await input.apiImplementation.dashboardGET({ options, userContext });
 
     options.res.sendHTMLResponse(htmlString);
 

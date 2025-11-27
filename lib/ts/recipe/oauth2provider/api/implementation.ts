@@ -13,13 +13,15 @@
  * under the License.
  */
 
+import type SuperTokens from "../../../supertokens";
 import { APIInterface } from "../types";
 import { handleLoginInternalRedirects, handleLogoutInternalRedirects, loginGET } from "./utils";
 
-export default function getAPIImplementation(): APIInterface {
+export default function getAPIImplementation(stInstance: SuperTokens): APIInterface {
     return {
         loginGET: async ({ loginChallenge, options, session, shouldTryRefresh, userContext }) => {
             const response = await loginGET({
+                stInstance,
                 recipeImplementation: options.recipeImplementation,
                 loginChallenge,
                 session,
@@ -33,6 +35,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const respAfterInternalRedirects = await handleLoginInternalRedirects({
+                stInstance,
                 response,
                 cookie: options.req.getHeaderValue("cookie"),
                 recipeImplementation: options.recipeImplementation,
@@ -64,6 +67,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             return handleLoginInternalRedirects({
+                stInstance,
                 response,
                 recipeImplementation: options.recipeImplementation,
                 cookie,
@@ -150,6 +154,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             return handleLogoutInternalRedirects({
+                stInstance,
                 response,
                 session,
                 recipeImplementation: options.recipeImplementation,
@@ -169,6 +174,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             return handleLogoutInternalRedirects({
+                stInstance,
                 response,
                 session,
                 recipeImplementation: options.recipeImplementation,
@@ -190,6 +196,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const res = await handleLogoutInternalRedirects({
+                stInstance,
                 response,
                 recipeImplementation: options.recipeImplementation,
                 userContext,

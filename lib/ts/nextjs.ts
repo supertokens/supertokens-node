@@ -14,7 +14,7 @@
  */
 
 import { errorHandler } from "./framework/express";
-import { CollectingResponse, PreParsedRequest } from "./framework/custom";
+import type { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import { JWTPayload } from "jose";
 import {

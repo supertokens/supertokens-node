@@ -1,17 +1,15 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import { GeneralErrorResponse, User, UserContext } from "../../../types";
-import { getUser } from "../../../";
-import AccountLinking from "../../accountlinking/recipe";
-import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
 import { SessionContainerInterface } from "../../session/types";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIImplementation(): APIInterface {
+export default function getAPIImplementation(stInstance: SuperTokens): APIInterface {
     return {
         emailExistsGET: async function ({
             email,
@@ -32,14 +30,16 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an email password user with the same email cause the function
             // above does not check for that.
-            let users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId,
-                accountInfo: {
-                    email,
-                },
-                doUnionOfAccountInfo: false,
-                userContext,
-            });
+            let users = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo: {
+                        email,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext,
+                });
             let emailPasswordUserExists =
                 users.find((u) => {
                     return (
@@ -128,14 +128,16 @@ export default function getAPIImplementation(): APIInterface {
             /**
              * check if primaryUserId is linked with this email
              */
-            let users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId,
-                accountInfo: {
-                    email,
-                },
-                doUnionOfAccountInfo: false,
-                userContext,
-            });
+            let users = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo: {
+                        email,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext,
+                });
 
             // we find the recipe user ID of the email password account from the user's list
             // for later use.
@@ -179,12 +181,9 @@ export default function getAPIImplementation(): APIInterface {
                     } email)`
                 );
                 // Otherwise, we check if the user can become primary.
-                const shouldBecomePrimaryUser = await AccountLinking.getInstanceOrThrowError().shouldBecomePrimaryUser(
-                    oldestUser,
-                    tenantId,
-                    undefined,
-                    userContext
-                );
+                const shouldBecomePrimaryUser = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .shouldBecomePrimaryUser(oldestUser, tenantId, undefined, userContext);
 
                 logDebugMessage(
                     `generatePasswordResetTokenPOST: recipe level-linking candidate ${
@@ -282,8 +281,9 @@ export default function getAPIImplementation(): APIInterface {
             // is verified, and if not, we need to make sure that there is no other email / phone number
             // associated with the primary user account. If there is, then we do not proceed.
 
-            let shouldDoAccountLinkingResponse =
-                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            let shouldDoAccountLinkingResponse = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .config.shouldDoAutomaticAccountLinking(
                     emailPasswordAccount !== undefined
                         ? emailPasswordAccount
                         : {
@@ -318,7 +318,7 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
 
-                let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                let isSignUpAllowed = await stInstance.getRecipeInstanceOrThrow("accountlinking").isSignUpAllowed({
                     newUser: {
                         recipeId: "emailpassword",
                         email,
@@ -384,7 +384,13 @@ export default function getAPIImplementation(): APIInterface {
             | GeneralErrorResponse
         > {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
-                const emailVerificationInstance = EmailVerification.getInstance();
+                let emailVerificationInstance = undefined;
+                try {
+                    emailVerificationInstance = stInstance.getRecipeInstanceOrThrow("emailverification");
+                } catch (_) {
+                    logDebugMessage("email verification recipe not initialised, not marking email as verified");
+                }
+
                 if (emailVerificationInstance) {
                     const tokenResponse =
                         await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
@@ -455,7 +461,9 @@ export default function getAPIImplementation(): APIInterface {
                     // If we verified (and linked) the existing user with the original password, User M would get access to the current user and any linked users.
                     await markEmailAsVerified(recipeUserId, emailForWhomTokenWasGenerated);
                     // We refresh the user information here, because the verification status may be updated, which is used during linking.
-                    const updatedUserAfterEmailVerification = await getUser(recipeUserId.getAsString(), userContext);
+                    const updatedUserAfterEmailVerification = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
                     if (updatedUserAfterEmailVerification === undefined) {
                         throw new Error("Should never happen - user deleted after during password reset");
                     }
@@ -475,8 +483,9 @@ export default function getAPIImplementation(): APIInterface {
                     // The function below will try and also create a primary user of the new account, this can happen if:
                     // 1. the user was unverified and linking requires verification
                     // We do not take try linking by session here, since this is supposed to be called without a session
-                    const linkRes =
-                        await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                    const linkRes = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .tryLinkingByAccountInfoOrCreatePrimaryUser({
                             tenantId,
                             inputUser: updatedUserAfterEmailVerification,
                             session: undefined,
@@ -516,7 +525,9 @@ export default function getAPIImplementation(): APIInterface {
             let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
             let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
-            let existingUser = await getUser(userIdForWhomTokenWasGenerated, userContext);
+            let existingUser = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: userIdForWhomTokenWasGenerated, userContext });
 
             if (existingUser === undefined) {
                 // This should happen only cause of a race condition where the user
@@ -629,7 +640,9 @@ export default function getAPIImplementation(): APIInterface {
                     createUserResponse.user.loginMethods[0].recipeUserId,
                     tokenConsumptionResponse.email
                 );
-                const updatedUser = await getUser(createUserResponse.user.id, userContext);
+                const updatedUser = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.getUser({ userId: createUserResponse.user.id, userContext });
                 if (updatedUser === undefined) {
                     throw new Error("Should never happen - user deleted after during password reset");
                 }
@@ -640,8 +653,9 @@ export default function getAPIImplementation(): APIInterface {
                 // email is shared.
                 // We do not take try linking by session here, since this is supposed to be called without a session
                 // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                const linkRes =
-                    await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                const linkRes = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .tryLinkingByAccountInfoOrCreatePrimaryUser({
                         tenantId,
                         inputUser: createUserResponse.user,
                         session: undefined,
@@ -744,6 +758,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                stInstance,
                 accountInfo: { email },
                 userContext,
                 recipeId,
@@ -763,6 +778,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
             const preAuthChecks = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     recipeId,
                     email,
@@ -809,6 +825,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
+                stInstance,
                 authenticatedUser: signInResponse.user,
                 recipeUserId: signInResponse.recipeUserId,
                 isSignUp: false,
@@ -897,6 +914,7 @@ export default function getAPIImplementation(): APIInterface {
             let password: string = passwordAsUnknown;
 
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     recipeId: "emailpassword",
                     email,
@@ -914,8 +932,9 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
-                const conflictingUsers =
-                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+                const conflictingUsers = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.listUsersByAccountInfo({
                         tenantId,
                         accountInfo: {
                             email,
@@ -961,6 +980,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
+                stInstance,
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
                 isSignUp: true,

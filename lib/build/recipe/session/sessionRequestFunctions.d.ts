@@ -1,5 +1,4 @@
 // @ts-nocheck
-import Recipe from "./recipe";
 import {
     VerifySessionOptions,
     RecipeInterface,
@@ -7,14 +6,18 @@ import {
     TypeNormalisedInput,
     SessionContainerInterface,
 } from "./types";
+import type SuperTokens from "../../supertokens";
 import { ParsedJWTInfo } from "./jwt";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import type SessionRecipe from "./recipe";
 export declare function getSessionFromRequest({
     req,
     res,
     config,
     recipeInterfaceImpl,
+    recipeInstance,
+    stInstance,
     options,
     userContext,
 }: {
@@ -22,6 +25,8 @@ export declare function getSessionFromRequest({
     res: any;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    recipeInstance: SessionRecipe;
+    stInstance: SuperTokens;
     options?: VerifySessionOptions;
     userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined>;
@@ -41,18 +46,21 @@ export declare function refreshSessionInRequest({
     userContext,
     config,
     recipeInterfaceImpl,
+    stInstance,
 }: {
     res: any;
     req: any;
     userContext: UserContext;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    stInstance: SuperTokens;
 }): Promise<SessionContainerInterface>;
 export declare function createNewSessionInRequest({
     req,
     res,
     userContext,
     recipeInstance,
+    stInstance,
     accessTokenPayload,
     userId,
     recipeUserId,
@@ -64,7 +72,8 @@ export declare function createNewSessionInRequest({
     req: any;
     res: any;
     userContext: UserContext;
-    recipeInstance: Recipe;
+    recipeInstance: SessionRecipe;
+    stInstance: SuperTokens;
     accessTokenPayload: any;
     userId: string;
     recipeUserId: RecipeUserId;

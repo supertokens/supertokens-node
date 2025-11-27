@@ -14,14 +14,14 @@
  */
 
 import { RecipeInterface, TypeNormalisedInput } from "./types";
-import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
-import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
+import type SuperTokens from "../../supertokens";
 
 export default function getRecipeInterface(
+    stInstance: SuperTokens,
     querier: Querier,
     getWebauthnConfig: () => TypeNormalisedInput
 ): RecipeInterface {
@@ -153,6 +153,7 @@ export default function getRecipeInterface(
             }
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                stInstance,
                 tenantId,
                 inputUser: response.user,
                 recipeUserId: response.recipeUserId,
@@ -190,18 +191,23 @@ export default function getRecipeInterface(
             )!;
 
             if (!loginMethod.verified) {
-                await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    user: response.user,
-                    recipeUserId: response.recipeUserId,
-                    userContext,
-                });
+                await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                        user: response.user,
+                        recipeUserId: response.recipeUserId,
+                        userContext,
+                    });
 
                 // We do this so that we get the updated user (in case the above
                 // function updated the verification status) and can return that
-                response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
+                response.user = (await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.getUser({ userId: response.recipeUserId!.getAsString(), userContext }))!;
             }
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                stInstance,
                 tenantId,
                 inputUser: response.user,
                 recipeUserId: response.recipeUserId,

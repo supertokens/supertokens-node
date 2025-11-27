@@ -2,11 +2,15 @@
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod, UserContext } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./framework";
+import type { BaseRequest, BaseResponse } from "./framework";
+import { Querier } from "./querier";
+import type SuperTokens from "./supertokens";
 export default abstract class RecipeModule {
     private recipeId;
     protected appInfo: NormalisedAppinfo;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo);
+    protected stInstance: SuperTokens;
+    protected querier: Querier;
+    constructor(stInstance: SuperTokens, recipeId: string, appInfo: NormalisedAppinfo);
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;
     returnAPIIdIfCanHandleRequest: (

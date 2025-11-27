@@ -29,13 +29,6 @@ describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const userId = "userId";
             const roles = ["role1", "role2", "role3"];
 

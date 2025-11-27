@@ -15,6 +15,10 @@ export type RecipeInterface = {
     signIn: (message: string, stack: string[]) => RecipeReturnType<"Recipe">;
 };
 
+export type ConfigInterface = {
+    testProperty: string[];
+};
+
 export type PluginTestConfig = {
     override?: {
         functions?: (
@@ -22,6 +26,7 @@ export type PluginTestConfig = {
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        config?: (originalConfig: ConfigInterface) => ConfigInterface;
     };
 };
 
@@ -32,5 +37,6 @@ export type NormalizedPluginTestConfig = {
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        config: (originalConfig: ConfigInterface) => ConfigInterface;
     };
 };

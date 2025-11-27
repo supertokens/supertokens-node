@@ -5,11 +5,13 @@ import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
 import { UserContext } from "../../types";
+import type SuperTokens from "../../supertokens";
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
-    constructor(key?: string);
+    private readonly stInstanceGetter;
+    constructor(stInstanceGetter: () => SuperTokens, key?: string);
     validators: {
         hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
         hasCompletedRequirementList(requirementList: MFARequirementList, id?: string): SessionClaimValidator;
@@ -58,4 +60,3 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
     };
     getValueFromPayload: (payload: JSONObject) => MFAClaimValue;
 }
-export declare const MultiFactorAuthClaim: MultiFactorAuthClaimClass;

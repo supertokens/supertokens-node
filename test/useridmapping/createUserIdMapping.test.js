@@ -30,13 +30,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signUpResponse.status, "OK");
@@ -81,13 +74,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
-
             // create the userId mapping
             let createUserIdMappingResponse = await STExpress.createUserIdMapping({
                 superTokensUserId: "unknownuUserId",
@@ -112,13 +98,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a UserId mapping
 
@@ -194,13 +173,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
 

@@ -16,7 +16,7 @@ import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import Supertokens from "../../../../../supertokens";
-import { postWithFetch } from "../../../../../utils";
+import { postWithFetch } from "../../../../../querier";
 import { UserContext } from "../../../../../types";
 
 async function createAndSendSmsUsingSupertokensService(input: {

@@ -9,6 +9,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { SessionContainerInterface } from "../session/types";
+import type SuperTokens from "../../supertokens";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: "passwordless";
@@ -19,6 +20,7 @@ export default class Recipe extends RecipeModule {
     emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
     smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,

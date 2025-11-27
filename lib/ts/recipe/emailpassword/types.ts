@@ -330,3 +330,10 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
 };
 
 export type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;
+
+export type APIFunction = (input: {
+    apiImplementation: APIInterface;
+    tenantId: string;
+    options: APIOptions;
+    userContext: UserContext;
+}) => Promise<boolean>;

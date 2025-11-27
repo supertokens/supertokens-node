@@ -1,16 +1,18 @@
 import { RecipeInterface, ProviderInput } from "./types";
 import { Querier } from "../../querier";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
-import AccountLinking from "../accountlinking/recipe";
-import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { getUser, listUsersByAccountInfo } from "../..";
 import { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import type SuperTokens from "../../supertokens";
 
-export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
+export default function getRecipeImplementation(
+    stInstance: SuperTokens,
+    querier: Querier,
+    providers: ProviderInput[]
+): RecipeInterface {
     return {
         manuallyCreateOrUpdateUser: async function (
             this: RecipeInterface,
@@ -25,13 +27,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext,
             }
         ) {
-            const accountLinking = AccountLinking.getInstanceOrThrowError();
-            const users = await listUsersByAccountInfo(
+            const accountLinking = stInstance.getRecipeInstanceOrThrow("accountlinking");
+            const users = await accountLinking.recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
-                { thirdParty: { id: thirdPartyId, userId: thirdPartyUserId } },
-                false,
-                userContext
-            );
+                accountInfo: { thirdParty: { id: thirdPartyId, userId: thirdPartyUserId } },
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
 
             const user = users[0];
             if (user !== undefined) {
@@ -74,7 +76,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             let userAsObj = User.fromApi(response.user);
             const recipeUserIdAsObj = new RecipeUserId(response.recipeUserId);
 
-            await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+            await accountLinking.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                 user: userAsObj,
                 recipeUserId: recipeUserIdAsObj,
                 userContext,
@@ -82,9 +84,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
             // we do this so that we get the updated user (in case the above
             // function updated the verification status) and can return that
-            userAsObj = (await getUser(recipeUserIdAsObj.getAsString(), userContext))!;
+            userAsObj = (await accountLinking.recipeInterfaceImpl.getUser({
+                userId: recipeUserIdAsObj.getAsString(),
+                userContext,
+            }))!;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                stInstance,
                 tenantId,
                 shouldTryLinkingWithSessionUser,
                 inputUser: userAsObj,
@@ -177,7 +183,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
         },
 
         getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {
-            const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+            const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
             const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
             if (tenantConfig === undefined) {

@@ -29,13 +29,6 @@ describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, func
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const roles = ["role1", "role2", "role3"];
             const userId = "user";
 
@@ -84,13 +77,6 @@ describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, func
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const result = await UserRolesRecipe.deleteRole("unknownRole");
             assert.strictEqual(result.status, "OK");

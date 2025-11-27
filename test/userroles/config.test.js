@@ -26,13 +26,6 @@ describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function
                 recipeList: [UserRolesRecipe.init(), SessionRecipe.init()],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             await UserRolesRecipe.getInstanceOrThrowError();
         });
     });

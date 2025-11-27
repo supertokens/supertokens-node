@@ -27,6 +27,7 @@ import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID = "openid" as const;
@@ -35,12 +36,12 @@ export default class OpenIdRecipe extends RecipeModule {
     recipeImplementation: RecipeInterface;
     apiImpl: APIInterface;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(stInstance: SuperTokens, recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
+        super(stInstance, recipeId, appInfo);
 
         this.config = validateAndNormaliseUserInput(config);
 
-        let builder = new OverrideableBuilder(RecipeImplementation(appInfo));
+        let builder = new OverrideableBuilder(RecipeImplementation(stInstance, appInfo));
 
         this.recipeImplementation = builder.override(this.config.override.functions).build();
 
@@ -57,9 +58,10 @@ export default class OpenIdRecipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, _isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, _isInServerlessEnv, plugins) => {
             if (OpenIdRecipe.instance === undefined) {
                 OpenIdRecipe.instance = new OpenIdRecipe(
+                    stInstance,
                     OpenIdRecipe.RECIPE_ID,
                     appInfo,
                     applyPlugins(OpenIdRecipe.RECIPE_ID, config, plugins ?? [])
@@ -78,10 +80,8 @@ export default class OpenIdRecipe extends RecipeModule {
         OpenIdRecipe.instance = undefined;
     }
 
-    static async getIssuer(userContext: UserContext) {
-        return (
-            await this.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext })
-        ).issuer;
+    async getIssuer(userContext: UserContext) {
+        return (await this.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext })).issuer;
     }
 
     getAPIsHandled = (): APIHandled[] => {

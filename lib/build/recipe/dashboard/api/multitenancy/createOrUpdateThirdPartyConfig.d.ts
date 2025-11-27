@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 export type Response =
     | {
           status: "OK";
@@ -13,9 +12,9 @@ export type Response =
           status: "BOXY_ERROR";
           message: string;
       };
-export default function createOrUpdateThirdPartyConfig(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response>;
+export default function createOrUpdateThirdPartyConfig({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response>;

@@ -1,8 +1,3 @@
-import AccountLinking from "./recipe/accountlinking/recipe";
-import Session from "./recipe/session";
-import MultiTenancy from "./recipe/multitenancy";
-import MultiFactorAuth from "./recipe/multifactorauth";
-import MultiFactorAuthRecipe from "./recipe/multifactorauth/recipe";
 import { SessionContainerInterface } from "./recipe/session/types";
 import { UserContext } from "./types";
 import { LoginMethod, User } from "./user";
@@ -10,13 +5,14 @@ import RecipeUserId from "./recipeUserId";
 import { updateAndGetMFARelatedInfoInSession } from "./recipe/multifactorauth/utils";
 import { isValidFirstFactor } from "./recipe/multitenancy/utils";
 import SessionError from "./recipe/session/error";
-import { Error as STError, getUser } from ".";
+import { Error as STError } from ".";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
-import { BaseRequest, BaseResponse } from "./framework";
+import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { EmailVerificationClaim } from "./recipe/emailverification";
 import SuperTokensError from "./error";
 import { recipeInitDefinedShouldDoAutomaticAccountLinking } from "./recipe/accountlinking/utils";
+import type SuperTokens from "./supertokens";
 
 export const AuthUtils = {
     /**
@@ -72,6 +68,7 @@ export const AuthUtils = {
      * if the session user should become primary but we couldn't make it primary because of a conflicting primary user.
      */
     preAuthChecks: async function ({
+        stInstance,
         authenticatingAccountInfo,
         tenantId,
         isSignUp,
@@ -84,6 +81,7 @@ export const AuthUtils = {
         shouldTryLinkingWithSessionUser,
         userContext,
     }: {
+        stInstance: SuperTokens;
         authenticatingAccountInfo: AccountInfoWithRecipeId;
         authenticatingUser: User | undefined;
         tenantId: string;
@@ -118,6 +116,7 @@ export const AuthUtils = {
         // to decide if this is a first factor auth or not and if it'll link to the session user
         // We also load the session user here if it is available.
         const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
+            stInstance,
             session,
             shouldTryLinkingWithSessionUser,
             authenticatingAccountInfo,
@@ -141,6 +140,7 @@ export const AuthUtils = {
             // If the flowType for passwordless is USER_INPUT_CODE_AND_MAGIC_LINK and firstFactors for the tenant we only have otp-email
             // then we do not want to include a link in the email.
             const validFirstFactors = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
+                stInstance,
                 factorIds,
                 tenantId,
                 session !== undefined,
@@ -152,6 +152,7 @@ export const AuthUtils = {
             // In this case the app will try to link the session user and the authenticating user after auth,
             // so we need to check if this is allowed by the MFA recipe (if initialized).
             validFactorIds = await filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
+                stInstance,
                 factorIds,
                 authTypeInfo.inputUserAlreadyLinkedToSessionUser,
                 authTypeInfo.sessionUser,
@@ -179,7 +180,7 @@ export const AuthUtils = {
 
             logDebugMessage("preAuthChecks checking if the user is allowed to sign up");
             if (
-                !(await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                !(await stInstance.getRecipeInstanceOrThrow("accountlinking").isSignUpAllowed({
                     newUser: authenticatingAccountInfo,
                     isVerified: isVerified || signInVerifiesLoginMethod || verifiedInSessionUser,
                     tenantId,
@@ -193,7 +194,7 @@ export const AuthUtils = {
             // for sign ins, this is checked after the credentials have been verified
             logDebugMessage("preAuthChecks checking if the user is allowed to sign in");
             if (
-                !(await AccountLinking.getInstanceOrThrowError().isSignInAllowed({
+                !(await stInstance.getRecipeInstanceOrThrow("accountlinking").isSignInAllowed({
                     user: authenticatingUser,
                     accountInfo: authenticatingAccountInfo,
                     signInVerifiesLoginMethod,
@@ -233,6 +234,7 @@ export const AuthUtils = {
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     postAuthChecks: async function ({
+        stInstance,
         authenticatedUser,
         recipeUserId,
         isSignUp,
@@ -243,6 +245,7 @@ export const AuthUtils = {
         tenantId,
         userContext,
     }: {
+        stInstance: SuperTokens;
         authenticatedUser: User;
         recipeUserId: RecipeUserId;
         tenantId: string;
@@ -259,7 +262,7 @@ export const AuthUtils = {
             } with ${factorId}`
         );
 
-        const mfaInstance = MultiFactorAuthRecipe.getInstance();
+        const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
 
         let respSession = session;
         if (session !== undefined) {
@@ -272,24 +275,52 @@ export const AuthUtils = {
                     logDebugMessage(`postAuthChecks marking factor as completed`);
                     // if the authenticating user is linked to the current session user (it means that the factor got set up or completed),
                     // we mark it as completed in the session.
-                    await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
+                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                        session: respSession!,
+                        factorId,
+                        userContext,
+                    });
                 }
             } else {
                 // If the new user wasn't linked to the current one, we overwrite the session
                 // Note: we could also get here if MFA is enabled, but the app didn't want to link the user to the session user.
-                respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
+                respSession = await stInstance.getRecipeInstanceOrThrow("session").createNewSession({
+                    req,
+                    res,
+                    tenantId,
+                    recipeUserId,
+                    accessTokenPayload: {},
+                    sessionDataInDatabase: {},
+                    userContext,
+                });
                 if (mfaInstance !== undefined) {
-                    await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
+                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                        session: respSession!,
+                        factorId,
+                        userContext,
+                    });
                 }
             }
         } else {
             logDebugMessage(`postAuthChecks creating session for first factor sign in/up`);
             // If there is no input session, we do not need to do anything other checks and create a new session
-            respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
+            respSession = await stInstance.getRecipeInstanceOrThrow("session").createNewSession({
+                req,
+                res,
+                tenantId,
+                recipeUserId,
+                accessTokenPayload: {},
+                sessionDataInDatabase: {},
+                userContext,
+            });
 
             // Here we can always mark the factor as completed, since we just created the session
             if (mfaInstance !== undefined) {
-                await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: respSession!,
+                    factorId,
+                    userContext,
+                });
             }
         }
         return { status: "OK", session: respSession!, user: authenticatedUser };
@@ -306,6 +337,7 @@ export const AuthUtils = {
      * most importantly, this way all secondary factors are app-wide instead of mixing app-wide (totp) and tenant-wide (password) factors.
      */
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: async ({
+        stInstance,
         recipeId,
         accountInfo,
         checkCredentialsOnTenant,
@@ -313,6 +345,7 @@ export const AuthUtils = {
         session,
         userContext,
     }: {
+        stInstance: SuperTokens;
         recipeId: string;
         accountInfo:
             | { email: string; thirdParty?: undefined; phoneNumber?: undefined; webauthn?: undefined }
@@ -339,8 +372,9 @@ export const AuthUtils = {
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired called with ${JSON.stringify(accountInfo)}`
             );
-            const existingUsers =
-                await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+            const existingUsers = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
                     tenantId,
                     accountInfo,
                     doUnionOfAccountInfo: true,
@@ -374,7 +408,9 @@ export const AuthUtils = {
 
             if (authenticatingUser === undefined && session !== undefined) {
                 logDebugMessage(`getAuthenticatingUserAndAddToCurrentTenantIfRequired checking session user`);
-                const sessionUser = await getUser(session.getUserId(userContext), userContext);
+                const sessionUser = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.getUser({ userId: session.getUserId(userContext), userContext });
                 if (sessionUser === undefined) {
                     throw new SessionError({
                         type: SessionError.UNAUTHORISED,
@@ -425,11 +461,13 @@ export const AuthUtils = {
                         logDebugMessage(
                             `getAuthenticatingUserAndAddToCurrentTenantIfRequired associating user from ${lm.tenantIds[0]} with current tenant`
                         );
-                        const associateRes = await MultiTenancy.associateUserToTenant(
-                            tenantId,
-                            lm.recipeUserId,
-                            userContext
-                        );
+                        const associateRes = await stInstance
+                            .getRecipeInstanceOrThrow("multitenancy")
+                            .recipeInterfaceImpl.associateUserToTenant({
+                                tenantId,
+                                recipeUserId: lm.recipeUserId,
+                                userContext,
+                            });
                         logDebugMessage(
                             `getAuthenticatingUserAndAddToCurrentTenantIfRequired associating returned ${associateRes.status}`
                         );
@@ -488,6 +526,7 @@ export const AuthUtils = {
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     checkAuthTypeAndLinkingStatus: async function (
+        stInstance: SuperTokens,
         session: SessionContainerInterface | undefined,
         shouldTryLinkingWithSessionUser: boolean | undefined,
         accountInfo: AccountInfoWithRecipeId,
@@ -532,14 +571,18 @@ export const AuthUtils = {
                 return { status: "OK", isFirstFactor: true };
             }
 
-            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstanceOrThrowError().config)) {
+            if (
+                !recipeInitDefinedShouldDoAutomaticAccountLinking(
+                    stInstance.getRecipeInstanceOrThrow("accountlinking").config
+                )
+            ) {
                 if (shouldTryLinkingWithSessionUser === true) {
                     throw new Error(
                         "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
                     );
                 } else {
                     // This is the legacy case where shouldTryLinkingWithSessionUser is undefined
-                    if (MultiFactorAuthRecipe.getInstance() !== undefined) {
+                    if (stInstance.getRecipeInstance("multifactorauth") !== undefined) {
                         throw new Error(
                             "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
                         );
@@ -578,6 +621,7 @@ export const AuthUtils = {
             );
             // We have to load the session user in order to get the account linking info
             const sessionUserResult = await AuthUtils.tryAndMakeSessionUserIntoAPrimaryUser(
+                stInstance,
                 session,
                 skipSessionUserUpdateInCore,
                 userContext
@@ -608,13 +652,15 @@ export const AuthUtils = {
 
             // We check if the app intends to link these two accounts
             // Note: in some cases if the accountInfo already belongs to a primary user
-            const shouldLink = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
-                accountInfo,
-                sessionUser,
-                session,
-                session.getTenantId(),
-                userContext
-            );
+            const shouldLink = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .config.shouldDoAutomaticAccountLinking(
+                    accountInfo,
+                    sessionUser,
+                    session,
+                    session.getTenantId(),
+                    userContext
+                );
             logDebugMessage(
                 `checkAuthTypeAndLinkingStatus session user <-> input user shouldDoAutomaticAccountLinking returned ${JSON.stringify(
                     shouldLink
@@ -657,6 +703,7 @@ export const AuthUtils = {
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
+        stInstance,
         tenantId,
         inputUser,
         recipeUserId,
@@ -664,6 +711,7 @@ export const AuthUtils = {
         shouldTryLinkingWithSessionUser,
         userContext,
     }: {
+        stInstance: SuperTokens;
         tenantId: string;
         inputUser: User;
         recipeUserId: RecipeUserId;
@@ -685,6 +733,7 @@ export const AuthUtils = {
         const retry = () => {
             logDebugMessage("linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo retrying....");
             return AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                stInstance,
                 tenantId,
                 inputUser: inputUser,
                 session,
@@ -706,6 +755,7 @@ export const AuthUtils = {
         }
 
         const authTypeRes = await AuthUtils.checkAuthTypeAndLinkingStatus(
+            stInstance,
             session,
             shouldTryLinkingWithSessionUser,
             authLoginMethod,
@@ -719,7 +769,11 @@ export const AuthUtils = {
         }
 
         if (authTypeRes.isFirstFactor) {
-            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstanceOrThrowError().config)) {
+            if (
+                !recipeInitDefinedShouldDoAutomaticAccountLinking(
+                    stInstance.getRecipeInstanceOrThrow("accountlinking").config
+                )
+            ) {
                 logDebugMessage(
                     "linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo skipping link by account info because this is a first factor auth and the app hasn't defined shouldDoAutomaticAccountLinking"
                 );
@@ -730,12 +784,14 @@ export const AuthUtils = {
             );
             // We try and list all users that can be linked to the input user based on the account info
             // later we can use these when trying to link or when checking if linking to the session user is possible.
-            const linkRes = await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                inputUser: inputUser,
-                session,
-                tenantId,
-                userContext,
-            });
+            const linkRes = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .tryLinkingByAccountInfoOrCreatePrimaryUser({
+                    inputUser: inputUser,
+                    session,
+                    tenantId,
+                    userContext,
+                });
             if (linkRes.status === "OK") {
                 return { status: "OK", user: linkRes.user };
             }
@@ -756,6 +812,7 @@ export const AuthUtils = {
             "linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by session info"
         );
         const sessionLinkingRes = await AuthUtils.tryLinkingBySession({
+            stInstance,
             sessionUser: authTypeRes.sessionUser,
             authenticatedUser: inputUser,
             authLoginMethod,
@@ -787,6 +844,7 @@ export const AuthUtils = {
      * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
      */
     tryAndMakeSessionUserIntoAPrimaryUser: async function (
+        stInstance: SuperTokens,
         session: SessionContainerInterface,
         skipSessionUserUpdateInCore: boolean,
         userContext: UserContext
@@ -796,7 +854,9 @@ export const AuthUtils = {
         | { status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" }
     > {
         logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser called`);
-        const sessionUser = await getUser(session.getUserId(), userContext);
+        const sessionUser = await stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({ userId: session.getUserId(), userContext });
         if (sessionUser === undefined) {
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
@@ -816,8 +876,9 @@ export const AuthUtils = {
 
             // We do this check here instead of using the shouldBecomePrimaryUser util, because
             // here we handle the shouldRequireVerification case differently
-            const shouldDoAccountLinking =
-                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            const shouldDoAccountLinking = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .config.shouldDoAutomaticAccountLinking(
                     sessionUser.loginMethods[0],
                     undefined,
                     session,
@@ -851,8 +912,9 @@ export const AuthUtils = {
                         "This should never happen: email verification claim validator passed after setting value to false"
                     );
                 }
-                const createPrimaryUserRes =
-                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
+                const createPrimaryUserRes = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.createPrimaryUser({
                         recipeUserId: sessionUser.loginMethods[0].recipeUserId,
                         userContext,
                     });
@@ -894,12 +956,14 @@ export const AuthUtils = {
      * if the session user is not primary. This can be resolved by making it primary and retrying the call.
      */
     tryLinkingBySession: async function ({
+        stInstance,
         linkingToSessionUserRequiresVerification,
         authLoginMethod,
         authenticatedUser,
         sessionUser,
         userContext,
     }: {
+        stInstance: SuperTokens;
         authenticatedUser: User;
         linkingToSessionUserRequiresVerification: boolean;
         sessionUser: User;
@@ -943,11 +1007,13 @@ export const AuthUtils = {
         // If we get here, it means that the session and the input user can be linked, so we try it.
         // Note that this function will not call shouldDoAutomaticAccountLinking and check the verification status before linking
         // it'll mark the freshly linked recipe user as verified if the email address was verified in the session user.
-        let linkAccountsResult = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
-            recipeUserId: authenticatedUser.loginMethods[0].recipeUserId,
-            primaryUserId: sessionUser.id,
-            userContext,
-        });
+        let linkAccountsResult = await stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.linkAccounts({
+                recipeUserId: authenticatedUser.loginMethods[0].recipeUserId,
+                primaryUserId: sessionUser.id,
+                userContext,
+            });
 
         if (linkAccountsResult.status === "OK") {
             logDebugMessage("tryLinkingBySession successfully linked input user to session user");
@@ -981,6 +1047,7 @@ export const AuthUtils = {
     },
 
     filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: async function (
+        stInstance: SuperTokens,
         factorIds: string[],
         tenantId: string,
         hasSession: boolean,
@@ -989,7 +1056,7 @@ export const AuthUtils = {
         let validFactorIds = [];
         for (const id of factorIds) {
             // This util takes the tenant config into account (if it exists), then the MFA (static) config if it was initialized and set.
-            let validRes = await isValidFirstFactor(tenantId, id, userContext);
+            let validRes = await isValidFirstFactor(stInstance, tenantId, id, userContext);
 
             if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
                 if (hasSession) {
@@ -1023,6 +1090,7 @@ export const AuthUtils = {
         return validFactorIds;
     },
     loadSessionInAuthAPIIfNeeded: async function (
+        stInstance: SuperTokens,
         req: BaseRequest,
         res: BaseResponse,
         shouldTryLinkingWithSessionUser: boolean | undefined,
@@ -1032,17 +1100,17 @@ export const AuthUtils = {
             logDebugMessage(
                 "loadSessionInAuthAPIIfNeeded: loading session because shouldTryLinkingWithSessionUser is not set to false so we may want to link later"
             );
-            return await Session.getSession(
+            return await stInstance.getRecipeInstanceOrThrow("session").getSession({
                 req,
                 res,
-                {
+                options: {
                     // This is optional only if shouldTryLinkingWithSessionUser is undefined
                     // in the (old) 3.0 FDI, this flag didn't exist and we linking was based on the session presence and shouldDoAutomaticAccountLinking
                     sessionRequired: shouldTryLinkingWithSessionUser === true,
                     overrideGlobalClaimValidators: () => [],
                 },
-                userContext
-            );
+                userContext,
+            });
         }
 
         logDebugMessage(
@@ -1054,6 +1122,7 @@ export const AuthUtils = {
 };
 
 async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
+    stInstance: SuperTokens,
     factorIds: string[],
     inputUserAlreadyLinkedToSessionUser: boolean,
     sessionUser: User,
@@ -1072,7 +1141,7 @@ async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
     }
     logDebugMessage(`filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid called for ${factorIds.join(", ")}`);
 
-    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+    const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
     if (mfaInstance !== undefined) {
         if (!inputUserAlreadyLinkedToSessionUser) {
             let factorsSetUpForUserProm: Promise<string[]> | undefined;
@@ -1096,6 +1165,7 @@ async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
                         return mfaInfoProm.then((res) => res.mfaRequirementsForAuth);
                     }
                     mfaInfoProm = updateAndGetMFARelatedInfoInSession({
+                        stInstance,
                         session,
                         userContext,
                     });

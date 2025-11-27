@@ -310,12 +310,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         let result = await request({
@@ -362,12 +356,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -421,12 +409,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         await createUsers(EmailPassword);
@@ -479,12 +461,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -542,12 +518,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         await createUsers(null, Passwordless);
@@ -603,12 +573,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -711,12 +675,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         await createUsers(null, Passwordless, ThirdParty);
@@ -814,12 +772,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 

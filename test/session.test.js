@@ -21,6 +21,7 @@ const {
 
     mockResponse,
     mockRequest,
+    getQuerierInstance,
 } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
@@ -898,7 +899,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         try {
-            await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+            await getQuerierInstance().getAPIVersion();
             throw new Error("should not have come here");
         } catch (err) {
             if (
@@ -1274,14 +1275,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s.helpers, "public", new RecipeUserId(""), false, {}, {}, {});
@@ -1369,14 +1362,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(
@@ -1462,14 +1447,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
@@ -1558,14 +1535,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
@@ -1729,14 +1698,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(
@@ -1767,14 +1728,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
@@ -1810,14 +1763,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
-
-        let q = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await q.getAPIVersion();
-
-        // Only run test for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data

@@ -1,9 +1,6 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import EmailVerification from "../../../emailverification";
-import EmailVerificationRecipe from "../../../emailverification/recipe";
 import RecipeUserId from "../../../../recipeUserId";
-import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -14,12 +11,7 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
-export const userEmailVerifyGet: APIFunction = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userEmailVerifyGet: APIFunction = async ({ stInstance, options, userContext }): Promise<Response> => {
     const req = options.req;
     const recipeUserId = req.getKeyValueFromQuery("recipeUserId");
 
@@ -30,15 +22,35 @@ export const userEmailVerifyGet: APIFunction = async (
         });
     }
 
+    let emailVerificationRecipe = undefined;
     try {
-        EmailVerificationRecipe.getInstanceOrThrowError();
+        emailVerificationRecipe = stInstance.getRecipeInstanceOrThrow("emailverification");
     } catch (e) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(new RecipeUserId(recipeUserId), undefined, userContext);
+    let email: string | undefined = undefined;
+    const emailInfo = await emailVerificationRecipe.getEmailForRecipeUserId(
+        undefined,
+        new RecipeUserId(recipeUserId),
+        userContext
+    );
+    if (emailInfo.status === "OK") {
+        email = emailInfo.email;
+    } else {
+        throw new STError({
+            message: "Failed to get email for recipe user id",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
+    const response = await emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
+        recipeUserId: new RecipeUserId(recipeUserId),
+        email,
+        userContext,
+    });
     return {
         status: "OK",
         isVerified: response,

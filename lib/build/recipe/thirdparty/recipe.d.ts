@@ -5,6 +5,7 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, Provider
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
+import type SuperTokens from "../../supertokens";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: "thirdparty";
@@ -14,6 +15,7 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,

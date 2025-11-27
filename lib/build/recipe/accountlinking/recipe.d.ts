@@ -8,12 +8,14 @@ import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRe
 import RecipeUserId from "../../recipeUserId";
 import { LoginMethod } from "../../user";
 import { SessionContainerInterface } from "../session/types";
+import type SuperTokens from "../../supertokens";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: "accountlinking";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         config: TypeInput | undefined,

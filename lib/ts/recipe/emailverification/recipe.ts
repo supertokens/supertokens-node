@@ -24,22 +24,20 @@ import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
 import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { Querier } from "../../querier";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import SessionRecipe from "../session/recipe";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
 import { SessionContainerInterface } from "../session/types";
 import SessionError from "../session/error";
 import Session from "../session";
-import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { logDebugMessage } from "../../logger";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -56,6 +54,7 @@ export default class Recipe extends RecipeModule {
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
@@ -64,18 +63,18 @@ export default class Recipe extends RecipeModule {
             emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput> | undefined;
         }
     ) {
-        super(recipeId, appInfo);
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
             let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.getEmailForRecipeUserId)
+                RecipeImplementation(this.stInstance, this.querier, this.getEmailForRecipeUserId)
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
@@ -101,9 +100,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -114,12 +114,12 @@ export default class Recipe extends RecipeModule {
                 );
 
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(EmailVerificationClaim);
+                    stInstance.getRecipeInstanceOrThrow("session").addClaimFromOtherRecipe(EmailVerificationClaim);
 
                     if (config.mode === "REQUIRED") {
-                        SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
-                            EmailVerificationClaim.validators.isVerified()
-                        );
+                        stInstance
+                            .getRecipeInstanceOrThrow("session")
+                            .addClaimValidatorFromOtherRecipe(EmailVerificationClaim.validators.isVerified());
                     }
                 });
 
@@ -184,9 +184,9 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this.apiImpl, options, userContext);
+            return await generateEmailVerifyTokenAPI(this.stInstance, this.apiImpl, options, userContext);
         } else {
-            return await emailVerifyAPI(this.apiImpl, tenantId, options, userContext);
+            return await emailVerifyAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         }
     };
 
@@ -211,7 +211,9 @@ export default class Recipe extends RecipeModule {
         }
 
         if (user === undefined) {
-            user = await getUser(recipeUserId.getAsString(), userContext);
+            user = await this.stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
 
             if (user === undefined) {
                 return {
@@ -253,7 +255,9 @@ export default class Recipe extends RecipeModule {
         // so that the consumer of the getUser function does not read the email
         // from the primaryUser. Hence, this function only returns the string ID
         // and nothing else from the primaryUser.
-        let primaryUser = await getUser(recipeUserId.getAsString(), userContext);
+        let primaryUser = await this.stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
         if (primaryUser === undefined) {
             // This can come here if the user is using session + email verification
             // recipe with a user ID that is not known to supertokens. In this case,

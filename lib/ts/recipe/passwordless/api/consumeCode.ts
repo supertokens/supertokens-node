@@ -22,8 +22,10 @@ import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import { AuthUtils } from "../../../authUtils";
+import type SuperTokens from "../../../supertokens";
 
 export default async function consumeCode(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -69,6 +71,7 @@ export default async function consumeCode(
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
     const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        stInstance,
         options.req,
         options.res,
         shouldTryLinkingWithSessionUser,

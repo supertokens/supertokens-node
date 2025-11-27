@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../../types";
-import { User, UserContext } from "../../../../../types";
-import RecipeUserId from "../../../../../recipeUserId";
+import { APIFunction } from "../../../types";
+import type { User } from "../../../../../types";
+import type RecipeUserId from "../../../../../recipeUserId";
 type Response =
     | {
           status: "OK";
@@ -19,10 +19,10 @@ type Response =
           status: "PASSWORD_VALIDATION_ERROR";
           message: string;
       };
-export declare const createEmailPasswordUser: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-) => Promise<Response>;
+export declare const createEmailPasswordUser: ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]) => Promise<Response>;
 export {};

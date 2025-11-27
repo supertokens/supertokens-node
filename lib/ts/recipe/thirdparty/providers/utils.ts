@@ -4,7 +4,7 @@ import { getOIDCDiscoveryInfo } from "../../../thirdpartyUtils";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";
-import { doFetch } from "../../../utils";
+import { doFetch } from "../../../querier";
 
 export async function doGetRequest(
     url: string,

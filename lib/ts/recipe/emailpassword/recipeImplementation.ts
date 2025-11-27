@@ -1,16 +1,15 @@
 import { RecipeInterface, TypeNormalisedInput } from "./types";
-import AccountLinking from "../accountlinking/recipe";
-import EmailVerification from "../emailverification/recipe";
 import { Querier } from "../../querier";
-import { getUser } from "../..";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
+import type SuperTokens from "../../supertokens";
 
 export default function getRecipeInterface(
+    stInstance: SuperTokens,
     querier: Querier,
     getEmailPasswordConfig: () => TypeNormalisedInput
 ): RecipeInterface {
@@ -47,8 +46,9 @@ export default function getRecipeInterface(
             let updatedUser = response.user;
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                stInstance,
                 tenantId,
-                inputUser: response.user,
+                inputUser: updatedUser,
                 recipeUserId: response.recipeUserId,
                 session,
                 shouldTryLinkingWithSessionUser,
@@ -118,11 +118,13 @@ export default function getRecipeInterface(
                 )!;
 
                 if (!loginMethod.verified) {
-                    await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        user: response.user,
-                        recipeUserId: response.recipeUserId,
-                        userContext,
-                    });
+                    await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                            user: response.user,
+                            recipeUserId: response.recipeUserId,
+                            userContext,
+                        });
 
                     // Unlike in the sign up recipe function, we do not do account linking here
                     // cause we do not want sign in to change the potentially user ID of a user
@@ -136,10 +138,13 @@ export default function getRecipeInterface(
 
                     // We do this so that we get the updated user (in case the above
                     // function updated the verification status) and can return that
-                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
+                    response.user = (await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .recipeInterfaceImpl.getUser({ userId: response.recipeUserId!.getAsString(), userContext }))!;
                 }
 
                 const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                    stInstance,
                     tenantId,
                     inputUser: response.user,
                     recipeUserId: response.recipeUserId,
@@ -265,15 +270,18 @@ export default function getRecipeInterface(
               }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
-            const accountLinking = AccountLinking.getInstanceOrThrowError();
+            const accountLinking = stInstance.getRecipeInstanceOrThrow("accountlinking");
             if (input.email) {
-                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+                const user = await stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
+                    userId: input.recipeUserId.getAsString(),
+                    userContext: input.userContext,
+                });
 
                 if (user === undefined) {
                     return { status: "UNKNOWN_USER_ID_ERROR" };
                 }
 
-                const evInstance = EmailVerification.getInstance();
+                const evInstance = stInstance.getRecipeInstance("emailverification");
 
                 let isEmailVerified = false;
                 if (evInstance) {
@@ -337,18 +345,23 @@ export default function getRecipeInterface(
             );
 
             if (response.status === "OK") {
-                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+                const user = await stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
+                    userId: input.recipeUserId.getAsString(),
+                    userContext: input.userContext,
+                });
                 if (user === undefined) {
                     // This means that the user was deleted between the put and get requests
                     return {
                         status: "UNKNOWN_USER_ID_ERROR",
                     };
                 }
-                await AccountLinking.getInstanceOrThrowError().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    user,
-                    recipeUserId: input.recipeUserId,
-                    userContext: input.userContext,
-                });
+                await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                        user,
+                        recipeUserId: input.recipeUserId,
+                        userContext: input.userContext,
+                    });
             }
 
             return response;

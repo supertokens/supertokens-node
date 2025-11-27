@@ -11,61 +11,13 @@ import type {
     SuperTokensConfigWithNormalisedAppInfo,
 } from "./types";
 import { nonPublicConfigProperties, NonPublicConfigPropertiesType, Entries } from "./types";
-import NormalisedURLDomain from "./normalisedURLDomain";
+import NormalisedURLDomain, { isAnIpAddress } from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_FDI, HEADER_RID } from "./constants";
-import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
-import { ProcessState, PROCESS_STATE } from "./processState";
-
-export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
-    // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
-    // we don't want that because it may lead to weird behaviour when querying the core.
-    if (init === undefined) {
-        ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
-        init = {
-            cache: "no-store",
-            redirect: "manual",
-        };
-    } else {
-        if (init.cache === undefined) {
-            ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
-            init.cache = "no-store";
-            init.redirect = "manual";
-        }
-    }
-
-    // Remove the cache field if the runtime is Cloudflare Workers
-    //
-    // CF Workers did not support the cache field at all until Nov, 2024
-    // when they added support for the `cache` field but it only supports
-    // `no-store`.
-    //
-    // The following check is to ensure that this doesn't error out in
-    // Cloudflare Workers where compatibility flag is set to an older version.
-    //
-    // Since there is no way for us to determine which compatibility flags are
-    // enabled, we are disabling the cache functionality for CF Workers altogether.
-    // Ref issue: https://github.com/cloudflare/workerd/issues/698
-    if (isRunningInCloudflareWorker()) {
-        delete init.cache;
-    }
-
-    const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
-    try {
-        return await fetchFunction(input, init);
-    } catch (e) {
-        logDebugMessage("Error fetching: " + e);
-        throw e;
-    }
-};
-
-function isRunningInCloudflareWorker() {
-    return typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
-}
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -207,11 +159,6 @@ function deepTransform(obj: { [key: string]: any }): { [key: string]: any } {
     return out;
 }
 
-export function isAnIpAddress(ipaddress: string) {
-    return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
-        ipaddress
-    );
-}
 export function getNormalisedShouldTryLinkingWithSessionUserFlag(req: BaseRequest, body: any) {
     if (hasGreaterThanEqualToFDI(req, "3.1")) {
         return body.shouldTryLinkingWithSessionUser ?? false;
@@ -403,54 +350,6 @@ export function getFromObjectCaseInsensitive<T>(key: string, object: Record<stri
     }
 
     return object[matchedKeys[0]];
-}
-
-export async function postWithFetch(
-    url: string,
-    headers: Record<string, string>,
-    body: any,
-    { successLog, errorLogHeader }: { successLog: string; errorLogHeader: string }
-): Promise<{ resp: { status: number; body: any } } | { error: any }> {
-    let error;
-    let resp: { status: number; body: any };
-    try {
-        const fetchResp = await doFetch(url, {
-            method: "POST",
-            body: JSON.stringify(body),
-            headers,
-        });
-        const respText = await fetchResp.text();
-        resp = {
-            status: fetchResp.status,
-            body: JSON.parse(respText),
-        };
-        if (fetchResp.status < 300) {
-            logDebugMessage(successLog);
-            return { resp };
-        }
-        logDebugMessage(errorLogHeader);
-        logDebugMessage(`Error status: ${fetchResp.status}`);
-        logDebugMessage(`Error response: ${respText}`);
-    } catch (caught) {
-        error = caught;
-        logDebugMessage(errorLogHeader);
-        if (error instanceof Error) {
-            logDebugMessage(`Error: ${error.message}`);
-            logDebugMessage(`Stack: ${error.stack}`);
-        } else {
-            logDebugMessage(`Error: ${JSON.stringify(error)}`);
-        }
-    }
-    logDebugMessage("Logging the input below:");
-    logDebugMessage(JSON.stringify(body, null, 2));
-    if (error !== undefined) {
-        return {
-            error,
-        };
-    }
-    return {
-        resp: resp!,
-    };
 }
 
 export function normaliseEmail(email: string): string {

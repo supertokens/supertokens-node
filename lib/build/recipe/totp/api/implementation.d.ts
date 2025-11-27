@@ -1,3 +1,4 @@
 // @ts-nocheck
 import { APIInterface } from "../";
-export default function getAPIInterface(): APIInterface;
+import type SuperTokens from "../../../supertokens";
+export default function getAPIInterface(stInstance: SuperTokens): APIInterface;

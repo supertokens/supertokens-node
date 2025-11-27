@@ -2,7 +2,7 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, NormalisedFormField, TypeInputFormField } from "./types";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { BaseRequest } from "../../framework";
+import type { BaseRequest } from "../../framework";
 export declare function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
@@ -21,7 +21,7 @@ export declare function defaultPasswordValidator(
 >;
 export declare function defaultEmailValidator(
     value: any
-): Promise<"Development bug: Please make sure the email field yields a string" | "Email is invalid" | undefined>;
+): Promise<"Email is invalid" | "Development bug: Please make sure the email field yields a string" | undefined>;
 export declare function getPasswordResetLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;

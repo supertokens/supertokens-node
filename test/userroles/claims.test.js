@@ -34,13 +34,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const session = await Session.createNewSession(
                 mockRequest(),
                 mockResponse(),
@@ -71,13 +64,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 ],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const session = await Session.createNewSession(
                 mockRequest(),
                 mockResponse(),
@@ -101,13 +87,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
@@ -136,13 +115,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
@@ -190,13 +162,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 ],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const session = await Session.createNewSession(
                 mockRequest(),
                 mockResponse(),
@@ -221,13 +186,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
@@ -274,13 +232,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const session = await Session.createNewSession(
                 mockRequest(),

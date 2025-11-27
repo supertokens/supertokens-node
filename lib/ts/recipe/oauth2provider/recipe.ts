@@ -17,7 +17,6 @@ import SuperTokensError from "../../error";
 import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, JSONObject, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import authGET from "./api/auth";
@@ -56,6 +55,7 @@ import introspectTokenPOST from "./api/introspectToken";
 import { endSessionGET, endSessionPOST } from "./api/endSession";
 import { logoutPOST } from "./api/logout";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider" as const;
@@ -69,15 +69,22 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
             let builder = new OverrideableBuilder(
                 RecipeImplementation(
-                    Querier.getNewInstanceOrThrowError(recipeId),
+                    this.stInstance,
+                    this.querier,
                     this.config,
                     appInfo,
                     this.getDefaultAccessTokenPayload.bind(this),
@@ -88,7 +95,7 @@ export default class Recipe extends RecipeModule {
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
     }
@@ -106,9 +113,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -226,19 +234,19 @@ export default class Recipe extends RecipeModule {
         };
 
         if (id === LOGIN_PATH) {
-            return loginAPI(this.apiImpl, options, userContext);
+            return loginAPI(this.stInstance, this.apiImpl, options, userContext);
         }
         if (id === TOKEN_PATH) {
             return tokenPOST(this.apiImpl, options, userContext);
         }
         if (id === AUTH_PATH) {
-            return authGET(this.apiImpl, options, userContext);
+            return authGET(this.stInstance, this.apiImpl, options, userContext);
         }
         if (id === LOGIN_INFO_PATH) {
             return loginInfoGET(this.apiImpl, options, userContext);
         }
         if (id === USER_INFO_PATH) {
-            return userInfoGET(this.apiImpl, tenantId, options, userContext);
+            return userInfoGET(this.stInstance, this.apiImpl, tenantId, options, userContext);
         }
         if (id === REVOKE_TOKEN_PATH) {
             return revokeTokenPOST(this.apiImpl, options, userContext);
@@ -247,13 +255,13 @@ export default class Recipe extends RecipeModule {
             return introspectTokenPOST(this.apiImpl, options, userContext);
         }
         if (id === END_SESSION_PATH && method === "get") {
-            return endSessionGET(this.apiImpl, options, userContext);
+            return endSessionGET(this.stInstance, this.apiImpl, options, userContext);
         }
         if (id === END_SESSION_PATH && method === "post") {
-            return endSessionPOST(this.apiImpl, options, userContext);
+            return endSessionPOST(this.stInstance, this.apiImpl, options, userContext);
         }
         if (id === LOGOUT_PATH && method === "post") {
-            return logoutPOST(this.apiImpl, options, userContext);
+            return logoutPOST(this.stInstance, this.apiImpl, options, userContext);
         }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };

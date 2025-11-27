@@ -1,17 +1,17 @@
-import { APIInterface, APIOptions } from "../../../types";
-import UserRolesRecipe from "../../../../userroles/recipe";
-import UserRoles from "../../../../userroles";
+import { APIFunction } from "../../../types";
 
 import STError from "../../../../../error";
 
-const createRoleOrAddPermissions = async (
-    _: APIInterface,
-    __: string,
-    options: APIOptions,
-    ___: any
-): Promise<{ status: "OK"; createdNewRole: boolean } | { status: "FEATURE_NOT_ENABLED_ERROR" }> => {
+const createRoleOrAddPermissions = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<
+    { status: "OK"; createdNewRole: boolean } | { status: "FEATURE_NOT_ENABLED_ERROR" }
+> => {
+    let userrolesRecipe = undefined;
     try {
-        UserRolesRecipe.getInstanceOrThrowError();
+        userrolesRecipe = stInstance.getRecipeInstanceOrThrow("userroles");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
@@ -36,7 +36,11 @@ const createRoleOrAddPermissions = async (
         });
     }
 
-    const response = await UserRoles.createNewRoleOrAddPermissions(role, permissions);
+    const response = await userrolesRecipe.recipeInterfaceImpl.createNewRoleOrAddPermissions({
+        role,
+        permissions,
+        userContext,
+    });
 
     return response;
 };

@@ -1,7 +1,11 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 type Response = {
     status: "OK";
 };
-export declare const userDelete: (_: APIInterface, ___: string, options: APIOptions, __: any) => Promise<Response>;
+export declare const userDelete: ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]) => Promise<Response>;
 export {};

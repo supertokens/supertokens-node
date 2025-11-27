@@ -14,6 +14,7 @@ import {
     UserInfoBuilderFunction,
 } from "./types";
 import { User } from "../../user";
+import type SuperTokens from "../../supertokens";
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: "oauth2provider";
     private static instance;
@@ -24,7 +25,13 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    );
     static getInstance(): Recipe | undefined;
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;

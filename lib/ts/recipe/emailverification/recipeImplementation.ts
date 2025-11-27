@@ -2,11 +2,11 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
-import { getUser } from "../..";
 import { UserContext } from "../../types";
-import type AccountLinkingRecipe from "../accountlinking/recipe";
+import SuperTokens from "../../supertokens";
 
 export default function getRecipeInterface(
+    stInstance: SuperTokens,
     querier: Querier,
     getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc
 ): RecipeInterface {
@@ -76,7 +76,9 @@ export default function getRecipeInterface(
                 const recipeUserId = new RecipeUserId(response.userId);
                 if (attemptAccountLinking) {
                     // TODO: this should ideally come from the api response
-                    const updatedUser = await getUser(recipeUserId.getAsString());
+                    const updatedUser = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
 
                     if (updatedUser) {
                         // before attempting this, we must check that the email that got verified
@@ -85,16 +87,14 @@ export default function getRecipeInterface(
                         // and not necessarily the email that is currently associated with the ID)
                         let emailInfo = await getEmailForRecipeUserId(updatedUser, recipeUserId, userContext);
                         if (emailInfo.status === "OK" && emailInfo.email === response.email) {
-                            // we do this here to prevent cyclic dependencies.
-                            // TODO: Fix this.
-                            let AccountLinking =
-                                require("../accountlinking/recipe").default.getInstanceOrThrowError() as AccountLinkingRecipe;
-                            await AccountLinking.tryLinkingByAccountInfoOrCreatePrimaryUser({
-                                tenantId,
-                                inputUser: updatedUser,
-                                session: undefined,
-                                userContext,
-                            });
+                            await stInstance
+                                .getRecipeInstanceOrThrow("accountlinking")
+                                .tryLinkingByAccountInfoOrCreatePrimaryUser({
+                                    tenantId,
+                                    inputUser: updatedUser,
+                                    session: undefined,
+                                    userContext,
+                                });
                         }
                     }
                 }

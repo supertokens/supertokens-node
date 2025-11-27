@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, extractInfoFromResponse, resetAll } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, resetAll, getQuerierInstance } = require("../utils");
 const assert = require("assert");
 const { Querier } = require("../../lib/build/querier");
 const express = require("express");
@@ -330,7 +330,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -431,7 +431,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -500,7 +500,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -559,7 +559,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -648,7 +648,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "3.0";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -716,7 +716,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "3.0";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -971,7 +971,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",
@@ -1026,7 +1026,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
             // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
             Querier.apiVersion = "2.18";
-            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+            const legacySessionResp = await getQuerierInstance().sendPostRequest(
                 "/recipe/session",
                 {
                     userId: "test-user-id",

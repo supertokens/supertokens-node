@@ -12,13 +12,16 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeFramework } from "./framework/types";
+import { RecipeIdToRecipeTypeMap } from "./recipeIdToRecipeType";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & {
+        pluginId: string;
+    })[];
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
     supertokens: undefined | SuperTokensInfo;
     telemetryEnabled: boolean;
@@ -93,4 +96,6 @@ export default class SuperTokens {
     middleware: (request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<void>;
     getRequestFromUserContext: (userContext: UserContext | undefined) => BaseRequest | undefined;
+    getRecipeInstanceOrThrow: <T extends keyof RecipeIdToRecipeTypeMap>(recipeId: T) => RecipeIdToRecipeTypeMap[T];
+    getRecipeInstance: <T extends keyof RecipeIdToRecipeTypeMap>(recipeId: T) => RecipeIdToRecipeTypeMap[T] | undefined;
 }

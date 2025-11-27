@@ -1463,12 +1463,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(HapiFramework.plugin);
 
         await this.server.initialize();
@@ -1517,12 +1511,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(HapiFramework.plugin);
 
@@ -1573,12 +1561,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(HapiFramework.plugin);
 
         await this.server.initialize();
@@ -1626,12 +1608,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(HapiFramework.plugin);
 
@@ -1685,12 +1661,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(HapiFramework.plugin);
 
         await this.server.initialize();
@@ -1742,12 +1712,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(HapiFramework.plugin);
 
@@ -1846,12 +1810,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(HapiFramework.plugin);
 
         await this.server.initialize();
@@ -1944,12 +1902,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(HapiFramework.plugin);
 

@@ -30,13 +30,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
             recipeList: [OpenIdRecipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         const app = express();
 
         app.use(middleware());
@@ -74,13 +67,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
             },
             recipeList: [OpenIdRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         const app = express();
 
@@ -131,13 +117,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
                 }),
             ],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         const app = express();
 

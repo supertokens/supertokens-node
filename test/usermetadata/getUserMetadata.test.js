@@ -30,13 +30,6 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
-
             const result = await UserMetadataRecipe.getUserMetadata(testUserId);
 
             assert.strictEqual(result.status, "OK");
@@ -62,13 +55,6 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
-
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
             await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata);
 
             const result = await UserMetadataRecipe.getUserMetadata(testUserId);
