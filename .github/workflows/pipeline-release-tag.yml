@@ -114,6 +114,7 @@ jobs:
                   repository: ${{ github.repository }}
                   run_id: ${{ github.run_id }}
                   setup-python: true
+                  skip-test-checks: ${{ inputs.skip-test-checks }}
 
             - if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
               name: Mark as success
