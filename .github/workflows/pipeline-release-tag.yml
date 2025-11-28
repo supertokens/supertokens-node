@@ -115,7 +115,9 @@ jobs:
                   run_id: ${{ github.run_id }}
                   setup-python: true
 
-            - run: |
+            - if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
+              name: Mark as success
+              run: |
                   curl --fail-with-body -X PATCH \
                       https://api.supertokens.io/0/driver \
                       -H 'Content-Type: application/json' \
@@ -154,6 +156,7 @@ jobs:
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
             - name: Check tests passed
+              if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
               run: |
                   testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
 
