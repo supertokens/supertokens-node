@@ -9,6 +9,7 @@ export function validateAndNormalizeUserInput(appInfo, config) {
     let override = {
         functions: (originalImplementation) => originalImplementation,
         apis: (originalImplementation) => originalImplementation,
+        config: (originalConfig) => originalConfig,
         ...config?.override,
     };
 
@@ -22,14 +23,16 @@ export default class Recipe extends RecipeModule {
 
     config;
 
+    configImpl;
+
     recipeInterfaceImpl;
 
     apiImpl;
 
     isInServerlessEnv;
 
-    constructor(recipeId, appInfo, isInServerlessEnv, config) {
-        super(recipeId, appInfo);
+    constructor(stInstance, recipeId, appInfo, isInServerlessEnv, config) {
+        super(stInstance, recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormalizeUserInput(appInfo, config);
         {
@@ -39,6 +42,9 @@ export default class Recipe extends RecipeModule {
         {
             let builder = new OverrideableBuilder(getAPIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
+        }
+        {
+            this.configImpl = this.config.override.config(config);
         }
     }
 
@@ -50,9 +56,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config) {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,

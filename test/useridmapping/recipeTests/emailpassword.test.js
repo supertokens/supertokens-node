@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
+const { printPath, createCoreApplication } = require("../../utils");
 const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
 const EmailPasswordRecipe = require("../../../lib/build/recipe/emailpassword").default;
@@ -11,19 +11,12 @@ describe(`userIdMapping with emailpassword: ${printPath(
     "[test/useridmapping/recipeTests/emailpassword.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("getUserById", () => {
         it("create an emailPassword user and map their userId, retrieve the user info using getUserById and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -35,13 +28,6 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a new EmailPassword User
             const email = "test@example.com";
@@ -86,7 +72,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("getUserByEmail", () => {
         it("create an emailPassword user and map their userId, retrieve the user info using getUserByEmail and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -98,13 +84,6 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a new EmailPassword User
             const email = "test@example.com";
@@ -141,7 +120,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("signIn", () => {
         it("create an emailPassword user and map their userId, signIn, check that the userRetrieved has the mapped userId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -153,13 +132,6 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a new EmailPassword User
             const email = "test@example.com";
@@ -193,7 +165,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("password reset", () => {
         it("create an emailPassword user and map their userId, and do a password reset using the external id, check that it gets reset", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -205,13 +177,6 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a new EmailPassword User
             const email = "test@example.com";
@@ -266,7 +231,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("update email and password", () => {
         it("create an emailPassword user and map their userId, update their email and password using the externalId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -278,13 +243,6 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a new EmailPassword User
             const email = "test@example.com";

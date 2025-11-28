@@ -1,11 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-declare const removeUserRole: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-) => Promise<
+import { APIFunction } from "../../types";
+declare const removeUserRole: ({ stInstance, tenantId, options, userContext }: Parameters<APIFunction>[0]) => Promise<
     | {
           status: "OK";
           didUserHaveRole: boolean;

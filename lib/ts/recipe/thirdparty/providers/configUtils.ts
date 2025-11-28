@@ -15,25 +15,9 @@ import {
     Twitter,
 } from ".";
 import { UserContext } from "../../../types";
-import {
-    ProviderClientConfig,
-    ProviderConfig,
-    ProviderConfigForClientType,
-    ProviderInput,
-    TypeProvider,
-} from "../types";
+import { ProviderConfig, ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 import { discoverOIDCEndpoints } from "./utils";
-
-export function getProviderConfigForClient(
-    providerConfig: ProviderConfig,
-    clientConfig: ProviderClientConfig
-): ProviderConfigForClientType {
-    return {
-        ...providerConfig,
-        ...clientConfig,
-    };
-}
 
 async function fetchAndSetConfig(
     tenantId: string,

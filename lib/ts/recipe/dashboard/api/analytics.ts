@@ -13,26 +13,22 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
-import SuperTokens from "../../../supertokens";
-import { Querier } from "../../../querier";
+import { APIFunction } from "../types";
+import { Querier, doFetch } from "../../../querier";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
-import { doFetch } from "../../../utils";
-import { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";
 };
 
-export default async function analyticsPost(
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function analyticsPost({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     // If telemetry is disabled, dont send any event
-    if (!SuperTokens.getInstanceOrThrowError().telemetryEnabled) {
+    if (!stInstance.telemetryEnabled) {
         return {
             status: "OK",
         };
@@ -57,13 +53,13 @@ export default async function analyticsPost(
     let telemetryId: string | undefined;
     let numberOfUsers: number;
     try {
-        let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
+        let querier = Querier.getNewInstanceOrThrowError(stInstance);
         let response = await querier.sendGetRequest("/telemetry", {}, userContext);
         if (response.exists) {
             telemetryId = response.telemetryId;
         }
 
-        numberOfUsers = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, undefined, userContext);
+        numberOfUsers = await stInstance.getUserCount(undefined, undefined, userContext);
     } catch (_) {
         // If either telemetry id API or user count fetch fails, no event should be sent
         return {

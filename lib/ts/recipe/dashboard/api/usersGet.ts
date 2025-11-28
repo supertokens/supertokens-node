@@ -12,11 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
+import { APIFunction, UserWithFirstAndLastName } from "../types";
 import STError from "../../../error";
 import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
-import UserMetaDataRecipe from "../../usermetadata/recipe";
-import UserMetaData from "../../usermetadata";
 
 export type Response = {
     status: "OK";
@@ -24,7 +22,12 @@ export type Response = {
     users: UserWithFirstAndLastName[];
 };
 
-export default async function usersGet(_: APIInterface, tenantId: string, options: APIOptions): Promise<Response> {
+export default async function usersGet({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 
@@ -66,9 +69,10 @@ export default async function usersGet(_: APIInterface, tenantId: string, option
                   paginationToken,
               });
 
+    let usermetadataRecipe = undefined;
     // If the UserMetaData recipe has been initialised, fetch first and last name
     try {
-        UserMetaDataRecipe.getInstanceOrThrowError();
+        usermetadataRecipe = stInstance.getRecipeInstanceOrThrow("usermetadata");
     } catch (e) {
         // Recipe has not been initialised, return without first name and last name
         return {
@@ -87,7 +91,10 @@ export default async function usersGet(_: APIInterface, tenantId: string, option
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {
                     try {
-                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id);
+                        const userMetaDataResponse = await usermetadataRecipe.recipeInterfaceImpl.getUserMetadata({
+                            userId: userObj.id,
+                            userContext,
+                        });
                         const { first_name, last_name } = userMetaDataResponse.metadata;
 
                         updatedUsersArray[i] = {

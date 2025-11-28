@@ -20,12 +20,13 @@ import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
 import { UserContext } from "../../types";
 import { updateAndGetMFARelatedInfoInSession } from "./utils";
+import type SuperTokens from "../../supertokens";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
 export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
-    constructor(key?: string) {
+    constructor(private readonly stInstanceGetter: () => SuperTokens, key?: string) {
         super(key ?? "st-mfa");
 
         this.validators = {
@@ -196,6 +197,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         userContext: UserContext
     ) => {
         const mfaInfo = await updateAndGetMFARelatedInfoInSession({
+            stInstance: this.stInstanceGetter(),
             sessionRecipeUserId: recipeUserId,
             tenantId,
             accessTokenPayload: currentPayload,
@@ -243,5 +245,3 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         return payload[this.key] as MFAClaimValue;
     };
 }
-
-export const MultiFactorAuthClaim = new MultiFactorAuthClaimClass();

@@ -1,7 +1,7 @@
 let assert = require("assert");
 const e = require("cors");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
 let { ProcessState } = require("../../lib/build/processState");
@@ -10,18 +10,11 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("Test that sending 0 validity throws an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -33,13 +26,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             },
             recipeList: [JWTRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         try {
             await JWTRecipe.createJWT({}, 0);
@@ -50,7 +36,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
     });
 
     it("Test that sending a invalid json throws an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -62,13 +48,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             },
             recipeList: [JWTRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let jwt = undefined;
 
@@ -82,7 +61,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
     });
 
     it("Test that returned JWT uses 100 years for expiry for default config", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -94,13 +73,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             },
             recipeList: [JWTRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let currentTimeInSeconds = Date.now() / 1000;
         let jwt = (await JWTRecipe.createJWT({})).jwt.split(".")[1];
@@ -117,7 +89,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
     });
 
     it("Test that jwt validity is same as validity set in config", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -133,13 +105,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
                 }),
             ],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let currentTimeInSeconds = Date.now() / 1000;
         let jwt = (await JWTRecipe.createJWT({})).jwt.split(".")[1];
@@ -156,7 +121,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
     });
 
     it("Test that jwt validity is same as validity passed in createJWT function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -172,13 +137,6 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
                 }),
             ],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         let currentTimeInSeconds = Date.now() / 1000;
         let targetExpiryDuration = 500; // 100 years in seconds

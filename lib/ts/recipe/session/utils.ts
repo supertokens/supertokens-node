@@ -19,13 +19,11 @@ import {
     NormalisedErrorHandlers,
     ClaimValidationError,
     SessionClaimValidator,
-    SessionContainerInterface,
-    VerifySessionOptions,
     TokenTransferMethod,
     TokenType,
 } from "./types";
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
-import SessionRecipe from "./recipe";
+import type SessionRecipe from "./recipe";
 import {
     REFRESH_API_PATH,
     accessTokenCookieKey,
@@ -36,12 +34,13 @@ import {
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { isAnIpAddress, send200Response } from "../../utils";
+import { send200Response } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
+import { isAnIpAddress } from "../../normalisedURLDomain";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -368,27 +367,6 @@ export function setAccessTokenInResponse(
             userContext
         );
     }
-}
-
-export async function getRequiredClaimValidators(
-    session: SessionContainerInterface,
-    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: UserContext
-) {
-    const claimValidatorsAddedByOtherRecipes =
-        SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
-    const globalClaimValidators: SessionClaimValidator[] =
-        await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators({
-            userId: session.getUserId(userContext),
-            recipeUserId: session.getRecipeUserId(userContext),
-            tenantId: session.getTenantId(userContext),
-            claimValidatorsAddedByOtherRecipes,
-            userContext,
-        });
-
-    return overrideGlobalClaimValidators !== undefined
-        ? await overrideGlobalClaimValidators(globalClaimValidators, session, userContext)
-        : globalClaimValidators;
 }
 
 export async function validateClaimsInPayload(

@@ -16,12 +16,13 @@
 import setCookieParser from "set-cookie-parser";
 import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
-import Session from "../../session";
 import { UserContext } from "../../../types";
 import SuperTokensError from "../../../error";
 import SessionError from "../../../recipe/session/error";
+import type SuperTokens from "../../../supertokens";
 
 export default async function login(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -32,7 +33,12 @@ export default async function login(
 
     let session, shouldTryRefresh;
     try {
-        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
+        session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+            req: options.req,
+            res: options.res,
+            options: { sessionRequired: false },
+            userContext,
+        });
         shouldTryRefresh = false;
     } catch (error) {
         // We can handle this as if the session is not present, because then we redirect to the frontend,

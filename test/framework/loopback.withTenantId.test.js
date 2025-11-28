@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../..");
@@ -30,8 +30,6 @@ const { default: fetch } = require("cross-fetch");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         this.app = require("./loopback-server/index.js");
     });
@@ -42,14 +40,9 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
         }
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     //check basic usage of session
     it("test basic usage of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -192,7 +185,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("sending custom response", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -237,7 +230,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -286,7 +279,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that tags request respond with correct tags", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -315,12 +308,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         let result = await request({
@@ -338,7 +325,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -367,12 +354,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -396,7 +377,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for multiple search items", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -425,12 +406,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -455,7 +430,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -485,12 +460,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         await createUsers(EmailPassword);
@@ -514,7 +483,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -546,12 +515,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -576,7 +539,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -609,12 +572,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.app.start();
 
         await createUsers(null, Passwordless);
@@ -638,7 +595,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'provider: google', phone: 1", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -715,12 +672,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 
@@ -746,7 +697,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
@@ -819,12 +770,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.app.start();
 

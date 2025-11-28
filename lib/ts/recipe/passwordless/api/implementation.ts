@@ -2,16 +2,14 @@ import { APIInterface, RecipeInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import { AuthUtils } from "../../../authUtils";
 import { FactorIds } from "../../multifactorauth";
-import AccountLinking from "../../accountlinking/recipe";
-import EmailVerification from "../../emailverification/recipe";
 import { getEnabledPwlessFactors } from "../utils";
-import { getUser, listUsersByAccountInfo } from "../../..";
 import { SessionContainerInterface } from "../../session/types";
 import { UserContext } from "../../../types";
 import { LoginMethod, User } from "../../../user";
 import SessionError from "../../session/error";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIImplementation(): APIInterface {
+export default function getAPIImplementation(stInstance: SuperTokens): APIInterface {
     return {
         consumeCodePOST: async function (input) {
             const errorCodeMap = {
@@ -79,6 +77,7 @@ export default function getAPIImplementation(): APIInterface {
             };
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                stInstance,
                 accountInfo,
                 recipeId,
                 userContext: input.userContext,
@@ -87,7 +86,7 @@ export default function getAPIImplementation(): APIInterface {
                 checkCredentialsOnTenant: checkCredentials,
             });
 
-            const emailVerificationInstance = EmailVerification.getInstance();
+            const emailVerificationInstance = stInstance.getRecipeInstance("emailverification");
             // If we have a session and emailverification was initialized plus this code was sent to an email
             // then we check if we can/should verify this email address for the session user.
             // This helps in usecases like phone-password and emailverification-with-otp where we only want to allow linking
@@ -102,7 +101,9 @@ export default function getAPIImplementation(): APIInterface {
             ) {
                 // We first load the session user, so we can check if verification is required
                 // We do this first, it is better for caching if we group the post calls together (verifyIng the code and the email address)
-                const sessionUser = await getUser(input.session.getUserId(), input.userContext);
+                const sessionUser = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.getUser({ userId: input.session.getUserId(), userContext: input.userContext });
                 if (sessionUser === undefined) {
                     throw new SessionError({
                         type: SessionError.UNAUTHORISED,
@@ -164,6 +165,7 @@ export default function getAPIImplementation(): APIInterface {
 
             const isSignUp = authenticatingUser === undefined;
             const preAuthChecks = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     recipeId: "passwordless",
                     email: deviceInfo.email,
@@ -239,6 +241,7 @@ export default function getAPIImplementation(): APIInterface {
             // of the user), it's OK to do this check here cause the preAuthChecks already checks
             // conditions related to account linking
             const postAuthChecks = await AuthUtils.postAuthChecks({
+                stInstance,
                 factorId,
                 isSignUp,
                 authenticatedUser: response.user ?? authenticatingUser!.user,
@@ -285,7 +288,11 @@ export default function getAPIImplementation(): APIInterface {
             // Here we use do not use the helper from AuthUtil to check if this is going to be a sign in or up, because:
             // 1. At this point we have no way to check credentials
             // 2. We do not want to associate the relevant recipe user with the current tenant (yet)
-            const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({ ...input, accountInfo });
+            const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({
+                ...input,
+                accountInfo,
+                stInstance,
+            });
 
             let factorIds;
             if (input.session !== undefined) {
@@ -308,6 +315,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     ...accountInfo,
                     recipeId: "passwordless",
@@ -445,14 +453,16 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         emailExistsGET: async function (input) {
-            const users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
-                    email: input.email,
-                },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+            const users = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId: input.tenantId,
+                    accountInfo: {
+                        email: input.email,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext: input.userContext,
+                });
             const userExists = users.some((u) =>
                 u.loginMethods.some((lm) => lm.recipeId === "passwordless" && lm.hasSameEmailAs(input.email))
             );
@@ -463,15 +473,16 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         phoneNumberExistsGET: async function (input) {
-            let users = await listUsersByAccountInfo(
-                input.tenantId,
-                {
-                    phoneNumber: input.phoneNumber,
-                    // tenantId: input.tenantId,
-                },
-                false,
-                input.userContext
-            );
+            let users = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId: input.tenantId,
+                    accountInfo: {
+                        phoneNumber: input.phoneNumber,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext: input.userContext,
+                });
 
             return {
                 exists: users.length > 0,
@@ -502,8 +513,10 @@ export default function getAPIImplementation(): APIInterface {
             const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({
                 ...input,
                 accountInfo: deviceInfo,
+                stInstance: stInstance,
             });
             const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
+                stInstance,
                 input.session,
                 input.shouldTryLinkingWithSessionUser,
                 {
@@ -571,6 +584,7 @@ export default function getAPIImplementation(): APIInterface {
                     } else {
                         factorIds = getEnabledPwlessFactors(input.options.config);
                         factorIds = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
+                            stInstance,
                             factorIds,
                             input.tenantId,
                             false,
@@ -658,13 +672,16 @@ async function getPasswordlessUserByAccountInfo(input: {
     session?: SessionContainerInterface;
     userContext: UserContext;
     accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+    stInstance: SuperTokens;
 }): Promise<{ user: User; loginMethod: LoginMethod } | undefined> {
-    const existingUsers = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-        tenantId: input.tenantId,
-        accountInfo: input.accountInfo,
-        doUnionOfAccountInfo: false,
-        userContext: input.userContext,
-    });
+    const existingUsers = await input.stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId: input.tenantId,
+            accountInfo: input.accountInfo,
+            doUnionOfAccountInfo: false,
+            userContext: input.userContext,
+        });
     logDebugMessage(
         `getPasswordlessUserByAccountInfo got ${existingUsers.length} from core resp ${JSON.stringify(
             input.accountInfo

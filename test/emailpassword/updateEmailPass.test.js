@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
+const { printPath, createCoreApplication, signUPRequest } = require("../utils");
 const { updateEmailOrPassword, signIn } = require("../../lib/build/recipe/emailpassword");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -26,18 +26,11 @@ const express = require("express");
 
 describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test updateEmailPass", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -49,11 +42,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
-
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         const express = require("express");
         const app = express();
@@ -79,7 +67,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass with failing password validation", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -109,11 +97,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
-
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         const express = require("express");
         const app = express();
@@ -137,7 +120,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass with passing password validation", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -168,11 +151,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             ],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
-
         const express = require("express");
         const app = express();
 
@@ -194,7 +172,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass with failing default password validation", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -206,11 +184,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
-
-        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return;
-        }
 
         const express = require("express");
         const app = express();

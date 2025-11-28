@@ -17,7 +17,6 @@ import SuperTokensError from "../../error";
 import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { isTestEnv } from "../../utils";
@@ -27,6 +26,7 @@ import RecipeImplementation from "./recipeImplementation";
 import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "usermetadata" as const;
@@ -36,13 +36,19 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(RecipeImplementation(this.querier));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
     }
@@ -59,9 +65,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,

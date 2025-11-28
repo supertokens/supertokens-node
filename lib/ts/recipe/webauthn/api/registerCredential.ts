@@ -17,10 +17,11 @@ import { send200Response } from "../../../utils";
 import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
-import Session from "../../session";
 import STError from "../../../error";
+import type SuperTokens from "../../../supertokens";
 
 export default async function registerCredentialAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -30,12 +31,12 @@ export default async function registerCredentialAPI(
         return false;
     }
 
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
-        userContext
-    );
+    const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+        req: options.req,
+        res: options.res,
+        options: { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext,
+    });
 
     const requestBody = await options.req.getJSONBody();
     const webauthnGeneratedOptionsId = validateWebauthnGeneratedOptionsIdOrThrowError(
@@ -58,7 +59,7 @@ export default async function registerCredentialAPI(
         tenantId,
         options,
         userContext: userContext,
-        session,
+        session: session!,
     });
 
     if (result.status === "OK") {

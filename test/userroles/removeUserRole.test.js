@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
@@ -10,19 +10,12 @@ const { default: SessionRecipe } = require("../../lib/build/recipe/session/recip
 
 describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("removeUserRole", () => {
         it("remove role from user", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -35,13 +28,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const userId = "userId";
             const role = "role";
@@ -84,7 +70,7 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
         });
 
         it("remove a role the user does not have", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -97,13 +83,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const userId = "userId";
             const role = "role";
@@ -124,7 +103,7 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
         });
 
         it("remove an unknown role from the user", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -137,13 +116,6 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const userId = "userId";
             const role = "unknownRole";

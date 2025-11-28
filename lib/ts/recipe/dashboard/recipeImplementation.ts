@@ -22,7 +22,7 @@ import { DASHBOARD_ANALYTICS_API, SIGN_OUT_API } from "./constants";
 import { RecipeInterface } from "./types";
 import { validateApiKey } from "./utils";
 
-export default function getRecipeImplementation(): RecipeInterface {
+export default function getRecipeImplementation(querier: Querier): RecipeInterface {
     return {
         getDashboardBundleLocation: async function () {
             return `https://cdn.jsdelivr.net/gh/supertokens/dashboard@v${dashboardVersion}/build/`;
@@ -31,7 +31,6 @@ export default function getRecipeImplementation(): RecipeInterface {
             // For cases where we're not using the API key, the JWT is being used; we allow their access by default
             if (!input.config.apiKey) {
                 // make the check for the API endpoint here with querier
-                let querier = Querier.getNewInstanceOrThrowError(undefined);
                 const authHeaderValue = input.req.getHeaderValue("authorization")?.split(" ")[1];
                 const sessionVerificationResponse = await querier.sendPostRequest(
                     "/recipe/dashboard/session/verify",

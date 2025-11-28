@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("./utils");
+const { printPath, createCoreApplication, resetAll, getQuerierInstance } = require("./utils");
 let { ProcessState } = require("../lib/build/processState");
 let ST = require("../");
 let Session = require("../recipe/session");
@@ -35,26 +35,18 @@ let { middleware, errorHandler } = require("../framework/express");
  * TODO: (later) Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
  *
  */
+const fakeConnectionURI = "http://localhost:3000";
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         resetTestRecipies();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("calling init multiple times", async function () {
-        const connectionURI = await startST();
-
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -69,7 +61,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -86,20 +78,18 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Check that querier has been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
-        const connectionURI = await startST();
-
         try {
-            await Querier.getNewInstanceOrThrowError(undefined);
+            await getQuerierInstance();
             assert(false);
         } catch (err) {
-            if (err.message !== "Please call the supertokens.init function before using SuperTokens") {
+            if (err.message !== "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
                 throw err;
             }
         }
 
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -109,14 +99,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
-        await Querier.getNewInstanceOrThrowError(undefined);
+        await getQuerierInstance();
     });
 
     // Check that modules have been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that modules have been initiated when we call supertokens.init", async function () {
-        const connectionURI = await startST();
-
         try {
             SessionRecipe.getInstanceOrThrowError();
             assert(false);
@@ -140,7 +128,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -165,10 +153,9 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail is using the incorrect base path
     it("test various inputs to routing with default base path", async function () {
-        const connectionURI = await startST();
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -246,11 +233,10 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail is using the wrong base path
     it("test various inputs to routing when base path is /", async function () {
-        const connectionURI = await startST();
         {
             ST.init({
                 supertokens: {
-                    connectionURI,
+                    connectionURI: fakeConnectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -333,11 +319,9 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail if the incorrect rid header value is set when sending a request the path
     it("test routing with multiple recipes", async function () {
-        const connectionURI = await startST();
-
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -398,11 +382,9 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Test various inputs to errorHandler (if it accepts or not)
     it("test various inputs to errorHandler", async function () {
-        const connectionURI = await startST();
-
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -436,7 +418,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     }
                 })
         );
-        assert(r1 === "General error handled in user error handler");
+        assert.strictEqual(r1, "General error handled in user error handler");
 
         r1 = await new Promise((resolve) =>
             request(app)
@@ -456,11 +438,9 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Error thrown from APIs implemented by recipes must not go unhandled
     it("test that error thrown from APIs implemented by recipes must not go unhandled", async function () {
-        const connectionURI = await startST();
-
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -514,7 +494,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Disable a default route, and then implement your own API and check that that gets called
     // Failure condition: in testRecipe1 if the disabled value for the /default-route-disabled is set to false, the test will fail
     it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         ST.init({
             supertokens: {
@@ -550,16 +530,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     }
                 })
         );
-        assert(r1 === "user defined api");
+        assert.strictEqual(r1, "user defined api");
     });
 
     // If an error handler in a recipe throws an error, that error next to go to the user's error handler
     it("test if the error handler in a recipe throws an error, it goes to the user's error handler", async function () {
-        const connectionURI = await startST();
-
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -593,16 +571,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     }
                 })
         );
-        assert(r1 === "user error handler");
+        assert.strictEqual(r1, "user error handler");
     });
 
     // Test getAllCORSHeaders
     it("test the getAllCORSHeaders function", async function () {
-        const connectionURI = await startST();
-
         ST.init({
             supertokens: {
-                connectionURI,
+                connectionURI: fakeConnectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -622,14 +598,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 });
 
 class TestRecipe extends RecipeModule {
-    constructor(recipeId, appInfo) {
-        super(recipeId, appInfo);
+    constructor(stInstance, recipeId, appInfo) {
+        super(stInstance, recipeId, appInfo);
     }
 
     static init() {
-        return (appInfo) => {
+        return (stInstance, appInfo) => {
             if (TestRecipe.instance === undefined) {
-                TestRecipe.instance = new TestRecipe("testRecipe", appInfo);
+                TestRecipe.instance = new TestRecipe(stInstance, "testRecipe", appInfo);
                 return TestRecipe.instance;
             } else {
                 throw new Error("already initialised");
@@ -750,14 +726,14 @@ class TestRecipeError extends STError {
 }
 
 class TestRecipe1 extends RecipeModule {
-    constructor(recipeId, appInfo) {
-        super(recipeId, appInfo);
+    constructor(stInstance, recipeId, appInfo) {
+        super(stInstance, recipeId, appInfo);
     }
 
     static init() {
-        return (appInfo) => {
+        return (stInstance, appInfo) => {
             if (TestRecipe1.instance === undefined) {
-                TestRecipe1.instance = new TestRecipe1("testRecipe1", appInfo);
+                TestRecipe1.instance = new TestRecipe1(stInstance, "testRecipe1", appInfo);
                 return TestRecipe1.instance;
             } else {
                 throw new Error("already initialised");
@@ -856,14 +832,14 @@ class TestRecipe1Error extends STError {
 }
 
 class TestRecipe2 extends RecipeModule {
-    constructor(recipeId, appInfo) {
+    constructor(stInstance, recipeId, appInfo) {
         super(recipeId, appInfo);
     }
 
     static init() {
-        return (appInfo) => {
+        return (stInstance, appInfo) => {
             if (TestRecipe2.instance === undefined) {
-                TestRecipe2.instance = new TestRecipe2("testRecipe2", appInfo);
+                TestRecipe2.instance = new TestRecipe2(stInstance, "testRecipe2", appInfo);
                 return TestRecipe2.instance;
             } else {
                 throw new Error("already initialised");
@@ -885,14 +861,14 @@ class TestRecipe2 extends RecipeModule {
 }
 
 class TestRecipe3 extends RecipeModule {
-    constructor(recipeId, appInfo) {
-        super(recipeId, appInfo);
+    constructor(stInstance, recipeId, appInfo) {
+        super(stInstance, recipeId, appInfo);
     }
 
     static init() {
-        return (appInfo) => {
+        return (stInstance, appInfo) => {
             if (TestRecipe3.instance === undefined) {
-                TestRecipe3.instance = new TestRecipe3("testRecipe3", appInfo);
+                TestRecipe3.instance = new TestRecipe3(stInstance, "testRecipe3", appInfo);
                 return TestRecipe3.instance;
             } else {
                 throw new Error("already initialised");
@@ -914,14 +890,14 @@ class TestRecipe3 extends RecipeModule {
 }
 
 class TestRecipe3Duplicate extends RecipeModule {
-    constructor(recipeId, appInfo) {
-        super(recipeId, appInfo);
+    constructor(stInstance, recipeId, appInfo) {
+        super(stInstance, recipeId, appInfo);
     }
 
     static init() {
-        return (appInfo) => {
+        return (stInstance, appInfo) => {
             if (TestRecipe3Duplicate.instance === undefined) {
-                TestRecipe3Duplicate.instance = new TestRecipe3("testRecipe3Duplicate", appInfo);
+                TestRecipe3Duplicate.instance = new TestRecipe3(stInstance, "testRecipe3Duplicate", appInfo);
                 return TestRecipe3Duplicate.instance;
             } else {
                 throw new Error("already initialised");

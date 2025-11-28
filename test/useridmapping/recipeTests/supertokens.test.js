@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
+const { printPath, createCoreApplication } = require("../../utils");
 const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
 const EmailPasswordRecipe = require("../../../lib/build/recipe/emailpassword").default;
@@ -12,19 +12,12 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
     "[test/useridmapping/recipeTests/supertokens.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("deleteUser", () => {
         it("create an emailPassword user and map their userId, then delete user with the externalId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -36,13 +29,6 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a new EmailPassword User
             const email = "test@example.com";
@@ -108,7 +94,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
     describe("getUsers", () => {
         it("create multiple users and map one of the users userId, retrieve all users and check that response will contain the externalId for the mapped user", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -120,13 +106,6 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create multiple users
             const email = ["test@example.com", "test1@example.com", "test2@example.com", "test3@example.com"];

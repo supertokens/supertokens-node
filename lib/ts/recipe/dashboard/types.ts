@@ -15,7 +15,9 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo, User, UserContext } from "../../types";
+import type { NormalisedAppinfo, User, UserContext } from "../../types";
+import type DashboardRecipe from "./recipe";
+import type SuperTokens from "../../supertokens";
 
 export type TypeInput = {
     apiKey?: string;
@@ -65,12 +67,14 @@ export type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: UserContext }) => Promise<string>);
 };
 
-export type APIFunction = (
-    apiImplementation: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-) => Promise<any>;
+export type APIFunction = (input: {
+    apiImplementation: APIInterface;
+    recipeInstance: DashboardRecipe;
+    stInstance: SuperTokens;
+    tenantId: string;
+    options: APIOptions;
+    userContext: UserContext;
+}) => Promise<any>;
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 

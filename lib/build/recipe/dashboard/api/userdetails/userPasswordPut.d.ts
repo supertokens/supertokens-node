@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 type Response =
     | {
           status: "OK";
@@ -9,10 +8,10 @@ type Response =
           status: "INVALID_PASSWORD_ERROR";
           error: string;
       };
-export declare const userPasswordPut: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-) => Promise<Response>;
+export declare const userPasswordPut: ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]) => Promise<Response>;
 export {};

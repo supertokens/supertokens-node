@@ -13,12 +13,10 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../../../types";
+import { APIFunction } from "../../../types";
 import STError from "../../../../../error";
-import Passwordless from "../../../../passwordless";
-import PasswordlessRecipe from "../../../../passwordless/recipe";
-import { User } from "../../../../../types";
-import RecipeUserId from "../../../../../recipeUserId";
+import type { User } from "../../../../../types";
+import type RecipeUserId from "../../../../../recipeUserId";
 import { parsePhoneNumber } from "libphonenumber-js/max";
 
 type Response =
@@ -40,16 +38,16 @@ type Response =
           message: string;
       };
 
-export const createPasswordlessUser = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-): Promise<Response> => {
-    let passwordlessRecipe: PasswordlessRecipe | undefined = undefined;
+export const createPasswordlessUser = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
+    let passwordlessRecipe = undefined;
 
     try {
-        passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+        passwordlessRecipe = stInstance.getRecipeInstanceOrThrow("passwordless");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
@@ -111,7 +109,7 @@ export const createPasswordlessUser = async (
         }
     }
 
-    return await Passwordless.signInUp(
-        email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
+    return await passwordlessRecipe.signInUp(
+        email !== undefined ? { email, tenantId, userContext } : { phoneNumber: phoneNumber!, tenantId, userContext }
     );
 };

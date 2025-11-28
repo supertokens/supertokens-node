@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
@@ -10,19 +10,12 @@ const { default: SessionRecipe } = require("../../lib/build/recipe/session/recip
 
 describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRole.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("getUsersThatHaveRole", () => {
         it("get users for a role", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -35,13 +28,6 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const users = ["user1", "user2", "user3"];
             const role = "role";
@@ -67,7 +53,7 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
         });
 
         it("get users for an unknown role", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -80,13 +66,6 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             // retrieve the users for role which that not exist
             const result = await UserRolesRecipe.getUsersThatHaveRole("public", "unknownRole");

@@ -1,11 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-declare const addRoleToUser: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-) => Promise<
+import { APIFunction } from "../../types";
+declare const addRoleToUser: ({ stInstance, tenantId, options, userContext }: Parameters<APIFunction>[0]) => Promise<
     | {
           status: "OK";
           didUserAlreadyHaveRole: boolean;

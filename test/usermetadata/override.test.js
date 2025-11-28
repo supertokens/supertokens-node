@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 const STExpress = require("../../");
 const { ProcessState } = require("../../lib/build/processState");
 const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
@@ -9,19 +9,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`overrideTest: ${printPath("[test/usermetadata/override.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("recipe functions", () => {
         it("should work without an override config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testUserContext = { hello: ":)" };
@@ -41,13 +34,6 @@ describe(`overrideTest: ${printPath("[test/usermetadata/override.test.js]")}`, f
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
-
             const updateResult = await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata, testUserContext);
             const getResult = await UserMetadataRecipe.getUserMetadata(testUserId, testUserContext);
             const clearResult = await UserMetadataRecipe.clearUserMetadata(testUserId, testUserContext);
@@ -58,7 +44,7 @@ describe(`overrideTest: ${printPath("[test/usermetadata/override.test.js]")}`, f
         });
 
         it("should call user provided overrides", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testUserContext = { hello: ":)" };
@@ -116,13 +102,6 @@ describe(`overrideTest: ${printPath("[test/usermetadata/override.test.js]")}`, f
                     }),
                 ],
             });
-
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
 
             const updateResult = await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata, testUserContext);
             const getResult = await UserMetadataRecipe.getUserMetadata(testUserId, testUserContext);

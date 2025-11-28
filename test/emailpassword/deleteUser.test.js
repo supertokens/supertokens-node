@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
@@ -43,18 +41,11 @@ let { maxVersion } = require("../../lib/build/utils");
 
 describe(`deleteUser: ${printPath("[test/emailpassword/deleteUser.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test deleteUser", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -68,22 +59,18 @@ describe(`deleteUser: ${printPath("[test/emailpassword/deleteUser.test.js]")}`, 
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let cdiVersion = await querier.getAPIVersion();
-        if (maxVersion("2.10", cdiVersion) === cdiVersion) {
-            let user = await EmailPassword.signUp("public", "test@example.com", "1234abcd");
+        let user = await EmailPassword.signUp("public", "test@example.com", "1234abcd");
 
-            {
-                let response = await STExpress.getUsersOldestFirst({ tenantId: "public" });
-                assert(response.users.length === 1);
-            }
+        {
+            let response = await STExpress.getUsersOldestFirst({ tenantId: "public" });
+            assert(response.users.length === 1);
+        }
 
-            await STExpress.deleteUser(user.user.id);
+        await STExpress.deleteUser(user.user.id);
 
-            {
-                let response = await STExpress.getUsersOldestFirst({ tenantId: "public" });
-                assert(response.users.length === 0);
-            }
+        {
+            let response = await STExpress.getUsersOldestFirst({ tenantId: "public" });
+            assert(response.users.length === 0);
         }
     });
 });

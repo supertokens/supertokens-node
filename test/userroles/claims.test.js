@@ -1,13 +1,11 @@
 const assert = require("assert");
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     mockResponse,
     mockRequest,
-    setKeyValueInConfig,
 } = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
@@ -18,19 +16,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("recipe init", () => {
         it("should add claims to session without config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -43,13 +34,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const session = await Session.createNewSession(
                 mockRequest(),
                 mockResponse(),
@@ -61,7 +45,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         });
 
         it("should not add claims if disabled in config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -80,13 +64,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 ],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const session = await Session.createNewSession(
                 mockRequest(),
                 mockResponse(),
@@ -98,7 +75,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         });
 
         it("should add claims to session with values", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -110,13 +87,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
@@ -133,7 +103,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
     describe("validation", () => {
         it("should validate roles", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -145,13 +115,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
@@ -181,7 +144,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             });
         });
         it("should validate roles after refetching", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -199,13 +162,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 ],
             });
 
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
-
             const session = await Session.createNewSession(
                 mockRequest(),
                 mockResponse(),
@@ -218,7 +174,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("test")]);
         });
         it("should validate permissions", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -230,13 +186,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
@@ -266,7 +215,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             });
         });
         it("should validate permissions after refetching", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -283,13 +232,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
-
-            // Only run for version >= 2.14
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const session = await Session.createNewSession(
                 mockRequest(),

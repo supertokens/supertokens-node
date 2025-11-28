@@ -14,13 +14,10 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    startSTWithMultitenancy,
-    killAllST,
-    cleanST,
-    setKeyValueInConfig,
-    stopST,
+
+    createCoreApplication,
+    createCoreApplicationWithMultitenancy,
+    resetAll,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -63,18 +60,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         };
     });
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("test emailExistsAPI on old path with email password conflicting path, but different rid", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let emailPasswordEmailExistsCalled = false;
         let passwordlessEmailExistsCalled = false;
@@ -257,7 +247,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test emailExistsAPI conflicting with email password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let emailPasswordEmailExistsCalled = false;
         let passwordlessEmailExistsCalled = false;
@@ -417,7 +407,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test APIs still work with thirdpartypasswordless recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInputCode = undefined;
         STExpress.init({
@@ -527,7 +517,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      */
 
     it("test the sign up /in flow with email using the EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInputCode = undefined;
         STExpress.init({
@@ -630,7 +620,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      */
 
     it("test the sign up /in flow with phoneNumber using the EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInputCode = undefined;
         STExpress.init({
@@ -732,7 +722,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      *   - create code with email and then resend code and make sure that sending email function is called  while resending code
      */
     it("test creating a code with email and then resending the code and check that the sending custom email function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isCreateAndSendCustomEmailCalled = false;
 
@@ -827,7 +817,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      *   - create code with phone and then resend code and make sure that sending SMS function is called  while resending code
      */
     it("test creating a code with phone and then resending the code and check that the sending custom SMS function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isCreateAndSendCustomTextMessageCalled = false;
 
@@ -923,7 +913,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      *   - sending neither email and phone in createCode API throws bad request
      */
     it("test invalid input to createCodeAPI while using the EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1032,7 +1022,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     */
 
     it("test adding phoneNumber to a users info and signing in will sign in the same user, using the EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInputCode = undefined;
 
@@ -1171,7 +1161,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test not passing any fields to consumeCodeAPI", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1235,7 +1225,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test consumeCodeAPI with magic link", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1312,7 +1302,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test consumeCodeAPI with code", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1408,7 +1398,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test consumeCodeAPI with expired code", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: {
                 passwordless_code_lifetime: 1000, // one second lifetime
             },
@@ -1491,7 +1481,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test createCodeAPI with email", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1583,7 +1573,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test createCodeAPI with phoneNumber", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1675,7 +1665,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test magicLink format in createCodeAPI", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let magicLinkURL = undefined;
         STExpress.init({
@@ -1752,7 +1742,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test emailExistsAPI", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1847,7 +1837,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test emailExistsAPI with new path", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1942,7 +1932,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test phoneNumberExistsAPI", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -2037,7 +2027,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test phoneNumberExistsAPI with new path", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -2134,7 +2124,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     //resendCode API
 
     it("test resendCodeAPI", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -2223,7 +2213,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
     // test that you create a code with PHONE in config, you then change the config to use EMAIL, you call resendCode API, it should return RESTART_FLOW_ERROR
     it("test resendCodeAPI when changing contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -2267,8 +2257,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 phoneNumber: "+1234567890",
             });
 
-            await killAllST();
-            const connectionURI = await startST();
+            resetAll();
 
             STExpress.init({
                 supertokens: {
@@ -2320,7 +2309,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test resend code from different tenant throws error", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         let isCreateAndSendCustomEmailCalled = false;
 

@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
@@ -10,19 +10,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMapping.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("getUserIdMappingTest", () => {
         it("get userId mapping", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -35,13 +28,6 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
@@ -115,7 +101,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
         });
 
         it("get userId mapping when mapping does not exist", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -128,13 +114,6 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             {
                 let getUserIdMappingResponse = await STExpress.getUserIdMapping({
@@ -165,7 +144,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
         });
 
         it("get userId mapping when externalUserIdInfo does not exist", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -178,13 +157,6 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");

@@ -5,6 +5,7 @@ import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type SuperTokens from "../../supertokens";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: "saml";
@@ -12,7 +13,13 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    );
     static getInstanceOrThrowError(): Recipe;
     static getInstance(): Recipe | undefined;
     static init(config?: TypeInput): RecipeListFunction;

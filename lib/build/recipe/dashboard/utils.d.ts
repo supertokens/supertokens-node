@@ -3,10 +3,12 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import { RecipeIdForUser, TypeInput, TypeNormalisedInput, UserWithFirstAndLastName } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { UserContext } from "../../types";
+import type SuperTokens from "../../supertokens";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare function sendUnauthorisedAccess(res: BaseResponse): void;
 export declare function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser;
 export declare function getUserForRecipeId(
+    stInstance: SuperTokens,
     recipeUserId: RecipeUserId,
     recipeId: string,
     userContext: UserContext

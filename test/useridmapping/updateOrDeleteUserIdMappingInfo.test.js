@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
@@ -12,19 +12,12 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
     "[test/useridmapping/updateOrDeleteUserIdMappingInfo.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("updateOrDeleteUserIdMappingInfoTest", () => {
         it("update externalUserId mapping info with unknown userId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -37,13 +30,6 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             {
                 const response = await STExpress.updateOrDeleteUserIdMappingInfo({
@@ -79,7 +65,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         });
 
         it("update externalUserId mapping info with userIdType as SUPERTOKENS and EXTERNAL", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -92,13 +78,6 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
@@ -182,7 +161,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         });
 
         it("update externalUserId mapping info with userIdType as ANY", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -195,13 +174,6 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");

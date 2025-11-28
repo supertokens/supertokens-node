@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, delay } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, delay } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -28,19 +28,15 @@ let url = require("url");
 
 describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
     after(async function () {
         process.env.TEST_MODE = "testing";
-        await killAllST();
-        await cleanST();
     });
 
     it("test default backward compatibility api being called: reset password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -96,7 +92,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called, error message not sent back to user: reset password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -153,7 +149,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test backward compatibility: reset password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let passwordResetURL = undefined;
         STExpress.init({
@@ -210,7 +206,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test backward compatibility: reset password (non existent user)", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let functionCalled = false;
         STExpress.init({
             supertokens: {
@@ -279,7 +275,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test custom override: reset password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let passwordResetURL = undefined;
         let type = undefined;
@@ -351,7 +347,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test smtp service: reset password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let passwordResetURL = undefined;
         let outerOverrideCalled = false;
@@ -445,7 +441,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -504,7 +500,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called, error message not sent back to user: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -564,7 +560,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test backward compatibility: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let emailVerifyURL = undefined;
         let userIdInCb = undefined;
@@ -622,7 +618,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test custom override: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let emailVerifyURL = undefined;
         let type = undefined;
@@ -695,7 +691,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test smtp service: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let emailVerifyURL = undefined;
         let outerOverrideCalled = false;
@@ -790,7 +786,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("Test the reset password link", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -824,7 +820,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("Test the reset password link for invalid input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -853,7 +849,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test sendResetPasswordEmail", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let emailPasswordLink = "";
         STExpress.init({
             supertokens: {
@@ -901,7 +897,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test sendResetPasswordEmail: invalid input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

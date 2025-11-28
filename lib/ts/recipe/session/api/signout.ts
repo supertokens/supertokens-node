@@ -17,8 +17,10 @@ import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { getSessionFromRequest } from "../sessionRequestFunctions";
 import { UserContext } from "../../../types";
+import type SuperTokens from "../../../supertokens";
 
 export default async function signOutAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
@@ -32,8 +34,10 @@ export default async function signOutAPI(
     const session = await getSessionFromRequest({
         req: options.req,
         res: options.res,
+        stInstance,
         config: options.config,
         recipeInterfaceImpl: options.recipeImplementation,
+        recipeInstance: stInstance.getRecipeInstanceOrThrow("session"),
         options: {
             sessionRequired: true,
             overrideGlobalClaimValidators: () => [],

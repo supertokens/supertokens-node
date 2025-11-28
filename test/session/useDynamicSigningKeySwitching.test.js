@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, resetAll } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, resetAll } = require("../utils");
 const assert = require("assert");
 const SuperTokens = require("../..");
 const Session = require("../../recipe/session");
@@ -24,19 +24,9 @@ const { parseJWTWithoutSignatureVerification } = require("../../lib/build/recipe
 describe(`Switching useDynamicAccessTokenSigningKey after session creation: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
 )}`, function () {
-    beforeEach(async function () {
-        await killAllST();
-        await setupST();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     describe("true to false", () => {
         it("should throw when verifying", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -93,7 +83,7 @@ describe(`Switching useDynamicAccessTokenSigningKey after session creation: ${pr
         });
 
         it("should work after refresh", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,

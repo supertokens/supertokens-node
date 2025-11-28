@@ -6,9 +6,11 @@ on:
             - opened
             - reopened
             - synchronize
+            - labeled
+            - unlabeled
     push:
-        tags:
-            - dev-v[0-9]+.[0-9]+.[0-9]+
+        branches:
+            - "[0-9]+.[0-9]+"
 
 # Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
 # Previous runs will be cancelled.
@@ -18,11 +20,13 @@ concurrency:
 
 jobs:
     define-versions:
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests')
         runs-on: ubuntu-latest
         outputs:
             fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
             cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
             nodeVersions: '["20"]'
+            coreCdiVersionMap: ${{ steps.core-versions.outputs.cdiVersions }}
         steps:
             - uses: actions/checkout@v4
             - uses: supertokens/get-supported-versions-action@main
@@ -31,7 +35,15 @@ jobs:
                   has-fdi: true
                   has-cdi: true
 
+            - uses: supertokens/actions/get-versions-from-repo@main
+              id: core-versions
+              with:
+                  repo: supertokens-core
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  cdi-versions: ${{steps.versions.outputs.cdiVersions }}
+
     test:
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests')
         runs-on: ubuntu-latest
         needs: define-versions
 
@@ -53,14 +65,12 @@ jobs:
                   # Checking out to a custom path since the test repo will also be cloned
                   path: supertokens-node
 
-            - uses: supertokens/get-versions-action@main
-              id: versions
-              with:
-                  driver-name: node
-                  cdi-version: ${{ matrix.cdi-version }}
-                  fdi-version: ${{ matrix.fdi-version }}
-              env:
-                  SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+            - name: Get core version from current CDI version
+              id: core-version
+              run: |
+                  coreVersion=$(echo '${{ needs.define-versions.outputs.coreCdiVersionMap }}' | jq -r '.["${{ matrix.cdi-version }}"]')
+
+                  echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
 
             - uses: actions/setup-node@v4
               with:
@@ -70,7 +80,7 @@ jobs:
               working-directory: supertokens-node
               run: docker compose up --build --wait
               env:
-                  SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersionXy }}
+                  SUPERTOKENS_CORE_VERSION: ${{ steps.core-version.outputs.coreVersion }}
 
             - name: Install SDK dependencies
               working-directory: supertokens-node

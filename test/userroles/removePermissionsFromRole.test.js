@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
@@ -10,19 +10,12 @@ const { default: SessionRecipe } = require("../../lib/build/recipe/session/recip
 
 describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForRole.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("getPermissionsForRole", () => {
         it("remove permissions from a role", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -35,13 +28,6 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             const role = "role";
             const permissions = ["permission1", "permission2", "permission3"];
@@ -69,7 +55,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
         });
 
         it("remove permissions from an unknown role", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -82,13 +68,6 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
-
-            // Only run for version >= 2.14
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.13") === "2.13") {
-                return this.skip();
-            }
 
             // remove permission from an unknown role
             const result = await UserRolesRecipe.removePermissionsFromRole("unknownRole");

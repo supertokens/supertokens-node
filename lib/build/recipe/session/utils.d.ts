@@ -4,12 +4,10 @@ import {
     TypeNormalisedInput,
     ClaimValidationError,
     SessionClaimValidator,
-    SessionContainerInterface,
-    VerifySessionOptions,
     TokenTransferMethod,
     TokenType,
 } from "./types";
-import SessionRecipe from "./recipe";
+import type SessionRecipe from "./recipe";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import RecipeUserId from "../../recipeUserId";
@@ -60,11 +58,6 @@ export declare function setAccessTokenInResponse(
     req: BaseRequest,
     userContext: UserContext
 ): void;
-export declare function getRequiredClaimValidators(
-    session: SessionContainerInterface,
-    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: UserContext
-): Promise<SessionClaimValidator[]>;
 export declare function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,

@@ -1,6 +1,6 @@
 import { createRemoteJWKSet } from "jose";
 import { JWKCacheCooldownInMs } from "./recipe/session/constants";
-import { Querier } from "./querier";
+import type { Querier } from "./querier";
 
 let combinedJWKS: ReturnType<typeof createRemoteJWKSet> | undefined;
 
@@ -21,9 +21,9 @@ export function resetCombinedJWKS() {
     Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
     token verification. Otherwise, the result of session verification would depend on which core is currently available.
 */
-export function getCombinedJWKS(config: { jwksRefreshIntervalSec: number }) {
+export function getCombinedJWKS(querier: Querier, config: { jwksRefreshIntervalSec: number }) {
     if (combinedJWKS === undefined) {
-        const JWKS: ReturnType<typeof createRemoteJWKSet>[] = Querier.getNewInstanceOrThrowError(undefined)
+        const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier
             .getAllCoreUrlsForPath("/.well-known/jwks.json")
             .map((url) =>
                 createRemoteJWKSet(new URL(url), {

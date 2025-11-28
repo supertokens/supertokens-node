@@ -1,3 +1,8 @@
 // @ts-nocheck
 import { APIInterface } from "../";
-export default function getAPIInterface(): APIInterface;
+import type SuperTokens from "../../../supertokens";
+import { MultiFactorAuthClaimClass } from "../multiFactorAuthClaim";
+export default function getAPIInterface(
+    stInstance: SuperTokens,
+    multiFactorAuthClaim: MultiFactorAuthClaimClass
+): APIInterface;

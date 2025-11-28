@@ -13,22 +13,20 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
+import { APIFunction } from "../types";
 import { send200Response } from "../../../utils";
 import { Querier } from "../../../querier";
-import { UserContext } from "../../../types";
 
-export default async function signOut(
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<boolean> {
+export default async function signOut({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<boolean> {
     if (options.config.authMode === "api-key") {
         send200Response(options.res, { status: "OK" });
     } else {
         const sessionIdFormAuthHeader = options.req.getHeaderValue("authorization")?.split(" ")[1];
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let querier = Querier.getNewInstanceOrThrowError(stInstance);
         const sessionDeleteResponse = await querier.sendDeleteRequest(
             "/recipe/dashboard/session",
             undefined,

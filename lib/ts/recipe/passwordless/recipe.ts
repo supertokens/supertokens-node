@@ -21,7 +21,6 @@ import { getEnabledPwlessFactors, validateAndNormaliseUserInput } from "./utils"
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { Querier } from "../../querier";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import consumeCodeAPI from "./api/consumeCode";
@@ -42,14 +41,13 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import MultiFactorAuthRecipe from "../multifactorauth/recipe";
-import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
 import { SessionContainerInterface } from "../session/types";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -68,6 +66,7 @@ export default class Recipe extends RecipeModule {
     smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
 
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
@@ -77,16 +76,16 @@ export default class Recipe extends RecipeModule {
             smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
         }
     ) {
-        super(recipeId, appInfo);
+        super(stInstance, recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(RecipeImplementation(this.stInstance, this.querier));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
@@ -107,7 +106,7 @@ export default class Recipe extends RecipeModule {
         let allFactors = getEnabledPwlessFactors(this.config);
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
 
             if (mfaInstance !== undefined) {
                 mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes(() => {
@@ -413,7 +412,7 @@ export default class Recipe extends RecipeModule {
                 });
             }
 
-            const mtRecipe = MultitenancyRecipe.getInstance();
+            const mtRecipe = stInstance.getRecipeInstance("multitenancy");
             if (mtRecipe !== undefined) {
                 for (const factorId of allFactors) {
                     mtRecipe.allAvailableFirstFactors.push(factorId);
@@ -430,9 +429,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -527,15 +527,15 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === CONSUME_CODE_API) {
-            return await consumeCodeAPI(this.apiImpl, tenantId, options, userContext);
+            return await consumeCodeAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === CREATE_CODE_API) {
-            return await createCodeAPI(this.apiImpl, tenantId, options, userContext);
+            return await createCodeAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === DOES_EMAIL_EXIST_API || id === DOES_EMAIL_EXIST_API_OLD) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === DOES_PHONE_NUMBER_EXIST_API || id === DOES_PHONE_NUMBER_EXIST_API_OLD) {
             return await phoneNumberExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else {
-            return await resendCodeAPI(this.apiImpl, tenantId, options, userContext);
+            return await resendCodeAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         }
     };
 

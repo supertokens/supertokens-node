@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 const assert = require("assert");
 const SuperTokens = require("../..");
 const Session = require("../../recipe/session");
@@ -23,19 +23,9 @@ let { Querier } = require("../../lib/build/querier");
 describe(`Session handling functions without modifying response: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
 )}`, function () {
-    beforeEach(async function () {
-        await killAllST();
-        await setupST();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     describe("createNewSessionWithoutRequestResponse", () => {
         it("should create a new session", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -68,7 +58,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should create a new session w/ anti-csrf", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -106,7 +96,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
     describe("getSessionWithoutRequestResponse", () => {
         it("should validate basic access token", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -138,7 +128,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should validate basic access token with anti-csrf", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -192,7 +182,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should validate access tokens created by createJWT", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -227,7 +217,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should validate access tokens created by createJWT w/ checkDatabase", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -239,14 +229,6 @@ describe(`Session handling functions without modifying response: ${printPath(
                 },
                 recipeList: [Session.init(), JWT.init()],
             });
-
-            let q = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await q.getAPIVersion();
-
-            // Only run test for >= 3.0 CDI (3.0 is after 2.21)
-            if (maxVersion(apiVersion, "2.21") === "2.21") {
-                return;
-            }
 
             const session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -322,7 +304,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should return error for claim validation failures", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -358,7 +340,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
     describe("refreshSessionWithoutRequestResponse", () => {
         it("should refresh session", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -397,7 +379,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should work with anti-csrf", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -444,12 +426,13 @@ describe(`Session handling functions without modifying response: ${printPath(
                 tokensAfterRefresh.refreshToken,
                 true
             );
-            const tokensAfterRefreshWithDisable = sessionAfterRefreshWithDisabledAntiCsrf.getAllSessionTokensDangerously();
+            const tokensAfterRefreshWithDisable =
+                sessionAfterRefreshWithDisabledAntiCsrf.getAllSessionTokensDangerously();
             assert.strictEqual(tokensAfterRefreshWithDisable.accessAndFrontTokenUpdated, true);
         });
 
         it("should return error for non-tokens", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,

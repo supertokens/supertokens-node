@@ -5,7 +5,9 @@ import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 import { PathParam, RequestBody, ResponseBody } from "./core/types";
 import { paths } from "./core/paths";
+import type SuperTokens from "./supertokens";
 export declare class Querier {
+    private stInstance;
     private static initCalled;
     private static hosts;
     private static apiKey;
@@ -21,7 +23,7 @@ export declare class Querier {
     getAPIVersion: (userContext: UserContext) => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
-    static getNewInstanceOrThrowError(rIdToCore?: string): Querier;
+    static getNewInstanceOrThrowError(stInstance: SuperTokens, rIdToCore?: string): Querier;
     static init(
         hosts?: {
             domain: NormalisedURLDomain;
@@ -72,3 +74,26 @@ export declare class Querier {
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;
 }
+export declare const doFetch: typeof fetch;
+export declare function postWithFetch(
+    url: string,
+    headers: Record<string, string>,
+    body: any,
+    {
+        successLog,
+        errorLogHeader,
+    }: {
+        successLog: string;
+        errorLogHeader: string;
+    }
+): Promise<
+    | {
+          resp: {
+              status: number;
+              body: any;
+          };
+      }
+    | {
+          error: any;
+      }
+>;

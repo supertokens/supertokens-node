@@ -1,0 +1,88 @@
+name: "Check if docs need an update"
+
+on:
+    push:
+        branches:
+            - "[0-9]+.[0-9]+"
+
+permissions:
+    contents: write
+
+# Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
+# Previous runs will be cancelled.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    check-docs:
+        name: Check if docs need an update
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.ref }}
+                  # Need a complete fetch to make the master merge check work
+                  fetch-depth: 0
+                  fetch-tags: true
+                  token: ${{ secrets.ALL_REPO_PAT }}
+
+            - name: Setup git
+              run: |
+                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git fetch origin master
+
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 20
+
+            - name: Populate variables
+              id: versions
+              run: |
+                  . ./hooks/populate-hook-constants.sh
+
+                  echo "packageVersion=$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageVersionXy=$packageVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageLockVersion=$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "packageLockVersionXy=$packageLockVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+                  echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+            - name: Check tag and branch correctness
+              run: |
+                  if [[ "${{ steps.versions.outputs.packageVersion }}" != "${{ steps.versions.outputs.packageLockVersion }}" ]]
+                  then
+                      echo "The package version and package lock version do not match."
+                      exit 1
+                  fi
+
+                  if [[ "refs/heads/${{ steps.versions.outputs.packageVersion }}" != ${{ github.ref }}* ]]
+                  then
+                      echo "Branch name and package version mismatch"
+                      exit 1
+                  fi
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build docs
+              run: |
+                  npm run build-pretty
+                  npm run build-docs
+
+            - name: Check for changes in docs and create a commit if necessary
+              run: |
+                  git update-index --really-refresh
+
+                  if git diff-index --quiet HEAD; then
+                    # No-op, docs are updated
+                  else
+                    # Update docs and create a commit on the branch
+                    git add --all
+                    git commit -nm "doc: update docs for v${{ steps.versions.outputs.packageVersion }} tag"
+                    git push
+                  fi

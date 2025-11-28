@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../";
+import type { APIInterface, APIOptions } from "../types";
 import { UserContext } from "../../../types";
 export default function emailExists(
     apiImplementation: APIInterface,

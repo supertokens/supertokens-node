@@ -16,12 +16,12 @@
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { Querier } from "../../../querier";
-import SuperTokens from "../../../supertokens";
+import type SuperTokens from "../../../supertokens";
 import { maxVersion } from "../../../utils";
 import { DASHBOARD_API } from "../constants";
 import { APIInterface, AuthMode } from "../types";
 
-export default function getAPIImplementation(): APIInterface {
+export default function getAPIImplementation(stInstance: SuperTokens): APIInterface {
     return {
         dashboardGET: async function (input) {
             const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleLocation({
@@ -33,7 +33,7 @@ export default function getAPIImplementation(): APIInterface {
                 new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
 
             let connectionURI: string = "";
-            const superTokensInstance = SuperTokens.getInstanceOrThrowError();
+            const superTokensInstance = stInstance;
 
             const authMode: AuthMode = input.options.config.authMode;
 
@@ -48,9 +48,10 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let isSearchEnabled = false;
-            const cdiVersion = await Querier.getNewInstanceOrThrowError(input.options.recipeId).getAPIVersion(
-                input.userContext
-            );
+            const cdiVersion = await Querier.getNewInstanceOrThrowError(
+                stInstance,
+                input.options.recipeId
+            ).getAPIVersion(input.userContext);
             if (maxVersion("2.20", cdiVersion) === cdiVersion) {
                 // Only enable search if CDI version is 2.20 or above
                 isSearchEnabled = true;

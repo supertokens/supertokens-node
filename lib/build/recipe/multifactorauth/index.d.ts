@@ -1,12 +1,12 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
-import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
 import { FactorIds } from "./types";
+import { MultiFactorAuthClaimClass } from "./multiFactorAuthClaim";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
+    static MultiFactorAuthClaim: MultiFactorAuthClaimClass;
     static FactorIds: {
         EMAILPASSWORD: string;
         WEBAUTHN: string;
@@ -52,6 +52,6 @@ export declare let getRequiredSecondaryFactorsForUser: typeof Wrapper.getRequire
 export declare let getMFARequirementsForAuth: typeof Wrapper.getMFARequirementsForAuth;
 export declare const addToRequiredSecondaryFactorsForUser: typeof Wrapper.addToRequiredSecondaryFactorsForUser;
 export declare const removeFromRequiredSecondaryFactorsForUser: typeof Wrapper.removeFromRequiredSecondaryFactorsForUser;
-export { MultiFactorAuthClaim };
+export declare const MultiFactorAuthClaim: MultiFactorAuthClaimClass;
 export { FactorIds };
 export type { RecipeInterface, APIOptions, APIInterface };

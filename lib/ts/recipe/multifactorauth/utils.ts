@@ -21,13 +21,10 @@ import {
     MFAClaimValue,
     MFARequirementList,
 } from "./types";
-import Multitenancy from "../multitenancy";
 import { User, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
-import { RecipeUserId, getUser } from "../..";
-import Recipe from "./recipe";
-import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
-import Session from "../session";
+import { RecipeUserId } from "../..";
+import type SuperTokens from "../../supertokens";
 import SessionError from "../session/error";
 import { FactorIds } from "./types";
 import { isValidFirstFactor } from "../multitenancy/utils";
@@ -62,6 +59,7 @@ export const updateAndGetMFARelatedInfoInSession = async function (
           }
     ) & {
         updatedFactorId?: string;
+        stInstance: SuperTokens;
         userContext: UserContext;
     }
 ): Promise<{
@@ -87,7 +85,9 @@ export const updateAndGetMFARelatedInfoInSession = async function (
     }
 
     let updatedClaimVal = false;
-    let mfaClaimValue = MultiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
+    let mfaClaimValue = input.stInstance
+        .getRecipeInstanceOrThrow("multifactorauth")
+        .multiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
 
     if (input.updatedFactorId) {
         if (mfaClaimValue === undefined) {
@@ -106,7 +106,9 @@ export const updateAndGetMFARelatedInfoInSession = async function (
 
     if (mfaClaimValue === undefined) {
         // it should be fine to get the user multiple times since the caching will de-duplicate these requests
-        const sessionUser = await getUser(sessionRecipeUserId.getAsString(), input.userContext);
+        const sessionUser = await input.stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({ userId: sessionRecipeUserId.getAsString(), userContext: input.userContext });
         if (sessionUser === undefined) {
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
@@ -116,7 +118,9 @@ export const updateAndGetMFARelatedInfoInSession = async function (
         // This can happen with older session, because we did not add MFA claims previously.
         // We try to determine best possible factorId based on the session's recipe user id.
 
-        const sessionInfo = await Session.getSessionInformation(sessionHandle, input.userContext);
+        const sessionInfo = await input.stInstance
+            .getRecipeInstanceOrThrow("session")
+            .recipeInterfaceImpl.getSessionInformation({ sessionHandle, userContext: input.userContext });
 
         if (sessionInfo === undefined) {
             throw new SessionError({
@@ -130,7 +134,12 @@ export const updateAndGetMFARelatedInfoInSession = async function (
         for (const lM of sessionUser.loginMethods) {
             if (lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()) {
                 if (lM.recipeId === "emailpassword") {
-                    let validRes = await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, input.userContext);
+                    let validRes = await isValidFirstFactor(
+                        input.stInstance,
+                        tenantId,
+                        FactorIds.EMAILPASSWORD,
+                        input.userContext
+                    );
                     if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
@@ -141,7 +150,12 @@ export const updateAndGetMFARelatedInfoInSession = async function (
                         break;
                     }
                 } else if (lM.recipeId === "thirdparty") {
-                    let validRes = await isValidFirstFactor(tenantId, FactorIds.THIRDPARTY, input.userContext);
+                    let validRes = await isValidFirstFactor(
+                        input.stInstance,
+                        tenantId,
+                        FactorIds.THIRDPARTY,
+                        input.userContext
+                    );
                     if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
@@ -163,7 +177,12 @@ export const updateAndGetMFARelatedInfoInSession = async function (
                     }
 
                     for (const factorId of factorsToCheck) {
-                        let validRes = await isValidFirstFactor(tenantId, factorId, input.userContext);
+                        let validRes = await isValidFirstFactor(
+                            input.stInstance,
+                            tenantId,
+                            factorId,
+                            input.userContext
+                        );
                         if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
                             throw new SessionError({
                                 type: SessionError.UNAUTHORISED,
@@ -205,20 +224,24 @@ export const updateAndGetMFARelatedInfoInSession = async function (
         if (userProm) {
             return userProm;
         }
-        userProm = getUser(sessionRecipeUserId.getAsString(), input.userContext).then((sessionUser) => {
-            if (sessionUser === undefined) {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Session user not found",
-                });
-            }
-            return sessionUser;
-        });
+        userProm = input.stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({ userId: sessionRecipeUserId.getAsString(), userContext: input.userContext })
+            .then((sessionUser) => {
+                if (sessionUser === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+                return sessionUser;
+            });
         return userProm;
     }
 
-    const mfaRequirementsForAuth = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth(
-        {
+    const mfaRequirementsForAuth = await input.stInstance
+        .getRecipeInstanceOrThrow("multifactorauth")
+        .recipeInterfaceImpl.getMFARequirementsForAuth({
             accessTokenPayload,
             tenantId,
             get user() {
@@ -226,10 +249,12 @@ export const updateAndGetMFARelatedInfoInSession = async function (
             },
             get factorsSetUpForUser() {
                 return userGetter().then((user) =>
-                    Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-                        user,
-                        userContext: input.userContext,
-                    })
+                    input.stInstance
+                        .getRecipeInstanceOrThrow("multifactorauth")
+                        .recipeInterfaceImpl.getFactorsSetupForUser({
+                            user,
+                            userContext: input.userContext,
+                        })
                 );
             },
             get requiredSecondaryFactorsForUser() {
@@ -241,31 +266,37 @@ export const updateAndGetMFARelatedInfoInSession = async function (
                         });
                     }
 
-                    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
-                        userId: sessionUser.id,
-                        userContext: input.userContext,
-                    });
+                    return input.stInstance
+                        .getRecipeInstanceOrThrow("multifactorauth")
+                        .recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
+                            userId: sessionUser.id,
+                            userContext: input.userContext,
+                        });
                 });
             },
             get requiredSecondaryFactorsForTenant() {
-                return Multitenancy.getTenant(tenantId, input.userContext).then((tenantInfo) => {
-                    if (tenantInfo === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Tenant not found",
-                        });
-                    }
+                return input.stInstance
+                    .getRecipeInstanceOrThrow("multitenancy")
+                    .recipeInterfaceImpl.getTenant({ tenantId, userContext: input.userContext })
+                    .then((tenantInfo) => {
+                        if (tenantInfo === undefined) {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Tenant not found",
+                            });
+                        }
 
-                    return tenantInfo.requiredSecondaryFactors ?? [];
-                });
+                        return tenantInfo.requiredSecondaryFactors ?? [];
+                    });
             },
             completedFactors,
             userContext: input.userContext,
-        }
-    );
+        });
 
     const areAuthReqsComplete =
-        MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds
+        input.stInstance
+            .getRecipeInstanceOrThrow("multifactorauth")
+            .multiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds
             .length === 0;
     if (mfaClaimValue.v !== areAuthReqsComplete) {
         updatedClaimVal = true;
@@ -273,7 +304,11 @@ export const updateAndGetMFARelatedInfoInSession = async function (
     }
 
     if ("session" in input && updatedClaimVal) {
-        await input.session.setClaimValue(MultiFactorAuthClaim, mfaClaimValue, input.userContext);
+        await input.session.setClaimValue(
+            input.stInstance.getRecipeInstanceOrThrow("multifactorauth").multiFactorAuthClaim,
+            mfaClaimValue,
+            input.userContext
+        );
     }
 
     return {

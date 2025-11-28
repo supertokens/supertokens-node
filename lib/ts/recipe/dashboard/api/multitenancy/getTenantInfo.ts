@@ -12,17 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions, CoreConfigFieldInfo } from "../../types";
-import Multitenancy from "../../../multitenancy";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import SuperTokens from "../../../../supertokens";
+import { APIFunction, CoreConfigFieldInfo } from "../../types";
 import { getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
 import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
 import { Querier } from "../../../../querier";
-import { UserContext } from "../../../../types";
 import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 
 export type Response =
@@ -43,13 +39,14 @@ export type Response =
           status: "UNKNOWN_TENANT_ERROR";
       };
 
-export default async function getTenantInfo(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
-    let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
+export default async function getTenantInfo({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
+    let tenantRes = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
     if (tenantRes === undefined) {
         return {
@@ -59,7 +56,7 @@ export default async function getTenantInfo(
 
     let { status, ...tenantConfig } = tenantRes;
 
-    let firstFactors = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(tenantConfig);
+    let firstFactors = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(stInstance, tenantConfig);
 
     if (tenantRes === undefined) {
         return {
@@ -67,10 +64,9 @@ export default async function getTenantInfo(
         };
     }
 
-    const userCount = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
+    const userCount = await stInstance.getUserCount(undefined, tenantId, userContext);
 
     const providersFromCore = tenantRes?.thirdParty?.providers;
-    const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
     const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(
@@ -79,7 +75,7 @@ export default async function getTenantInfo(
         tenantId === DEFAULT_TENANT_ID
     );
 
-    let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
+    let querier = Querier.getNewInstanceOrThrowError(stInstance, options.recipeId);
     let coreConfig = await querier.sendGetRequest(
         {
             path: "/<tenantId>/recipe/dashboard/tenant/core-config",

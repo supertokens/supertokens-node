@@ -17,7 +17,6 @@ import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import MultitenancyRecipe from "../multitenancy/recipe";
 import STError from "./error";
 
 import { SIGN_IN_UP_API, AUTHORISATION_API, APPLE_REDIRECT_HANDLER } from "./constants";
@@ -26,7 +25,6 @@ import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { Querier } from "../../querier";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
@@ -34,6 +32,7 @@ import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks
 import { FactorIds } from "../multifactorauth";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -50,6 +49,7 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
 
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
@@ -57,25 +57,23 @@ export default class Recipe extends RecipeModule {
         _recipes: {},
         _ingredients: {}
     ) {
-        super(recipeId, appInfo);
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         this.providers = this.config.signInAndUpFeature.providers;
 
         {
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.providers)
-            );
+            let builder = new OverrideableBuilder(RecipeImplementation(this.stInstance, this.querier, this.providers));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const mtRecipe = MultitenancyRecipe.getInstance();
+            const mtRecipe = stInstance.getRecipeInstance("multitenancy");
             if (mtRecipe !== undefined) {
                 mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
                 mtRecipe.allAvailableFirstFactors.push(FactorIds.THIRDPARTY);
@@ -84,9 +82,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -161,7 +160,7 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this.apiImpl, tenantId, options, userContext);
+            return await signInUpAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === AUTHORISATION_API) {
             return await authorisationUrlAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === APPLE_REDIRECT_HANDLER) {

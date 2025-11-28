@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
@@ -34,8 +34,6 @@ const sinon = require("sinon");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         this.server = undefined;
     });
@@ -46,14 +44,9 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         }
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -125,7 +118,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             framework: "koa",
@@ -195,7 +188,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //- check for token theft detection
     it("koa token theft detection", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -318,7 +311,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //- check for token theft detection
     it("koa token theft detection with auto refresh middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -415,7 +408,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -570,7 +563,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test signout API works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -633,7 +626,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check basic usage of session
     it("test basic usage of express sessions with auto refresh", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             framework: "koa",
@@ -787,7 +780,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -870,7 +863,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -957,7 +950,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check revoking session(s)**
     it("test revoking express sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1100,7 +1093,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check manipulating session data
     it("test manipulating session data with express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1250,7 +1243,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check manipulating jwt payload
     it("test manipulating jwt payload with express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1465,7 +1458,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("sending custom response koa", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1517,7 +1510,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1572,7 +1565,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that tags request respond with correct tags", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1601,12 +1594,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -1630,7 +1617,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1659,12 +1646,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1694,7 +1675,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for multiple search items", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1723,12 +1704,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1758,7 +1733,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1788,12 +1763,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -1822,7 +1791,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1854,12 +1823,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1889,7 +1852,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -1921,12 +1884,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1956,7 +1913,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -2030,12 +1987,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -2064,7 +2015,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
@@ -2141,12 +2092,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());

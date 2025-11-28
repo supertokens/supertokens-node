@@ -14,7 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
@@ -22,7 +22,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserCont
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { RESYNC_SESSION_AND_FETCH_MFA_INFO } from "./constants";
-import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
+import { MultiFactorAuthClaimClass } from "./multiFactorAuthClaim";
 import {
     APIInterface,
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
@@ -33,20 +33,20 @@ import {
     TypeInput,
     TypeNormalisedInput,
 } from "./types";
-import { validateAndNormaliseUserInput } from "./utils";
+import { updateAndGetMFARelatedInfoInSession, validateAndNormaliseUserInput } from "./utils";
 import resyncSessionAndFetchMFAInfoAPI from "./api/resyncSessionAndFetchMFAInfo";
-import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
-import MultitenancyRecipe from "../multitenancy/recipe";
-import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
+    public multiFactorAuthClaim: MultiFactorAuthClaimClass;
     static RECIPE_ID = "multifactorauth" as const;
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
@@ -66,15 +66,19 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    querier: Querier;
-
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(config);
         this.isInServerlessEnv = isInServerlessEnv;
-
+        this.multiFactorAuthClaim = new MultiFactorAuthClaimClass(() => stInstance);
         {
-            let originalImpl = RecipeImplementation(this);
+            let originalImpl = RecipeImplementation(stInstance, this);
             let builder = new OverrideableBuilder(originalImpl);
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
 
@@ -84,12 +88,12 @@ export default class Recipe extends RecipeModule {
         }
 
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance, this.multiFactorAuthClaim));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const mtRecipe = MultitenancyRecipe.getInstance();
+            const mtRecipe = stInstance.getRecipeInstance("multitenancy");
             if (mtRecipe !== undefined) {
                 mtRecipe.staticFirstFactors = this.config.firstFactors;
             }
@@ -98,12 +102,12 @@ export default class Recipe extends RecipeModule {
             // on factor setup / completion any way (in the sign in / up APIs).
             // SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(MultiFactorAuthClaim);
 
-            SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
-                MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()
-            );
+            stInstance
+                .getRecipeInstanceOrThrow("session")
+                .addClaimValidatorFromOtherRecipe(
+                    this.multiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()
+                );
         });
-
-        this.querier = Querier.getNewInstanceOrThrowError(recipeId);
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -118,9 +122,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -174,7 +179,7 @@ export default class Recipe extends RecipeModule {
             res,
         };
         if (id === RESYNC_SESSION_AND_FETCH_MFA_INFO) {
-            return await resyncSessionAndFetchMFAInfoAPI(this.apiImpl, options, userContext);
+            return await resyncSessionAndFetchMFAInfoAPI(this.stInstance, this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
     };
@@ -273,4 +278,39 @@ export default class Recipe extends RecipeModule {
         }
         return result;
     };
+
+    async assertAllowedToSetupFactorElseThrowInvalidClaimError(
+        session: SessionContainerInterface,
+        factorId: string,
+        userContext: UserContext
+    ) {
+        const user = await this.stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({ userId: session.getUserId(), userContext });
+        if (!user) {
+            throw new Error("Unknown user id");
+        }
+        const mfaInfo = await updateAndGetMFARelatedInfoInSession({
+            stInstance: this.stInstance,
+            session,
+            userContext,
+        });
+
+        const factorsSetUpForUser = await this.recipeInterfaceImpl.getFactorsSetupForUser({
+            user,
+            userContext,
+        });
+
+        await this.recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError({
+            session,
+            factorId,
+            get factorsSetUpForUser() {
+                return Promise.resolve(factorsSetUpForUser);
+            },
+            get mfaRequirementsForAuth() {
+                return Promise.resolve(mfaInfo.mfaRequirementsForAuth);
+            },
+            userContext,
+        });
+    }
 }

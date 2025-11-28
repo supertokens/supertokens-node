@@ -14,13 +14,14 @@
  */
 
 import SuperTokens from "./supertokens";
-import SuperTokensError from "./error";
+import SuperTokensError, { SuperTokensPluginError } from "./error";
 import { UserContext, User as UserType } from "./types";
-import AccountLinking from "./recipe/accountlinking/recipe";
 import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
 import { getUserContext } from "./utils";
+import { SessionContainerInterface } from "./recipe/session/types";
+import { FactorIds } from "./recipe/multifactorauth";
 
 export type {
     TypeInput as SuperTokensConfig,
@@ -34,6 +35,7 @@ export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
     static Error = SuperTokensError;
+    static PluginError = SuperTokensPluginError;
     static RecipeUserId = RecipeUserId;
     static User = User;
 
@@ -60,11 +62,13 @@ export default class SuperTokensWrapper {
         users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
-            timeJoinedOrder: "ASC",
-            ...input,
-            userContext: getUserContext(input.userContext),
-        });
+        return SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUsers({
+                timeJoinedOrder: "ASC",
+                ...input,
+                userContext: getUserContext(input.userContext),
+            });
     }
 
     static getUsersNewestFirst(input: {
@@ -78,11 +82,13 @@ export default class SuperTokensWrapper {
         users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
-            timeJoinedOrder: "DESC",
-            ...input,
-            userContext: getUserContext(input.userContext),
-        });
+        return SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUsers({
+                timeJoinedOrder: "DESC",
+                ...input,
+                userContext: getUserContext(input.userContext),
+            });
     }
 
     static createUserIdMapping(input: {
@@ -134,10 +140,12 @@ export default class SuperTokensWrapper {
     }
 
     static async getUser(userId: string, userContext?: Record<string, any>) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
-            userId,
-            userContext: getUserContext(userContext),
-        });
+        return await SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({
+                userId,
+                userContext: getUserContext(userContext),
+            });
     }
 
     static async listUsersByAccountInfo(
@@ -146,23 +154,27 @@ export default class SuperTokensWrapper {
         doUnionOfAccountInfo: boolean = false,
         userContext?: Record<string, any>
     ) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-            tenantId,
-            accountInfo,
-            doUnionOfAccountInfo,
-            userContext: getUserContext(userContext),
-        });
+        return await SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId,
+                accountInfo,
+                doUnionOfAccountInfo,
+                userContext: getUserContext(userContext),
+            });
     }
     static async deleteUser(
         userId: string,
         removeAllLinkedAccounts: boolean = true,
         userContext?: Record<string, any>
     ) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
-            userId,
-            removeAllLinkedAccounts,
-            userContext: getUserContext(userContext),
-        });
+        return await SuperTokens.getInstanceOrThrowError()
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.deleteUser({
+                userId,
+                removeAllLinkedAccounts,
+                userContext: getUserContext(userContext),
+            });
     }
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId {
         return new RecipeUserId(recipeUserId);
@@ -176,6 +188,34 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError()
             .recipeModules.map((recipe) => recipe.getRecipeId())
             .includes(recipeId);
+    }
+
+    static async getAvailableFirstFactors(
+        tenantId: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
+        const factorIds = Object.values(FactorIds);
+
+        try {
+            const { AuthUtils } = require("./authUtils");
+            const availableFirstFactors = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
+                factorIds,
+                tenantId,
+                !!session,
+                getUserContext(userContext)
+            );
+
+            return availableFirstFactors;
+        } catch (error) {
+            if (error instanceof SuperTokensError) {
+                if (error.type === SuperTokensError.BAD_INPUT_ERROR) {
+                    return [];
+                }
+            }
+
+            throw error;
+        }
     }
 }
 
@@ -209,7 +249,11 @@ export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserCont
 
 export let isRecipeInitialized = SuperTokensWrapper.isRecipeInitialized;
 
+export let getAvailableFirstFactors = SuperTokensWrapper.getAvailableFirstFactors;
+
 export let Error = SuperTokensWrapper.Error;
+
+export let PluginError = SuperTokensWrapper.PluginError;
 
 export { default as RecipeUserId } from "./recipeUserId";
 export { User } from "./user";

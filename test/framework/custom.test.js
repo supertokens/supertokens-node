@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../..");
@@ -24,8 +24,6 @@ const sinon = require("sinon");
 
 describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
@@ -34,14 +32,10 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
             await this.server.close();
         } catch (err) {}
     });
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
 
     // - check if session verify middleware responds with a nice error even without the global error handler
     it("test session verify middleware without error handler added", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "custom",
             supertokens: {
@@ -75,7 +69,7 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
 
     // check basic usage of session
     it("test basic usage of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "custom",
             supertokens: {
@@ -231,5 +225,121 @@ describe(`PreParsedRequest`, function () {
 
         assert(JSON.stringify(formData) === JSON.stringify(mockFormData));
         assert(JSON.stringify(formData2) === JSON.stringify(mockFormData));
+    });
+});
+
+describe(`CollectingResponse`, function () {
+    it("sendJSONResponse should ignore subsequent calls after first call", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // First call - should set the response
+        resp.sendJSONResponse({ status: "FIRST", message: "This should be preserved" });
+
+        // Second call - should be ignored
+        resp.sendJSONResponse({ status: "SECOND", message: "This should be ignored" });
+
+        // Verify only the first response is set
+        assert.strictEqual(resp.body, JSON.stringify({ status: "FIRST", message: "This should be preserved" }));
+        assert.strictEqual(resp.headers.get("Content-Type"), "application/json");
+    });
+
+    it("sendHTMLResponse should ignore subsequent calls after first call", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // First call - should set the response
+        resp.sendHTMLResponse("<html>First</html>");
+
+        // Second call - should be ignored
+        resp.sendHTMLResponse("<html>Second</html>");
+
+        // Verify only the first response is set
+        assert.strictEqual(resp.body, "<html>First</html>");
+        assert.strictEqual(resp.headers.get("Content-Type"), "text/html");
+    });
+
+    it("setStatusCode should ignore subsequent calls after response is set", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // Set status code and send response
+        resp.setStatusCode(400);
+        resp.sendJSONResponse({ status: "ERROR" });
+
+        // Try to change status code after response is sent - should be ignored
+        resp.setStatusCode(200);
+
+        // Verify status code remains 400
+        assert.strictEqual(resp.statusCode, 400);
+        assert.strictEqual(resp.body, JSON.stringify({ status: "ERROR" }));
+    });
+
+    it("sendJSONResponse should not allow sendHTMLResponse to overwrite", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // Set JSON response first
+        resp.sendJSONResponse({ status: "JSON" });
+
+        // Try to send HTML response - should be ignored
+        resp.sendHTMLResponse("<html>HTML</html>");
+
+        // Verify JSON response is preserved
+        assert.strictEqual(resp.body, JSON.stringify({ status: "JSON" }));
+        assert.strictEqual(resp.headers.get("Content-Type"), "application/json");
+    });
+
+    it("sendHTMLResponse should not allow sendJSONResponse to overwrite", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // Set HTML response first
+        resp.sendHTMLResponse("<html>HTML</html>");
+
+        // Try to send JSON response - should be ignored
+        resp.sendJSONResponse({ status: "JSON" });
+
+        // Verify HTML response is preserved
+        assert.strictEqual(resp.body, "<html>HTML</html>");
+        assert.strictEqual(resp.headers.get("Content-Type"), "text/html");
+    });
+
+    it("should allow setting status code before sending response", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // Set status code first
+        resp.setStatusCode(400);
+
+        // Then send response
+        resp.sendJSONResponse({ status: "ERROR" });
+
+        // Verify both are set correctly
+        assert.strictEqual(resp.statusCode, 400);
+        assert.strictEqual(resp.body, JSON.stringify({ status: "ERROR" }));
+    });
+
+    it("should simulate API override behavior - custom response should be preserved", function () {
+        const resp = new CustomFramework.CollectingResponse();
+
+        // Simulate what happens in an API override:
+        // 1. User calls setStatusCode and sendJSONResponse with custom response
+        resp.setStatusCode(400);
+        resp.sendJSONResponse({
+            status: "CUSTOM_ERROR",
+            message: "Custom error from override",
+        });
+
+        // 2. SDK later tries to send the returned value (should be ignored)
+        resp.setStatusCode(200);
+        resp.sendJSONResponse({
+            status: "GENERAL_ERROR",
+            message: "This should not appear",
+        });
+
+        // Verify the custom response is preserved
+        assert.strictEqual(resp.statusCode, 400);
+        assert.strictEqual(
+            resp.body,
+            JSON.stringify({
+                status: "CUSTOM_ERROR",
+                message: "Custom error from override",
+            })
+        );
     });
 });

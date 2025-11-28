@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
+const { printPath, createCoreApplication, signUPRequest, resetAll } = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -26,18 +26,11 @@ const express = require("express");
 
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
-        ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
+        resetAll();
     });
 
     it("test getUsersOldestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -57,11 +50,18 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "test4@gmail.com", "testPass123");
+        const randomValue = Math.random();
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signUPRequest(app, email, `testPass-${randomValue}-${i}` + randomValue + i);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -69,12 +69,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[0]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test1@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -101,7 +101,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersOldestFirst with search queries", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -121,16 +121,17 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
-        if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
-            return;
+        const randomValue = Math.random();
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
         }
-
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "john@gmail.com", "testPass123");
+        await signUPRequest(app, "john@gmail.com", `testPass-${randomValue}-4`);
 
         let users = await getUsersOldestFirst({ tenantId: "public", query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
@@ -146,7 +147,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -166,11 +167,18 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "test4@gmail.com", "testPass123");
+        const randomValue = Math.random();
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -178,12 +186,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test4@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[emails.length - 1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test3@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[emails.length - 2]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -210,7 +218,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst with search queries", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -230,16 +238,18 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
-        if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
-            return;
+        const randomValue = Math.random();
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "john@gmail.com", "testPass123");
+        await signUPRequest(app, "john3@gmail.com", `testPass-${randomValue}-4`);
 
         let users = await getUsersNewestFirst({ tenantId: "public", query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
@@ -249,7 +259,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUserCount", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -272,14 +282,21 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
+        await signUPRequest(app, "test@gmail.com", "testPass-${randomValue}-4");
         userCount = await getUserCount();
         assert.strictEqual(userCount, 1);
 
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "test4@gmail.com", "testPass123");
+        const randomValue = Math.random();
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
 
         userCount = await getUserCount();
         assert.strictEqual(userCount, 5);

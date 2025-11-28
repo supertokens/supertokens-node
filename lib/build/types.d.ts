@@ -2,9 +2,9 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeFramework } from "./framework/types";
+import type { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
-import { BaseRequest, BaseResponse } from "./framework";
+import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeInput as AccountLinkingTypeInput } from "./recipe/accountlinking/types";
 import type { TypeInput as DashboardTypeInput } from "./recipe/dashboard/types";
 import type { TypeInput as EmailPasswordTypeInput } from "./recipe/emailpassword/types";
@@ -26,6 +26,7 @@ import type { TypeInput as UserMetadataTypeInput } from "./recipe/usermetadata/t
 import type { TypeInput as UserRolesTypeInput } from "./recipe/userroles/types";
 import type { TypeInput as WebauthnTypeInput } from "./recipe/webauthn/types";
 import type { TypeInput as SAMLTypeInput } from "./recipe/saml/types";
+import type SuperTokens from "./supertokens";
 declare const __brand: unique symbol;
 type Brand<B> = {
     [__brand]: B;
@@ -192,6 +193,7 @@ export interface HttpRequest {
     body?: any;
 }
 export type RecipeListFunction = (
+    superTokens: SuperTokens,
     appInfo: NormalisedAppinfo,
     isInServerlessEnv: boolean,
     overrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[]

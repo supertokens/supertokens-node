@@ -15,7 +15,8 @@
 import { TypeWebauthnEmailDeliveryInput } from "../../../types";
 import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { isTestEnv, postWithFetch } from "../../../../../utils";
+import { isTestEnv } from "../../../../../utils";
+import { postWithFetch } from "../../../../../querier";
 
 async function createAndSendEmailUsingSupertokensService(input: {
     appInfo: NormalisedAppinfo;

@@ -14,10 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
     extractCookieCountInfo,
 } = require("../utils");
@@ -39,8 +38,6 @@ const ThirdParty = require("../../recipe/thirdparty");
 
 describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         this.server = Fastify();
     });
@@ -50,14 +47,10 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
             await this.server.close();
         } catch (err) {}
     });
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -111,7 +104,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -160,7 +153,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     //- check for token theft detection
     it("token theft detection", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -262,7 +255,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // - check for token theft detection
     it("token theft detection with auto refresh middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -338,7 +331,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // - check for token theft detection without error handler
     it("token theft detection with auto refresh middleware without error handler", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -412,7 +405,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // - check if session verify middleware responds with a nice error even without the global error handler
     it("test session verify middleware without error handler added", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -449,7 +442,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // check basic usage of session
     it("test basic usage of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -562,7 +555,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test signout API works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -608,7 +601,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // check basic usage of session
     it("test basic usage of sessions with auto refresh", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -723,7 +716,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -784,7 +777,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -850,7 +843,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     //check revoking session(s)**
     it("test revoking sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -946,7 +939,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     //check manipulating session data
     it("test manipulating session data", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1073,7 +1066,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
 
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1258,7 +1251,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("sending custom response fastify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1304,7 +1297,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("generating email verification token without payload", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1359,7 +1352,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test same cookie is not getting set multiple times", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1391,7 +1384,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1438,7 +1431,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that tags request respond with correct tags", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1467,12 +1460,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(FastifyFramework.plugin);
         let resp = await this.server.inject({
             method: "get",
@@ -1489,7 +1476,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1518,12 +1505,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(FastifyFramework.plugin);
         await createUsers(EmailPassword);
@@ -1542,7 +1523,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for multiple search terms", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1571,12 +1552,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
                 EmailPassword.init(),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await this.server.register(FastifyFramework.plugin);
         await createUsers(EmailPassword);
@@ -1595,7 +1570,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1625,12 +1600,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await this.server.register(FastifyFramework.plugin);
         await createUsers(EmailPassword);
         let resp = await this.server.inject({
@@ -1648,7 +1617,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1680,12 +1649,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await createUsers(null, Passwordless);
         await this.server.register(FastifyFramework.plugin);
@@ -1704,7 +1667,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1736,12 +1699,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await createUsers(null, null);
         await this.server.register(FastifyFramework.plugin);
@@ -1760,7 +1717,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1834,12 +1791,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
-
         await createUsers(null, null, ThirdParty);
         await this.server.register(FastifyFramework.plugin);
         let resp = await this.server.inject({
@@ -1857,7 +1808,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
@@ -1934,12 +1885,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
                 }),
             ],
         });
-
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.19") === "2.19") {
-            return this.skip();
-        }
 
         await createUsers(null, Passwordless, ThirdParty);
         await this.server.register(FastifyFramework.plugin);

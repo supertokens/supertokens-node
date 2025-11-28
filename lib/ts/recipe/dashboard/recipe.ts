@@ -96,6 +96,7 @@ import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
 import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -109,18 +110,24 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
 
         this.config = validateAndNormaliseUserInput(config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation());
+            let builder = new OverrideableBuilder(RecipeImplementation(this.querier));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
     }
@@ -133,9 +140,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -463,11 +471,25 @@ export default class Recipe extends RecipeModule {
 
         // For these APIs we dont need API key validation
         if (id === DASHBOARD_API) {
-            return await dashboard(this.apiImpl, options, userContext);
+            return await dashboard({
+                apiImplementation: this.apiImpl,
+                recipeInstance: this,
+                stInstance: this.stInstance,
+                tenantId,
+                options,
+                userContext,
+            });
         }
 
         if (id === SIGN_IN_API) {
-            return await signIn(this.apiImpl, options, userContext);
+            return await signIn({
+                apiImplementation: this.apiImpl,
+                recipeInstance: this,
+                stInstance: this.stInstance,
+                tenantId,
+                options,
+                userContext,
+            });
         }
 
         if (id === VALIDATE_KEY_API) {
@@ -599,7 +621,14 @@ export default class Recipe extends RecipeModule {
             return false;
         }
 
-        return await apiKeyProtector(this.apiImpl, tenantId, options, apiFunction, userContext);
+        return await apiKeyProtector(apiFunction, {
+            apiImplementation: this.apiImpl,
+            recipeInstance: this,
+            stInstance: this.stInstance,
+            tenantId,
+            options,
+            userContext,
+        });
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {

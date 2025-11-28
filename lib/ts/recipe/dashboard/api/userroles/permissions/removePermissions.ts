@@ -1,19 +1,17 @@
-import UserRolesRecipe from "../../../../userroles/recipe";
-import UserRoles from "../../../../userroles";
-import { APIInterface, APIOptions } from "../../../types";
+import { APIFunction } from "../../../types";
 
 import STError from "../../../../../error";
 
-const removePermissionsFromRole = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    __: any
-): Promise<{
+const removePermissionsFromRole = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<{
     status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
 }> => {
+    let userrolesRecipe = undefined;
     try {
-        UserRolesRecipe.getInstanceOrThrowError();
+        userrolesRecipe = stInstance.getRecipeInstanceOrThrow("userroles");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
@@ -40,7 +38,11 @@ const removePermissionsFromRole = async (
             });
         }
 
-    const response = await UserRoles.removePermissionsFromRole(role, permissions);
+    const response = await userrolesRecipe.recipeInterfaceImpl.removePermissionsFromRole({
+        role,
+        permissions,
+        userContext,
+    });
     return response;
 };
 

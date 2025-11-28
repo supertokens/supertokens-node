@@ -16,9 +16,10 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import type SuperTokens from "../../../supertokens";
 
 export default async function listCredentialsAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     _: string,
     options: APIOptions,
@@ -28,17 +29,17 @@ export default async function listCredentialsAPI(
         return false;
     }
 
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
-        userContext
-    );
+    const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
+        req: options.req,
+        res: options.res,
+        options: { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        userContext,
+    });
 
     const result = await apiImplementation.listCredentialsGET({
         options,
         userContext: userContext,
-        session,
+        session: session!,
     });
 
     send200Response(options.res, result);

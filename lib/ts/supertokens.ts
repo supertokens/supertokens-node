@@ -38,12 +38,12 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeFramework } from "./framework/types";
-import STError from "./error";
+import STError, { transformErrorToSuperTokensError } from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 import { SessionContainerInterface } from "./recipe/session/types";
-import Session from "./recipe/session/recipe";
+import { RecipeIdToRecipeTypeMap } from "./recipeIdToRecipeType";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -56,7 +56,7 @@ export default class SuperTokens {
 
     recipeModules: RecipeModule[];
 
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & { pluginId: string })[];
 
     pluginOverrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[];
 
@@ -153,7 +153,7 @@ export default class SuperTokens {
         let AccountLinkingRecipe = require("./recipe/accountlinking/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
-            const recipeModule = func(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps);
+            const recipeModule = func(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps);
 
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
@@ -178,18 +178,22 @@ export default class SuperTokens {
 
         if (!accountLinkingFound) {
             this.recipeModules.push(
-                AccountLinkingRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+                AccountLinkingRecipe.init()(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
             );
         }
         if (!jwtFound) {
-            this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
+            this.recipeModules.push(
+                jwtRecipe.init()(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+            );
         }
         if (!openIdFound) {
-            this.recipeModules.push(OpenIdRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps));
+            this.recipeModules.push(
+                OpenIdRecipe.init()(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+            );
         }
         if (!multitenancyFound) {
             this.recipeModules.push(
-                MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+                MultitenancyRecipe.init()(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
             );
         }
         if (totpFound && !multiFactorAuthFound) {
@@ -199,7 +203,7 @@ export default class SuperTokens {
             // Initializing the user metadata recipe shouldn't cause any issues/side effects and it doesn't expose any APIs,
             // so we can just always initialize it
             this.recipeModules.push(
-                UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+                UserMetadataRecipe.init()(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
             );
         }
         // While for many usecases account linking recipe also has to be initialized for MFA to function well,
@@ -210,7 +214,7 @@ export default class SuperTokens {
         // We've decided to always initialize the OAuth2Provider recipe
         if (!oauth2Found) {
             this.recipeModules.push(
-                OAuth2ProviderRecipe.init()(this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
+                OAuth2ProviderRecipe.init()(this, this.appInfo, this.isInServerlessEnv, this.pluginOverrideMaps)
             );
         }
         this.telemetryEnabled = config.telemetry === undefined ? !isTestEnv() : config.telemetry;
@@ -279,7 +283,7 @@ export default class SuperTokens {
         tenantId: string | undefined,
         userContext: UserContext
     ): Promise<number> => {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let querier = Querier.getNewInstanceOrThrowError(this);
         let apiVersion = await querier.getAPIVersion(userContext);
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             throw new Error(
@@ -323,7 +327,7 @@ export default class SuperTokens {
               doesExternalUserIdExist: boolean;
           }
     > {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let querier = Querier.getNewInstanceOrThrowError(this);
         let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
@@ -357,7 +361,7 @@ export default class SuperTokens {
               status: "UNKNOWN_MAPPING_ERROR";
           }
     > {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let querier = Querier.getNewInstanceOrThrowError(this);
         let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
@@ -384,7 +388,7 @@ export default class SuperTokens {
         status: "OK";
         didMappingExist: boolean;
     }> {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let querier = Querier.getNewInstanceOrThrowError(this);
         let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             return await querier.sendPostRequest(
@@ -409,7 +413,7 @@ export default class SuperTokens {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }> {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let querier = Querier.getNewInstanceOrThrowError(this);
         let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             return await querier.sendPutRequest(
@@ -438,14 +442,28 @@ export default class SuperTokens {
         if (handlerFromApis) {
             let session: SessionContainerInterface | undefined = undefined;
             if (handlerFromApis.verifySessionOptions !== undefined) {
-                session = await Session.getInstanceOrThrowError().verifySession(
+                session = await this.getRecipeInstanceOrThrow("session").verifySession(
                     handlerFromApis.verifySessionOptions,
                     request,
                     response,
                     userContext
                 );
             }
-            handlerFromApis.handler(request, response, session, userContext);
+
+            logDebugMessage("middleware: Request being handled by plugin. ID is: " + handlerFromApis.pluginId);
+
+            try {
+                await handlerFromApis.handler(request, response, session, userContext);
+            } catch (err) {
+                logDebugMessage(
+                    "middleware: Error from plugin, transforming to SuperTokensError. Plugin ID: " +
+                        handlerFromApis.pluginId
+                );
+
+                // transform errors to SuperTokensError to be handled by the errorHandler
+                throw transformErrorToSuperTokensError(err);
+            }
+
             return true;
         }
 
@@ -622,6 +640,17 @@ export default class SuperTokens {
                 return sendNon200ResponseWithMessage(response, err.message, 400);
             }
 
+            if (err.type === STError.PLUGIN_ERROR) {
+                const code = "code" in err && err.code ? err.code : 400;
+                logDebugMessage(`errorHandler: Sending ${code} status code response`);
+                return sendNon200ResponseWithMessage(response, err.message, code);
+            }
+
+            if (err.type === STError.UNKNOWN_ERROR) {
+                logDebugMessage("errorHandler: Sending 500 status code response");
+                return sendNon200ResponseWithMessage(response, err.message, 500);
+            }
+
             for (let i = 0; i < this.recipeModules.length; i++) {
                 logDebugMessage("errorHandler: Checking recipe for match: " + this.recipeModules[i].getRecipeId());
                 if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
@@ -651,5 +680,25 @@ export default class SuperTokens {
         }
 
         return userContext._default.request;
+    };
+
+    getRecipeInstanceOrThrow = <T extends keyof RecipeIdToRecipeTypeMap>(recipeId: T): RecipeIdToRecipeTypeMap[T] => {
+        const recipe = this.recipeModules.find((recipe) => recipe.getRecipeId() === recipeId);
+        if (recipe === undefined) {
+            throw new Error(
+                `Recipe ${recipeId} not initialised. Did you forget to call the add it to the recipe list?`
+            );
+        }
+        return recipe as RecipeIdToRecipeTypeMap[T];
+    };
+
+    getRecipeInstance = <T extends keyof RecipeIdToRecipeTypeMap>(
+        recipeId: T
+    ): RecipeIdToRecipeTypeMap[T] | undefined => {
+        const recipe = this.recipeModules.find((recipe) => recipe.getRecipeId() === recipeId);
+        if (recipe === undefined) {
+            return undefined;
+        }
+        return recipe as RecipeIdToRecipeTypeMap[T];
     };
 }

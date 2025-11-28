@@ -13,12 +13,11 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../../../types";
+import { APIFunction } from "../../../types";
 import STError from "../../../../../error";
 import EmailPassword from "../../../../emailpassword";
-import EmailPasswordRecipe from "../../../../emailpassword/recipe";
-import { User, UserContext } from "../../../../../types";
-import RecipeUserId from "../../../../../recipeUserId";
+import type { User } from "../../../../../types";
+import type RecipeUserId from "../../../../../recipeUserId";
 
 type Response =
     | {
@@ -38,15 +37,15 @@ type Response =
           message: string;
       };
 
-export const createEmailPasswordUser = async (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
-    let emailPassword: EmailPasswordRecipe | undefined = undefined;
+export const createEmailPasswordUser = async ({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
+    let emailPassword = undefined;
     try {
-        emailPassword = EmailPasswordRecipe.getInstanceOrThrowError();
+        emailPassword = stInstance.getRecipeInstanceOrThrow("emailpassword");
     } catch (error) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",

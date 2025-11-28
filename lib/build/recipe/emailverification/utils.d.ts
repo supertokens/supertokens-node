@@ -2,7 +2,7 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput } from "./types";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { BaseRequest } from "../../framework";
+import type { BaseRequest } from "../../framework";
 export declare function validateAndNormaliseUserInput(
     _: Recipe,
     appInfo: NormalisedAppinfo,

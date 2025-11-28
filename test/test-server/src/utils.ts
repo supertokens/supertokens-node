@@ -137,6 +137,22 @@ export async function convertRequestSessionToSessionObject(
     return tokens;
 }
 
+export function serializeResponseSession(session: Session.SessionContainer) {
+    const tokens = session.getAllSessionTokensDangerously();
+    return {
+        accessToken: session.getAccessToken(),
+        frontToken: tokens.frontToken,
+        refreshToken: (session as any).refreshToken,
+        antiCsrfToken: tokens.antiCsrfToken,
+        sessionHandle: session.getHandle(),
+        userId: session.getUserId(),
+        recipeUserId: session.getRecipeUserId(),
+        userDataInAccessToken: session.getAccessTokenPayload(),
+        accessTokenUpdated: tokens.accessAndFrontTokenUpdated,
+        tenantId: session.getTenantId(),
+    };
+}
+
 export async function serializeResponse(req, res, response) {
     const fdiVersion: string = req.headers["fdi-version"] as string;
 

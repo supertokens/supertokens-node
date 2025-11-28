@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
+const { printPath, createCoreApplication } = require("../../utils");
 const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
 const ThirdPartyRecipe = require("../../../lib/build/recipe/thirdparty").default;
@@ -11,19 +11,12 @@ describe(`userIdMapping with thirdparty: ${printPath(
     "[test/useridmapping/recipeTests/thirdparty.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("signInUp", () => {
         it("create a thirdParty user and map their userId, signIn and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -54,13 +47,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
@@ -97,7 +83,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
     describe("getUserById", () => {
         it("create a thirdParty user and map their userId, retrieve the user info using getUserById and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -128,13 +114,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
@@ -164,7 +143,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
     describe("getUsersByEmail", () => {
         it("create a thirdParty user and map their userId, retrieve the user info using getUsersByEmail and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -195,13 +174,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
@@ -231,7 +203,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
     describe("getUserByThirdPartyInfo", () => {
         it("create a thirdParty user and map their userId, retrieve the user info using getUserByThirdPartyInfo and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -262,13 +234,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a thirdParty user
             const thirdPartyId = "google";

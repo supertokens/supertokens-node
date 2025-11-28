@@ -1,19 +1,16 @@
-import { APIInterface, APIOptions } from "../../types";
+import { APIFunction } from "../../types";
 import STError from "../../../../error";
-import AccountLinking from "../../../accountlinking";
 import RecipeUserId from "../../../../recipeUserId";
-import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";
 };
 
-export const userUnlink = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> => {
+export const userUnlink = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> => {
     const recipeUserId = options.req.getKeyValueFromQuery("recipeUserId");
 
     if (recipeUserId === undefined) {
@@ -23,7 +20,9 @@ export const userUnlink = async (
         });
     }
 
-    await AccountLinking.unlinkAccount(new RecipeUserId(recipeUserId), userContext);
+    await stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.unlinkAccount({ recipeUserId: new RecipeUserId(recipeUserId), userContext });
 
     return {
         status: "OK",

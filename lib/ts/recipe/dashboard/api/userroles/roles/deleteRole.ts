@@ -1,15 +1,12 @@
-import UserRolesRecipe from "../../../../userroles/recipe";
-import UserRoles from "../../../../userroles";
-import { APIInterface, APIOptions } from "../../../types";
+import { APIFunction } from "../../../types";
 
 import STError from "../../../../../error";
 
-const deleteRole = async (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    __: any
-): Promise<
+const deleteRole = async ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<
     | {
           status: "OK";
           didRoleExist: boolean;
@@ -18,8 +15,9 @@ const deleteRole = async (
           status: "FEATURE_NOT_ENABLED_ERROR";
       }
 > => {
+    let userrolesRecipe = undefined;
     try {
-        UserRolesRecipe.getInstanceOrThrowError();
+        userrolesRecipe = stInstance.getRecipeInstanceOrThrow("userroles");
     } catch (_) {
         return {
             status: "FEATURE_NOT_ENABLED_ERROR",
@@ -35,7 +33,7 @@ const deleteRole = async (
         });
     }
 
-    const response = await UserRoles.deleteRole(role);
+    const response = await userrolesRecipe.recipeInterfaceImpl.deleteRole({ role, userContext });
 
     return response;
 };

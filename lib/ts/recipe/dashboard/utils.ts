@@ -24,14 +24,10 @@ import {
     TypeNormalisedInput,
     UserWithFirstAndLastName,
 } from "./types";
-import AccountLinking from "../accountlinking/recipe";
-import EmailPasswordRecipe from "../emailpassword/recipe";
-import ThirdPartyRecipe from "../thirdparty/recipe";
-import PasswordlessRecipe from "../passwordless/recipe";
-import WebAuthnRecipe from "../webauthn/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { User, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
+import type SuperTokens from "../../supertokens";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -72,6 +68,7 @@ export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
 }
 
 export async function getUserForRecipeId(
+    stInstance: SuperTokens,
     recipeUserId: RecipeUserId,
     recipeId: string,
     userContext: UserContext
@@ -79,7 +76,7 @@ export async function getUserForRecipeId(
     user: UserWithFirstAndLastName | undefined;
     recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 }> {
-    let userResponse = await _getUserForRecipeId(recipeUserId, recipeId, userContext);
+    let userResponse = await _getUserForRecipeId(stInstance, recipeUserId, recipeId, userContext);
     let user: UserWithFirstAndLastName | undefined = undefined;
     if (userResponse.user !== undefined) {
         user = {
@@ -95,6 +92,7 @@ export async function getUserForRecipeId(
 }
 
 async function _getUserForRecipeId(
+    stInstance: SuperTokens,
     recipeUserId: RecipeUserId,
     recipeId: string,
     userContext: UserContext
@@ -104,7 +102,7 @@ async function _getUserForRecipeId(
 }> {
     let recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 
-    const user = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+    const user = await stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
         userId: recipeUserId.getAsString(),
         userContext,
     });
@@ -127,34 +125,25 @@ async function _getUserForRecipeId(
         };
     }
 
-    if (recipeId === EmailPasswordRecipe.RECIPE_ID) {
-        try {
-            // we detect if this recipe has been init or not..
-            EmailPasswordRecipe.getInstanceOrThrowError();
+    if (recipeId === "emailpassword") {
+        let emailpasswordRecipe = stInstance.getRecipeInstance("emailpassword");
+        if (emailpasswordRecipe !== undefined) {
             recipe = "emailpassword";
-        } catch (e) {
-            // No - op
         }
-    } else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
-        try {
-            ThirdPartyRecipe.getInstanceOrThrowError();
+    } else if (recipeId === "thirdparty") {
+        let thirdpartyRecipe = stInstance.getRecipeInstance("thirdparty");
+        if (thirdpartyRecipe !== undefined) {
             recipe = "thirdparty";
-        } catch (e) {
-            // No - op
         }
-    } else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
-        try {
-            PasswordlessRecipe.getInstanceOrThrowError();
+    } else if (recipeId === "passwordless") {
+        let passwordlessRecipe = stInstance.getRecipeInstance("passwordless");
+        if (passwordlessRecipe !== undefined) {
             recipe = "passwordless";
-        } catch (e) {
-            // No - op
         }
-    } else if (recipeId === WebAuthnRecipe.RECIPE_ID) {
-        try {
-            WebAuthnRecipe.getInstanceOrThrowError();
+    } else if (recipeId === "webauthn") {
+        let webauthnRecipe = stInstance.getRecipeInstance("webauthn");
+        if (webauthnRecipe !== undefined) {
             recipe = "webauthn";
-        } catch (e) {
-            // No - op
         }
     }
     return {

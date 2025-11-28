@@ -47,15 +47,13 @@ import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeWebauthnEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import MultiFactorAuthRecipe from "../multifactorauth/recipe";
-import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
-import { FactorIds } from "../multifactorauth";
-import { Querier } from "../../querier";
+import { FactorIds } from "../multifactorauth/types";
 import { applyPlugins } from "../../plugins";
 import listCredentialsAPI from "./api/listCredentials";
 import removeCredentialAPI from "./api/removeCredential";
+import type SuperTokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -72,6 +70,7 @@ export default class Recipe extends RecipeModule {
     emailDelivery: EmailDeliveryIngredient<TypeWebauthnEmailDeliveryInput>;
 
     constructor(
+        stInstance: SuperTokens,
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
@@ -80,17 +79,16 @@ export default class Recipe extends RecipeModule {
             emailDelivery: EmailDeliveryIngredient<TypeWebauthnEmailDeliveryInput> | undefined;
         }
     ) {
-        super(recipeId, appInfo);
+        super(stInstance, recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         {
             const getWebauthnConfig = () => this.config;
-            const querier = Querier.getNewInstanceOrThrowError(recipeId);
-            let builder = new OverrideableBuilder(RecipeImplementation(querier, getWebauthnConfig));
+            let builder = new OverrideableBuilder(RecipeImplementation(stInstance, this.querier, getWebauthnConfig));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(stInstance));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
@@ -104,7 +102,7 @@ export default class Recipe extends RecipeModule {
                 : ingredients.emailDelivery;
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
             if (mfaInstance !== undefined) {
                 mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes(() => {
                     return ["webauthn"];
@@ -215,7 +213,7 @@ export default class Recipe extends RecipeModule {
                 });
             }
 
-            const mtRecipe = MultitenancyRecipe.getInstance();
+            const mtRecipe = stInstance.getRecipeInstance("multitenancy");
             if (mtRecipe !== undefined) {
                 mtRecipe.allAvailableFirstFactors.push(FactorIds.WEBAUTHN);
             }
@@ -230,9 +228,10 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
+                    stInstance,
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -347,9 +346,9 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNIN_OPTIONS_API) {
             return await signInOptionsAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGN_UP_API) {
-            return await signUpAPI(this.apiImpl, tenantId, options, userContext);
+            return await signUpAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.apiImpl, tenantId, options, userContext);
+            return await signInAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === GENERATE_RECOVER_ACCOUNT_TOKEN_API) {
             return await generateRecoverAccountTokenAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === RECOVER_ACCOUNT_API) {
@@ -357,11 +356,11 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === REGISTER_CREDENTIAL_API) {
-            return await registerCredentialAPI(this.apiImpl, tenantId, options, userContext);
+            return await registerCredentialAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === LIST_CREDENTIALS_API) {
-            return await listCredentialsAPI(this.apiImpl, tenantId, options, userContext);
+            return await listCredentialsAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else if (id === REMOVE_CREDENTIAL_API) {
-            return await removeCredentialAPI(this.apiImpl, tenantId, options, userContext);
+            return await removeCredentialAPI(this.stInstance, this.apiImpl, tenantId, options, userContext);
         } else return false;
     };
 

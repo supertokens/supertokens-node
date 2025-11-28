@@ -1,7 +1,5 @@
 import { APIInterface } from "..";
 import { GeneralErrorResponse, User } from "../../../types";
-import AccountLinking from "../../accountlinking/recipe";
-import EmailVerification from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
 import {
@@ -19,11 +17,10 @@ import RecipeUserId from "../../../recipeUserId";
 import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { getUser } from "../../..";
-import MultiFactorAuth from "../../multifactorauth";
-import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { FactorIds } from "../../multifactorauth/types";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIImplementation(): APIInterface {
+export default function getAPIImplementation(stInstance: SuperTokens): APIInterface {
     return {
         registerOptionsPOST: async function ({ tenantId, options, userContext, ...props }) {
             const relyingPartyId = await options.config.getRelyingPartyId({
@@ -181,11 +178,12 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     recipeId: "webauthn",
                     email,
                 },
-                factorIds: [MultiFactorAuth.FactorIds.WEBAUTHN],
+                factorIds: [FactorIds.WEBAUTHN],
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
                 signInVerifiesLoginMethod: false,
@@ -198,8 +196,9 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
-                const conflictingUsers =
-                    await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+                const conflictingUsers = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.listUsersByAccountInfo({
                         tenantId,
                         accountInfo: {
                             email,
@@ -257,6 +256,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
+                stInstance,
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
                 isSignUp: true,
@@ -336,6 +336,7 @@ export default function getAPIImplementation(): APIInterface {
 
             const accountInfo = { webauthn: { credentialId: credential.id } };
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                stInstance,
                 accountInfo,
                 userContext,
                 recipeId,
@@ -364,11 +365,12 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
+                stInstance,
                 authenticatingAccountInfo: {
                     recipeId,
                     email,
                 },
-                factorIds: [MultiFactorAuth.FactorIds.WEBAUTHN],
+                factorIds: [FactorIds.WEBAUTHN],
                 isSignUp: false,
                 authenticatingUser: authenticatingUser?.user,
                 isVerified,
@@ -420,6 +422,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
+                stInstance,
                 authenticatedUser: signInResponse.user,
                 recipeUserId: signInResponse.recipeUserId,
                 isSignUp: false,
@@ -446,14 +449,16 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an webauthn user with the same email cause the function
             // above does not check for that.
-            const users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId,
-                accountInfo: {
-                    email,
-                },
-                doUnionOfAccountInfo: false,
-                userContext,
-            });
+            const users = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo: {
+                        email,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext,
+                });
             const webauthnUserExists =
                 users.find((u) => {
                     return (
@@ -531,14 +536,16 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             //check if primaryUserId is linked with this email
-            const users = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId,
-                accountInfo: {
-                    email,
-                },
-                doUnionOfAccountInfo: false,
-                userContext,
-            });
+            const users = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo: {
+                        email,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext,
+                });
 
             // we find the recipe user ID of the webauthn account from the user's list
             // for later use.
@@ -598,8 +605,9 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            const shouldDoAccountLinkingResponse =
-                await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            const shouldDoAccountLinkingResponse = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .config.shouldDoAutomaticAccountLinking(
                     webauthnAccount !== undefined
                         ? webauthnAccount
                         : {
@@ -634,7 +642,7 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
 
-                const isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                const isSignUpAllowed = await stInstance.getRecipeInstanceOrThrow("accountlinking").isSignUpAllowed({
                     newUser: {
                         recipeId: "webauthn",
                         email,
@@ -729,7 +737,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }) {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
-                const emailVerificationInstance = EmailVerification.getInstance();
+                const emailVerificationInstance = stInstance.getRecipeInstance("emailverification");
                 if (emailVerificationInstance) {
                     const tokenResponse =
                         await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
@@ -802,7 +810,9 @@ export default function getAPIImplementation(): APIInterface {
                     // If we verified (and linked) the existing user with the original credential, User M would get access to the current user and any linked users.
                     await markEmailAsVerified(recipeUserId, emailForWhomTokenWasGenerated);
                     // We refresh the user information here, because the verification status may be updated, which is used during linking.
-                    const updatedUserAfterEmailVerification = await getUser(recipeUserId.getAsString(), userContext);
+                    const updatedUserAfterEmailVerification = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
                     if (updatedUserAfterEmailVerification === undefined) {
                         throw new Error("Should never happen - user deleted after during recover account");
                     }
@@ -823,8 +833,9 @@ export default function getAPIImplementation(): APIInterface {
                     // 1. the user was unverified and linking requires verification
                     // We do not take try linking by session here, since this is supposed to be called without a session
                     // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                    const linkRes =
-                        await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                    const linkRes = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .tryLinkingByAccountInfoOrCreatePrimaryUser({
                             tenantId,
                             inputUser: updatedUserAfterEmailVerification,
                             session: undefined,
@@ -854,7 +865,9 @@ export default function getAPIImplementation(): APIInterface {
             const userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
             const emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
-            const existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
+            const existingUser = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: tokenConsumptionResponse.userId, userContext });
 
             if (existingUser === undefined) {
                 // This should happen only cause of a race condition where the user
@@ -941,7 +954,9 @@ export default function getAPIImplementation(): APIInterface {
                             createUserResponse.user.loginMethods[0].recipeUserId,
                             tokenConsumptionResponse.email
                         );
-                        const updatedUser = await getUser(createUserResponse.user.id, userContext);
+                        const updatedUser = await stInstance
+                            .getRecipeInstanceOrThrow("accountlinking")
+                            .recipeInterfaceImpl.getUser({ userId: createUserResponse.user.id, userContext });
                         if (updatedUser === undefined) {
                             throw new Error("Should never happen - user deleted after during recover account");
                         }
@@ -952,8 +967,9 @@ export default function getAPIImplementation(): APIInterface {
                         // email is shared.
                         // We do not take try linking by session here, since this is supposed to be called without a session
                         // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                        const linkRes =
-                            await AccountLinking.getInstanceOrThrowError().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                        const linkRes = await stInstance
+                            .getRecipeInstanceOrThrow("accountlinking")
+                            .tryLinkingByAccountInfoOrCreatePrimaryUser({
                                 tenantId,
                                 inputUser: createUserResponse.user,
                                 session: undefined,
@@ -986,7 +1002,9 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         listCredentialsGET: async function ({ options, userContext, session }) {
-            const existingUser = await getUser(session.getUserId(), userContext);
+            const existingUser = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: session.getUserId(), userContext });
             if (!existingUser) {
                 return {
                     status: "GENERAL_ERROR",
@@ -1042,16 +1060,18 @@ export default function getAPIImplementation(): APIInterface {
                     "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
             };
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
             if (mfaInstance) {
-                await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
+                await mfaInstance.assertAllowedToSetupFactorElseThrowInvalidClaimError(
                     session,
-                    MultiFactorAuth.FactorIds.WEBAUTHN,
+                    FactorIds.WEBAUTHN,
                     userContext
                 );
             }
 
-            const user = await getUser(session.getUserId(), userContext);
+            const user = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: session.getUserId(), userContext });
             if (!user) {
                 return {
                     status: "GENERAL_ERROR",
@@ -1078,21 +1098,20 @@ export default function getAPIImplementation(): APIInterface {
                 return generatedOptions;
             }
 
-            const email = generatedOptions.email;
-            if (email !== loginMethod.email) {
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (!generatedOptions.email) {
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
+                );
+            }
+
+            if (generatedOptions.email !== loginMethod.email) {
                 return {
                     status: "GENERAL_ERROR",
                     message: "Email mismatch",
                 };
-            }
-
-            // NOTE: Following checks will likely never throw an error as the
-            // check for type is done in a parent function but they are kept
-            // here to be on the safe side.
-            if (!email) {
-                throw new Error(
-                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
-                );
             }
 
             // we are using the email from the register options
@@ -1100,7 +1119,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnGeneratedOptionsId,
                 credential,
                 userContext,
-                recipeUserId: session.getRecipeUserId().getAsString(),
+                recipeUserId,
             });
 
             if (registerCredentialResponse.status !== "OK") {
@@ -1116,14 +1135,16 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         removeCredentialPOST: async function ({ webauthnCredentialId, options, userContext, session }) {
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            const mfaInstance = stInstance.getRecipeInstance("multifactorauth");
             if (mfaInstance) {
                 await session.assertClaims([
-                    MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth(),
+                    mfaInstance.multiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth(),
                 ]);
             }
 
-            const user = await getUser(session.getUserId(), userContext);
+            const user = await stInstance
+                .getRecipeInstanceOrThrow("accountlinking")
+                .recipeInterfaceImpl.getUser({ userId: session.getUserId(), userContext });
             if (!user) {
                 return {
                     status: "GENERAL_ERROR",

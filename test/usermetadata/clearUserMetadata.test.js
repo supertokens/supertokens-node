@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
@@ -9,19 +9,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`clearUserMetadataTest: ${printPath("[test/usermetadata/clearUserMetadata.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("clearUserMetadata", () => {
         it("should return OK for unknown user id", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
 
@@ -37,20 +30,13 @@ describe(`clearUserMetadataTest: ${printPath("[test/usermetadata/clearUserMetada
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
-
             const result = await UserMetadataRecipe.clearUserMetadata(testUserId);
 
             assert.strictEqual(result.status, "OK");
         });
 
         it("should clear stored userId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -69,12 +55,6 @@ describe(`clearUserMetadataTest: ${printPath("[test/usermetadata/clearUserMetada
                 recipeList: [UserMetadataRecipe.init()],
             });
 
-            // Only run for version >= 2.13
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return this.skip();
-            }
             await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata);
 
             const result = await UserMetadataRecipe.clearUserMetadata(testUserId);

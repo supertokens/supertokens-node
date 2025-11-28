@@ -1,7 +1,6 @@
-import SuperTokens from "../../../supertokens";
+import type SuperTokens from "../../../supertokens";
 import { UserContext } from "../../../types";
 import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
-import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH, END_SESSION_PATH } from "../constants";
 import { ErrorOAuth2, RecipeInterface } from "../types";
@@ -10,6 +9,7 @@ import setCookieParser from "set-cookie-parser";
 // API implementation for the loginGET function.
 // Extracted for use in both apiImplementation and handleInternalRedirects.
 export async function loginGET({
+    stInstance,
     recipeImplementation,
     loginChallenge,
     shouldTryRefresh,
@@ -18,6 +18,7 @@ export async function loginGET({
     isDirectCall,
     userContext,
 }: {
+    stInstance: SuperTokens;
     recipeImplementation: RecipeInterface;
     loginChallenge: string;
     session?: SessionContainerInterface;
@@ -35,7 +36,12 @@ export async function loginGET({
         return loginRequest;
     }
 
-    const sessionInfo = session !== undefined ? await getSessionInformation(session?.getHandle()) : undefined;
+    const sessionInfo =
+        session !== undefined
+            ? await stInstance
+                  .getRecipeInstanceOrThrow("session")
+                  .recipeInterfaceImpl.getSessionInformation({ sessionHandle: session?.getHandle(), userContext })
+            : undefined;
     if (!sessionInfo) {
         session = undefined;
     }
@@ -207,15 +213,15 @@ function mergeSetCookieHeaders(setCookie1?: string[], setCookie2?: string[]): st
     return [...setCookie1, ...setCookie2];
 }
 
-function isLoginInternalRedirect(redirectTo: string): boolean {
-    const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
+function isLoginInternalRedirect(stInstance: SuperTokens, redirectTo: string): boolean {
+    const { apiDomain, apiBasePath } = stInstance.appInfo;
     const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
 
     return [LOGIN_PATH, AUTH_PATH].some((path) => redirectTo.startsWith(`${basePath}${path}`));
 }
 
-function isLogoutInternalRedirect(redirectTo: string): boolean {
-    const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
+function isLogoutInternalRedirect(stInstance: SuperTokens, redirectTo: string): boolean {
+    const { apiDomain, apiBasePath } = stInstance.appInfo;
     const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
     return redirectTo.startsWith(`${basePath}${END_SESSION_PATH}`);
 }
@@ -224,6 +230,7 @@ function isLogoutInternalRedirect(redirectTo: string): boolean {
 // If an internal redirect is identified, it's handled directly by this function.
 // Currently, we only need to handle redirects to /oauth/login and /oauth/auth endpoints in the login flow.
 export async function handleLoginInternalRedirects({
+    stInstance,
     response,
     recipeImplementation,
     session,
@@ -231,6 +238,7 @@ export async function handleLoginInternalRedirects({
     cookie = "",
     userContext,
 }: {
+    stInstance: SuperTokens;
     response: { redirectTo: string; cookies?: string[] };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
@@ -238,7 +246,7 @@ export async function handleLoginInternalRedirects({
     cookie?: string;
     userContext: UserContext;
 }): Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2> {
-    if (!isLoginInternalRedirect(response.redirectTo)) {
+    if (!isLoginInternalRedirect(stInstance, response.redirectTo)) {
         return response;
     }
 
@@ -247,7 +255,7 @@ export async function handleLoginInternalRedirects({
     const maxRedirects = 10;
     let redirectCount = 0;
 
-    while (redirectCount < maxRedirects && isLoginInternalRedirect(response.redirectTo)) {
+    while (redirectCount < maxRedirects && isLoginInternalRedirect(stInstance, response.redirectTo)) {
         cookie = getMergedCookies({ origCookies: cookie, newCookies: response.cookies });
 
         const queryString = response.redirectTo.split("?")[1];
@@ -260,6 +268,7 @@ export async function handleLoginInternalRedirects({
             }
 
             const loginRes = await loginGET({
+                stInstance,
                 recipeImplementation,
                 loginChallenge,
                 session,
@@ -306,17 +315,19 @@ export async function handleLoginInternalRedirects({
 // If an internal redirect is identified, it's handled directly by this function.
 // Currently, we only need to handle redirects to /oauth/end_session endpoint in the logout flow.
 export async function handleLogoutInternalRedirects({
+    stInstance,
     response,
     recipeImplementation,
     session,
     userContext,
 }: {
+    stInstance: SuperTokens;
     response: { redirectTo: string };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     userContext: UserContext;
 }): Promise<{ redirectTo: string } | ErrorOAuth2> {
-    if (!isLogoutInternalRedirect(response.redirectTo)) {
+    if (!isLogoutInternalRedirect(stInstance, response.redirectTo)) {
         return response;
     }
 
@@ -325,7 +336,7 @@ export async function handleLogoutInternalRedirects({
     const maxRedirects = 10;
     let redirectCount = 0;
 
-    while (redirectCount < maxRedirects && isLogoutInternalRedirect(response.redirectTo)) {
+    while (redirectCount < maxRedirects && isLogoutInternalRedirect(stInstance, response.redirectTo)) {
         const queryString = response.redirectTo.split("?")[1];
         const params = new URLSearchParams(queryString);
 

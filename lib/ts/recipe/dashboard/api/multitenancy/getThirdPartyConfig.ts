@@ -12,15 +12,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import Multitenancy from "../../../multitenancy";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { APIFunction } from "../../types";
 import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
 import { ProviderConfig } from "../../../thirdparty/types";
-import { UserContext } from "../../../../types";
 import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { doGetRequest } from "../../../../thirdpartyUtils";
@@ -38,13 +35,14 @@ export type Response =
           status: "UNKNOWN_TENANT_ERROR";
       };
 
-export default async function getThirdPartyConfig(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
-    let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
+export default async function getThirdPartyConfig({
+    stInstance,
+    tenantId,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
+    let tenantRes = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
     if (tenantRes === undefined) {
         return {
@@ -59,7 +57,6 @@ export default async function getThirdPartyConfig(
     }
 
     let providersFromCore = tenantRes?.thirdParty?.providers;
-    const mtRecipe = MultitenancyRecipe.getInstance();
     let staticProviders = mtRecipe?.staticThirdPartyProviders
         ? mtRecipe.staticThirdPartyProviders.map((provider) => ({ ...provider }))
         : [];

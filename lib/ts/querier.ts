@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { doFetch, getLargestVersionFromIntersection, isTestEnv } from "./utils";
+import { getLargestVersionFromIntersection, isTestEnv } from "./utils";
 import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -21,10 +21,11 @@ import { RATE_LIMIT_STATUS_CODE } from "./constants";
 import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
-import SuperTokens from "./supertokens";
 
 import { PathParam, RequestBody, ResponseBody } from "./core/types";
 import { paths } from "./core/paths";
+import type SuperTokens from "./supertokens";
+import crossFetch from "cross-fetch";
 
 export class Querier {
     private static initCalled = false;
@@ -45,6 +46,7 @@ export class Querier {
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
     private constructor(
+        private stInstance: SuperTokens,
         hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined,
         rIdToCore?: string
     ) {
@@ -57,10 +59,9 @@ export class Querier {
             return Querier.apiVersion;
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
-        const st = SuperTokens.getInstanceOrThrowError();
-        const appInfo = st.appInfo;
+        const appInfo = this.stInstance.appInfo;
 
-        const request = st.getRequestFromUserContext(userContext);
+        const request = this.stInstance.getRequestFromUserContext(userContext);
         const queryParamsObj: {
             apiDomain: string;
             websiteDomain: string;
@@ -129,11 +130,11 @@ export class Querier {
         return Querier.hostsAliveForTesting;
     };
 
-    static getNewInstanceOrThrowError(rIdToCore?: string): Querier {
+    static getNewInstanceOrThrowError(stInstance: SuperTokens, rIdToCore?: string): Querier {
         if (!Querier.initCalled) {
             throw Error("Please call the supertokens.init function before using SuperTokens");
         }
-        return new Querier(Querier.hosts, rIdToCore);
+        return new Querier(stInstance, Querier.hosts, rIdToCore);
     }
 
     static init(
@@ -693,5 +694,99 @@ export class Querier {
 
             throw err;
         }
+    };
+}
+
+export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
+    // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+    // we don't want that because it may lead to weird behaviour when querying the core.
+    if (init === undefined) {
+        ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+        init = {
+            cache: "no-store",
+            redirect: "manual",
+        };
+    } else {
+        if (init.cache === undefined) {
+            ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+            init.cache = "no-store";
+            init.redirect = "manual";
+        }
+    }
+
+    // Remove the cache field if the runtime is Cloudflare Workers
+    //
+    // CF Workers did not support the cache field at all until Nov, 2024
+    // when they added support for the `cache` field but it only supports
+    // `no-store`.
+    //
+    // The following check is to ensure that this doesn't error out in
+    // Cloudflare Workers where compatibility flag is set to an older version.
+    //
+    // Since there is no way for us to determine which compatibility flags are
+    // enabled, we are disabling the cache functionality for CF Workers altogether.
+    // Ref issue: https://github.com/cloudflare/workerd/issues/698
+    if (isRunningInCloudflareWorker()) {
+        delete init.cache;
+    }
+
+    const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
+    try {
+        return await fetchFunction(input, init);
+    } catch (e) {
+        logDebugMessage("Error fetching: " + e);
+        throw e;
+    }
+};
+
+function isRunningInCloudflareWorker() {
+    return typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
+}
+
+export async function postWithFetch(
+    url: string,
+    headers: Record<string, string>,
+    body: any,
+    { successLog, errorLogHeader }: { successLog: string; errorLogHeader: string }
+): Promise<{ resp: { status: number; body: any } } | { error: any }> {
+    let error;
+    let resp: { status: number; body: any };
+    try {
+        const fetchResp = await doFetch(url, {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers,
+        });
+        const respText = await fetchResp.text();
+        resp = {
+            status: fetchResp.status,
+            body: JSON.parse(respText),
+        };
+        if (fetchResp.status < 300) {
+            logDebugMessage(successLog);
+            return { resp };
+        }
+        logDebugMessage(errorLogHeader);
+        logDebugMessage(`Error status: ${fetchResp.status}`);
+        logDebugMessage(`Error response: ${respText}`);
+    } catch (caught) {
+        error = caught;
+        logDebugMessage(errorLogHeader);
+        if (error instanceof Error) {
+            logDebugMessage(`Error: ${error.message}`);
+            logDebugMessage(`Stack: ${error.stack}`);
+        } else {
+            logDebugMessage(`Error: ${JSON.stringify(error)}`);
+        }
+    }
+    logDebugMessage("Logging the input below:");
+    logDebugMessage(JSON.stringify(body, null, 2));
+    if (error !== undefined) {
+        return {
+            error,
+        };
+    }
+    return {
+        resp: resp!,
     };
 }

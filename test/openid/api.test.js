@@ -2,7 +2,7 @@ let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 const OpenIdRecipe = require("../../lib/build/recipe/openid/recipe").default;
@@ -13,18 +13,11 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
-
     it("Test that with default config calling discovery configuration endpoint works as expected", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -36,13 +29,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
             },
             recipeList: [OpenIdRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         const app = express();
 
@@ -68,7 +54,7 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
     });
 
     it("Test that with apiBasePath calling discovery configuration endpoint works as expected", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -81,13 +67,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
             },
             recipeList: [OpenIdRecipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         const app = express();
 
@@ -113,7 +92,7 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
     });
 
     it("Test that discovery endpoint does not work when disabled", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -138,13 +117,6 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
                 }),
             ],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         const app = express();
 

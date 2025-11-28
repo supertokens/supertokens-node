@@ -15,13 +15,16 @@
 
 import { RecipeInterface } from "./";
 import UserMetadata from "../usermetadata";
-import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import type MultiFactorAuthRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
 import { SessionClaimValidator } from "../session";
 import { updateAndGetMFARelatedInfoInSession } from "./utils";
+import type SuperTokens from "../../supertokens";
 
-export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
+export default function getRecipeInterface(
+    stInstance: SuperTokens,
+    recipeInstance: MultiFactorAuthRecipe
+): RecipeInterface {
     return {
         getFactorsSetupForUser: async function ({ user, userContext }) {
             // factors setup for user are provided by each of the initialized recipes
@@ -77,14 +80,14 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             // because the user will not be able to complete the MFA requirements for auth otherwise.
 
             const validator: SessionClaimValidator = {
-                id: MultiFactorAuthClaim.key,
-                claim: MultiFactorAuthClaim,
+                id: recipeInstance.multiFactorAuthClaim.key,
+                claim: recipeInstance.multiFactorAuthClaim,
                 shouldRefetch: (payload) => {
-                    const value = MultiFactorAuthClaim.getValueFromPayload(payload);
+                    const value = recipeInstance.multiFactorAuthClaim.getValueFromPayload(payload);
                     return value === undefined;
                 },
                 validate: async (payload) => {
-                    const claimVal = MultiFactorAuthClaim.getValueFromPayload(payload);
+                    const claimVal = recipeInstance.multiFactorAuthClaim.getValueFromPayload(payload);
                     if (!claimVal) {
                         throw new Error("should never happen");
                     }
@@ -96,7 +99,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                         return { isValid: true };
                     }
 
-                    const setOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+                    const setOfUnsatisfiedFactors = recipeInstance.multiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
                         claimVal.c,
                         await input.mfaRequirementsForAuth
                     );
@@ -155,6 +158,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
         markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {
             await updateAndGetMFARelatedInfoInSession({
+                stInstance: stInstance,
                 session,
                 updatedFactorId: factorId,
                 userContext,

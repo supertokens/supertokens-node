@@ -1,8 +1,14 @@
-import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
+import {
+    TypeProvider,
+    ProviderInput,
+    UserInfo,
+    ProviderConfigForClientType,
+    ProviderConfig,
+    ProviderClientConfig,
+} from "../types";
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "../../../thirdpartyUtils";
 import { getUserContext } from "../../../utils";
 import pkceChallenge from "pkce-challenge";
-import { getProviderConfigForClient } from "./configUtils";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
 import { logDebugMessage } from "../../../logger";
 import NormalisedURLPath from "../../../normalisedURLPath";
@@ -21,6 +27,16 @@ const DEV_KEY_IDENTIFIER = "4398792-";
 
 export function isUsingDevelopmentClientId(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
+}
+
+function getProviderConfigForClient(
+    providerConfig: ProviderConfig,
+    clientConfig: ProviderClientConfig
+): ProviderConfigForClientType {
+    return {
+        ...providerConfig,
+        ...clientConfig,
+    };
 }
 
 export function getActualClientIdFromDevelopmentClientId(client_id: string): string {

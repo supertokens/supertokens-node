@@ -41,6 +41,8 @@ export declare function loadPlugins({
     normalisedAppInfo: NormalisedAppinfo;
 }): {
     config: TypeInput;
-    pluginRouteHandlers: PluginRouteHandler[];
+    pluginRouteHandlers: (PluginRouteHandler & {
+        pluginId: string;
+    })[];
     overrideMaps: Record<string, any>[];
 };

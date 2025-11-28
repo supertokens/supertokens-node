@@ -1,5 +1,5 @@
 const { ProcessState } = require("../lib/build/processState");
-const { printPath, killAllST, setupST, cleanST, startST } = require("./utils");
+const { printPath, createCoreApplication, getQuerierInstance } = require("./utils");
 let STExpress = require("../");
 let Dashboard = require("../recipe/dashboard");
 let EmailVerification = require("../recipe/emailverification");
@@ -14,23 +14,18 @@ const RateLimitedStatus = 429;
 
 describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, () => {
     beforeEach(async () => {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
     after(async function () {
-        await killAllST();
-        await cleanST();
         Querier.apiVersion = undefined;
     });
 
     it("Test that network call is retried properly", async () => {
-        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                // Using 8083 because we need querier to call the test express server instead of the core
-                connectionURI: "http://localhost:8083",
+                // Using 8089 because we need querier to call the test express server instead of the core
+                connectionURI: "http://localhost:8089",
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -80,12 +75,12 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         app.use(errorHandler());
 
-        const server = app.listen(8083, () => {});
+        const server = app.listen(8089, () => {});
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
+        let q = getQuerierInstance(undefined);
 
         try {
-            await q.sendGetRequest(new NormalisedURLPath("/testing"), {}, {});
+            await q.sendGetRequest("/testing", {}, {});
         } catch (e) {
             if (!e.message.includes("with status code: 429")) {
                 throw e;
@@ -95,21 +90,20 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
         // 1 initial request + 5 retries
         assert.equal(numbersOfTimesRetried, 6);
 
-        await q.sendGetRequest(new NormalisedURLPath("/testing2"), {}, {});
+        await q.sendGetRequest("/testing2", {}, {});
         assert.equal(numberOfTimesSecondCalled, 3);
 
-        await q.sendGetRequest(new NormalisedURLPath("/testing3"), {}, {});
+        await q.sendGetRequest("/testing3", {}, {});
         assert.equal(numberOfTimesThirdCalled, 1);
 
         server.close();
     });
 
     it("Test that rate limiting errors are thrown back to the user", async () => {
-        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                // Using 8083 because we need querier to call the test express server instead of the core
-                connectionURI: "http://localhost:8083",
+                // Using 8089 because we need querier to call the test express server instead of the core
+                connectionURI: "http://localhost:8089",
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -141,12 +135,12 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         app.use(errorHandler());
 
-        const server = app.listen(8083, () => {});
+        const server = app.listen(8089, () => {});
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
+        let q = getQuerierInstance(undefined);
 
         try {
-            await q.sendGetRequest(new NormalisedURLPath("/testing"), {}, {});
+            await q.sendGetRequest("/testing", {}, {});
         } catch (e) {
             if (!e.message.includes("with status code: 429")) {
                 throw e;
@@ -159,11 +153,10 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
     });
 
     it("Test that parallel calls have independent retry counters", async () => {
-        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                // Using 8083 because we need querier to call the test express server instead of the core
-                connectionURI: "http://localhost:8083",
+                // Using 8089 because we need querier to call the test express server instead of the core
+                connectionURI: "http://localhost:8089",
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -201,13 +194,13 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         app.use(errorHandler());
 
-        const server = app.listen(8083, () => {});
+        const server = app.listen(8089, () => {});
 
-        let q = Querier.getNewInstanceOrThrowError(undefined);
+        let q = getQuerierInstance(undefined);
 
         const callApi1 = async () => {
             try {
-                await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "1" }, {});
+                await q.sendGetRequest("/testing", { id: "1" }, {});
             } catch (e) {
                 if (!e.message.includes("with status code: 429")) {
                     throw e;
@@ -217,7 +210,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         const callApi2 = async () => {
             try {
-                await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "2" }, {});
+                await q.sendGetRequest("/testing", { id: "2" }, {});
             } catch (e) {
                 if (!e.message.includes("with status code: 429")) {
                     throw e;

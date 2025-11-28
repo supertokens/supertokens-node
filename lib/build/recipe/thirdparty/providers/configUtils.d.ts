@@ -1,16 +1,6 @@
 // @ts-nocheck
 import { UserContext } from "../../../types";
-import {
-    ProviderClientConfig,
-    ProviderConfig,
-    ProviderConfigForClientType,
-    ProviderInput,
-    TypeProvider,
-} from "../types";
-export declare function getProviderConfigForClient(
-    providerConfig: ProviderConfig,
-    clientConfig: ProviderClientConfig
-): ProviderConfigForClientType;
+import { ProviderConfig, ProviderInput, TypeProvider } from "../types";
 export declare function findAndCreateProviderInstance(
     tenantId: string,
     providers: ProviderInput[],

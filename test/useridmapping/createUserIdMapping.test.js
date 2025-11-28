@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
@@ -11,19 +11,12 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserIdMapping.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("createUserIdMappingTest", () => {
         it("create a userId mapping", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -36,13 +29,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
             let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
@@ -74,7 +60,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
         });
 
         it("create a userId mapping with an unknown superTokensUserId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -87,13 +73,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create the userId mapping
             let createUserIdMappingResponse = await STExpress.createUserIdMapping({
@@ -106,7 +85,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
         });
 
         it("create a userId mapping when a mapping already exists", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -119,13 +98,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a UserId mapping
 
@@ -188,7 +160,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
         });
 
         it("create a userId mapping when userId already has usermetadata with and without force", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -201,13 +173,6 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 },
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });
-
-            // Only run for version >= 2.15
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a user
 

@@ -1,11 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-declare const getRolesForUser: (
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    __: any
-) => Promise<
+import { APIFunction } from "../../types";
+declare const getRolesForUser: ({ stInstance, tenantId, options, userContext }: Parameters<APIFunction>[0]) => Promise<
     | {
           status: "OK";
           roles: string[];

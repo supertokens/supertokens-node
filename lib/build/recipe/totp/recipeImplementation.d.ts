@@ -2,4 +2,9 @@
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import { TypeNormalisedInput } from "./types";
-export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface;
+import SuperTokens from "../../supertokens";
+export default function getRecipeInterface(
+    stInstance: SuperTokens,
+    querier: Querier,
+    config: TypeNormalisedInput
+): RecipeInterface;

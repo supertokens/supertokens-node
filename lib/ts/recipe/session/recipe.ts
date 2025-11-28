@@ -22,6 +22,7 @@ import {
     VerifySessionOptions,
     SessionClaimValidator,
     SessionClaim,
+    SessionContainerInterface,
 } from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -35,7 +36,6 @@ import {
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
 } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
-import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
@@ -44,6 +44,9 @@ import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { isTestEnv } from "../../utils";
 import { applyPlugins } from "../../plugins";
+import type SuperTokens from "../../supertokens";
+import { RecipeUserId } from "../..";
+import { createNewSessionInRequest, getSessionFromRequest } from "./sessionRequestFunctions";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -61,8 +64,14 @@ export default class SessionRecipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(
+        stInstance: SuperTokens,
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput
+    ) {
+        super(stInstance, recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         const antiCsrfToLog: string =
@@ -82,17 +91,12 @@ export default class SessionRecipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         let builder = new OverrideableBuilder(
-            RecipeImplementation(
-                Querier.getNewInstanceOrThrowError(recipeId),
-                this.config,
-                this.getAppInfo(),
-                () => this.recipeInterfaceImpl
-            )
+            RecipeImplementation(this.querier, this.config, this.getAppInfo(), () => this.recipeInterfaceImpl)
         );
         this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
 
         {
-            let builder = new OverrideableBuilder(APIImplementation());
+            let builder = new OverrideableBuilder(APIImplementation(this.stInstance, this));
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
     }
@@ -107,9 +111,10 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv, plugins) => {
+        return (stInstance, appInfo, isInServerlessEnv, plugins) => {
             if (SessionRecipe.instance === undefined) {
                 SessionRecipe.instance = new SessionRecipe(
+                    stInstance,
                     SessionRecipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
@@ -193,7 +198,7 @@ export default class SessionRecipe extends RecipeModule {
         if (id === REFRESH_API_PATH) {
             return await handleRefreshAPI(this.apiImpl, options, userContext);
         } else if (id === SIGNOUT_API_PATH) {
-            return await signOutAPI(this.apiImpl, options, userContext);
+            return await signOutAPI(this.stInstance, this.apiImpl, options, userContext);
         } else {
             return false;
         }
@@ -276,6 +281,69 @@ export default class SessionRecipe extends RecipeModule {
                 recipeImplementation: this.recipeInterfaceImpl,
             },
             userContext,
+        });
+    };
+    getRequiredClaimValidators = async (
+        session: SessionContainerInterface,
+        overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+        userContext: UserContext
+    ) => {
+        const claimValidatorsAddedByOtherRecipes = this.getClaimValidatorsAddedByOtherRecipes();
+        const globalClaimValidators: SessionClaimValidator[] = await this.recipeInterfaceImpl.getGlobalClaimValidators({
+            userId: session.getUserId(userContext),
+            recipeUserId: session.getRecipeUserId(userContext),
+            tenantId: session.getTenantId(userContext),
+            claimValidatorsAddedByOtherRecipes,
+            userContext,
+        });
+
+        return overrideGlobalClaimValidators !== undefined
+            ? await overrideGlobalClaimValidators(globalClaimValidators, session, userContext)
+            : globalClaimValidators;
+    };
+
+    createNewSession = async (input: {
+        req: any;
+        res: any;
+        tenantId: string;
+        recipeUserId: RecipeUserId;
+        accessTokenPayload: any;
+        sessionDataInDatabase: any;
+        userContext: UserContext;
+    }) => {
+        let user = await this.stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.getUser({ userId: input.recipeUserId.getAsString(), userContext: input.userContext });
+        let userId = input.recipeUserId.getAsString();
+        if (user !== undefined) {
+            userId = user.id;
+        }
+        return await createNewSessionInRequest({
+            req: input.req,
+            res: input.res,
+            userContext: input.userContext,
+            recipeInstance: this,
+            stInstance: this.stInstance,
+            accessTokenPayload: input.accessTokenPayload,
+            userId,
+            recipeUserId: input.recipeUserId,
+            config: this.config,
+            appInfo: this.stInstance.appInfo,
+            sessionDataInDatabase: input.sessionDataInDatabase,
+            tenantId: input.tenantId,
+        });
+    };
+
+    getSession = async (input: { req: any; res: any; options?: VerifySessionOptions; userContext: UserContext }) => {
+        return getSessionFromRequest({
+            req: input.req,
+            res: input.res,
+            recipeInterfaceImpl: this.recipeInterfaceImpl,
+            recipeInstance: this,
+            stInstance: this.stInstance,
+            config: this.config,
+            options: input.options,
+            userContext: input.userContext, // userContext is normalized inside the function
         });
     };
 }

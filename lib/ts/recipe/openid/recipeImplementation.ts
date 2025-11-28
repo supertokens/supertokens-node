@@ -13,7 +13,6 @@
  * under the License.
  */
 import { RecipeInterface } from "./types";
-import JWTRecipe from "../jwt/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
 import { NormalisedAppinfo, UserContext } from "../../types";
@@ -25,8 +24,9 @@ import {
     TOKEN_PATH,
     USER_INFO_PATH,
 } from "../oauth2provider/constants";
+import type SuperTokens from "../../supertokens";
 
-export default function getRecipeInterface(appInfo: NormalisedAppinfo): RecipeInterface {
+export default function getRecipeInterface(stInstance: SuperTokens, appInfo: NormalisedAppinfo): RecipeInterface {
     return {
         getOpenIdDiscoveryConfiguration: async function () {
             let issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
@@ -75,7 +75,7 @@ export default function getRecipeInterface(appInfo: NormalisedAppinfo): RecipeIn
             payload = payload === undefined || payload === null ? {} : payload;
 
             let issuer = (await this.getOpenIdDiscoveryConfiguration({ userContext })).issuer;
-            return await JWTRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
+            return await stInstance.getRecipeInstanceOrThrow("jwt").recipeInterfaceImpl.createJWT({
                 payload: {
                     iss: issuer,
                     ...payload,

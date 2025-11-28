@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
+const { printPath, createCoreApplication } = require("../../utils");
 const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
 const PasswordlessRecipe = require("../../../lib/build/recipe/passwordless").default;
@@ -11,19 +11,12 @@ describe(`userIdMapping with passwordless: ${printPath(
     "[test/useridmapping/recipeTests/passwordless.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
-    });
-
-    after(async function () {
-        await killAllST();
-        await cleanST();
     });
 
     describe("consumeCode", () => {
         it("create a passwordless user and map their userId, signIn again and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -51,13 +44,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const email = "test@example.com";
@@ -108,7 +94,7 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserById", () => {
         it("create a passwordless user and map their userId, call getUserById and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -136,13 +122,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const email = "test@example.com";
@@ -179,7 +158,7 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserByEmail", () => {
         it("create a passwordless user and map their userId, call getUserByEmail and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -207,13 +186,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const email = "test@example.com";
@@ -252,7 +224,7 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserByPhoneNumber", () => {
         it("create a passwordless user and map their userId, call getUserByPhoneNumber and check that the externalId is returned", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -280,13 +252,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const phoneNumber = "+911234566789";
@@ -325,7 +290,7 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("updateUser", () => {
         it("create a passwordless user and map their userId, call updateUser to add their email and retrieve the user to see if the changes are reflected", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -353,13 +318,6 @@ describe(`userIdMapping with passwordless: ${printPath(
                     SessionRecipe.init(),
                 ],
             });
-
-            // Only run for version >= 2.15
-            const querier = Querier.getNewInstanceOrThrowError(undefined);
-            const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.14") === "2.14") {
-                return this.skip();
-            }
 
             // create a Passwordless user
             const phoneNumber = "+911234566789";

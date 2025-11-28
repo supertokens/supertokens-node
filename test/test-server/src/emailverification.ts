@@ -71,19 +71,20 @@ const router = Router()
             );
             const session: Session.SessionContainer | undefined =
                 req.body.session && (await convertRequestSessionToSessionObject(req.body.session));
-            const response = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
-                {
+            const response =
+                await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification({
                     ...req.body,
                     session,
                     recipeUserIdWhoseEmailGotVerified,
-                }
-            );
+                    userContext: req.body.userContext ?? {},
+                });
             logDebugMessage(
                 "EmailVerificationRecipe:updateSessionIfRequiredPostEmailVerification response %j",
                 response
             );
             res.json(response);
         } catch (e) {
+            console.error(e);
             // we do not call next(e) here so that the proper error response is sent back to the client
             // otherwise the supertokens error handler will send a different type of response.
             res.status(500).json({ ...e, message: e.message });

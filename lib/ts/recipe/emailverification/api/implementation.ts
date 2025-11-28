@@ -1,13 +1,13 @@
 import { APIInterface, UserEmailInfo } from "../";
 import { logDebugMessage } from "../../../logger";
-import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
 import { SessionContainerInterface } from "../../session/types";
+import type SuperTokens from "../../../supertokens";
 
-export default function getAPIInterface(): APIInterface {
+export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
     return {
         verifyEmailPOST: async function (
             this: APIInterface,
@@ -29,15 +29,15 @@ export default function getAPIInterface(): APIInterface {
             }
 
             // status: "OK"
-            let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
-                {
+            let newSession = await stInstance
+                .getRecipeInstanceOrThrow("emailverification")
+                .updateSessionIfRequiredPostEmailVerification({
                     req: options.req,
                     res: options.res,
                     session,
                     recipeUserIdWhoseEmailGotVerified: verifyTokenResponse.user.recipeUserId,
                     userContext,
-                }
-            );
+                });
 
             return {
                 status: "OK",
@@ -59,11 +59,9 @@ export default function getAPIInterface(): APIInterface {
         > {
             // In this API, we will check if the session's recipe user id's email is verified or not.
 
-            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
-                undefined,
-                session.getRecipeUserId(userContext),
-                userContext
-            );
+            const emailInfo = await stInstance
+                .getRecipeInstanceOrThrow("emailverification")
+                .getEmailForRecipeUserId(undefined, session.getRecipeUserId(userContext), userContext);
 
             if (emailInfo.status === "OK") {
                 const isVerified = await options.recipeImplementation.isEmailVerified({
@@ -78,15 +76,15 @@ export default function getAPIInterface(): APIInterface {
                     // whilst the first browser is polling this API - in this case,
                     // we want to have the same effect to the session as if the
                     // email was opened on the original browser itself.
-                    let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
-                        {
+                    let newSession = await stInstance
+                        .getRecipeInstanceOrThrow("emailverification")
+                        .updateSessionIfRequiredPostEmailVerification({
                             req: options.req,
                             res: options.res,
                             session,
                             recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(userContext),
                             userContext,
-                        }
-                    );
+                        });
                     return {
                         status: "OK",
                         isVerified: true,
@@ -129,11 +127,9 @@ export default function getAPIInterface(): APIInterface {
             // In this API, we generate the email verification token for session's recipe user ID.
             const tenantId = session.getTenantId();
 
-            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
-                undefined,
-                session.getRecipeUserId(userContext),
-                userContext
-            );
+            const emailInfo = await stInstance
+                .getRecipeInstanceOrThrow("emailverification")
+                .getEmailForRecipeUserId(undefined, session.getRecipeUserId(userContext), userContext);
 
             if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
                 logDebugMessage(
@@ -143,15 +139,15 @@ export default function getAPIInterface(): APIInterface {
                 );
                 // this can happen if the user ID was found, but it has no email. In this
                 // case, we treat it as a success case.
-                let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
-                    {
+                let newSession = await stInstance
+                    .getRecipeInstanceOrThrow("emailverification")
+                    .updateSessionIfRequiredPostEmailVerification({
                         req: options.req,
                         res: options.res,
                         session,
                         recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(userContext),
                         userContext,
-                    }
-                );
+                    });
                 return {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR",
                     newSession,
@@ -172,15 +168,15 @@ export default function getAPIInterface(): APIInterface {
                             .getRecipeUserId(userContext)
                             .getAsString()} because it is already verified.`
                     );
-                    let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
-                        {
+                    let newSession = await stInstance
+                        .getRecipeInstanceOrThrow("emailverification")
+                        .updateSessionIfRequiredPostEmailVerification({
                             req: options.req,
                             res: options.res,
                             session,
                             recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(userContext),
                             userContext,
-                        }
-                    );
+                        });
                     return {
                         status: "EMAIL_ALREADY_VERIFIED_ERROR",
                         newSession,

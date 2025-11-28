@@ -12,9 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 import { getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
 
 type TenantWithLoginMethods = {
@@ -27,13 +25,12 @@ export type Response = {
     tenants: TenantWithLoginMethods[];
 };
 
-export default async function listAllTenantsWithLoginMethods(
-    _: APIInterface,
-    __: string,
-    ___: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
-    const tenantsRes = await MultitenancyRecipe.getInstanceOrThrowError().recipeInterfaceImpl.listAllTenants({
+export default async function listAllTenantsWithLoginMethods({
+    stInstance,
+    userContext,
+}: Parameters<APIFunction>[0]): Promise<Response> {
+    const mtRecipe = stInstance.getRecipeInstanceOrThrow("multitenancy");
+    const tenantsRes = await mtRecipe.recipeInterfaceImpl.listAllTenants({
         userContext,
     });
     const finalTenants: TenantWithLoginMethods[] = [];
@@ -41,7 +38,7 @@ export default async function listAllTenantsWithLoginMethods(
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         const currentTenant = tenantsRes.tenants[i];
 
-        const loginMethods = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(currentTenant);
+        const loginMethods = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(stInstance, currentTenant);
 
         finalTenants.push({
             tenantId: currentTenant.tenantId,

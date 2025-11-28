@@ -1,13 +1,11 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-import { UserContext } from "../../../../types";
+import { APIFunction } from "../../types";
 type Response = {
     status: "OK";
 };
-export declare const userSessionsPost: (
-    _: APIInterface,
-    ___: string,
-    options: APIOptions,
-    userContext: UserContext
-) => Promise<Response>;
+export declare const userSessionsPost: ({
+    stInstance,
+    options,
+    userContext,
+}: Parameters<APIFunction>[0]) => Promise<Response>;
 export {};

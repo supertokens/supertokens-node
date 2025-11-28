@@ -22,8 +22,10 @@ import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
 import { AuthUtils } from "../../../authUtils";
+import type SuperTokens from "../../../supertokens";
 
 export default async function signInAPI(
+    stInstance: SuperTokens,
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -49,6 +51,7 @@ export default async function signInAPI(
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
     const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        stInstance,
         options.req,
         options.res,
         shouldTryLinkingWithSessionUser,
