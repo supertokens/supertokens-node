@@ -108,7 +108,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         let signUpUserInfo = JSON.parse(response.text).user;
 
         {
-            let userInfo = await new Promise((resolve) =>
+            let userInfo = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signin")
                     .set("rid", "thirdpartyemailpassword")
@@ -137,7 +137,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             assert(userInfo.email === signUpUserInfo.email);
         }
         {
-            let userInfo = await new Promise((resolve) =>
+            let userInfo = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signin")
                     .set("rid", "emailpassword")
@@ -201,7 +201,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -218,7 +218,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -264,7 +264,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -282,7 +282,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -318,7 +318,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -336,7 +336,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -371,7 +371,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -389,7 +389,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -425,7 +425,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let invalidEmailResponse = await new Promise((resolve) =>
+        let invalidEmailResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -443,7 +443,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -480,7 +480,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let invalidPasswordResponse = await new Promise((resolve) =>
+        let invalidPasswordResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -498,7 +498,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -541,14 +541,14 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let badInputResponse = await new Promise((resolve) =>
+        let badInputResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send("hello")
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -588,13 +588,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let badInputResponse = await new Promise((resolve) =>
+        let badInputResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -630,7 +630,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let badInputResponse = await new Promise((resolve) =>
+        let badInputResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -639,7 +639,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -678,7 +678,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -696,7 +696,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -770,7 +770,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -788,7 +788,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -851,7 +851,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(passesValidatorCtr === 1);
         assert(failsValidatorCtr === 0);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -869,7 +869,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -909,7 +909,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -927,7 +927,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -963,7 +963,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -981,7 +981,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -1018,7 +1018,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1031,7 +1031,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -1069,7 +1069,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1082,7 +1082,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -1122,7 +1122,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1140,7 +1140,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                     }
                     resolve(JSON.parse(res.text));
@@ -1255,7 +1255,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signup")
                 .send({
@@ -1273,14 +1273,14 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
                 })
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1298,7 +1298,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1335,7 +1335,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1353,7 +1353,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -1390,7 +1390,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1408,7 +1408,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -1446,7 +1446,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1464,7 +1464,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -1502,7 +1502,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1520,7 +1520,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -1557,7 +1557,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1575,7 +1575,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -1613,7 +1613,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpUserInfo = JSON.parse(response.text).user;
 
-        let userInfo = await new Promise((resolve) =>
+        let userInfo = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1631,7 +1631,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text).user);
                     }
@@ -1854,7 +1854,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(JSON.parse(signUpResponse.text).status === "OK");
         assert(signUpResponse.status === 200);
 
-        let invalidEmailResponse = await new Promise((resolve) =>
+        let invalidEmailResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -1872,7 +1872,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

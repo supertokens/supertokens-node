@@ -520,7 +520,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -531,7 +531,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -552,7 +552,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
             thirdPartyId: "google",
         });
 
-        response1 = await new Promise((resolve) =>
+        response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/t1/signinup")
                 .send({
@@ -563,7 +563,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

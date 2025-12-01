@@ -60,7 +60,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         ];
         for await (const [i, email] of emails.entries()) {
             await signUPRequest(app, email, `testPass-${randomValue}-${i}` + randomValue + i);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve, reject) => setTimeout(resolve, 1000));
         }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
@@ -177,7 +177,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         ];
         for await (const [i, email] of emails.entries()) {
             await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve, reject) => setTimeout(resolve, 1000));
         }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
@@ -247,7 +247,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         ];
         for await (const [i, email] of emails.entries()) {
             await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve, reject) => setTimeout(resolve, 1000));
         }
         await signUPRequest(app, "john3@gmail.com", `testPass-${randomValue}-4`);
 
@@ -295,7 +295,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         ];
         for await (const [i, email] of emails.entries()) {
             await signUPRequest(app, email, `testPass-${randomValue}-${i}`);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve, reject) => setTimeout(resolve, 1000));
         }
 
         userCount = await getUserCount();

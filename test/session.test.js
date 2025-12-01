@@ -78,13 +78,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -133,7 +133,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -147,14 +147,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -202,7 +202,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -216,14 +216,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -260,7 +260,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         app.use(errorHandler());
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -274,14 +274,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";custom=" + JSON.stringify({ a: "b%b" })])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -320,7 +320,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -335,16 +335,16 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         );
 
         // Wait for the access token to expire
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve, reject) => setTimeout(resolve, 2000));
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -382,7 +382,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
         app.use(errorHandler());
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", [
@@ -393,7 +393,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 ])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -432,7 +432,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
         app.use(errorHandler());
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", [
@@ -443,7 +443,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 ])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -486,7 +486,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -500,7 +500,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", [
@@ -555,7 +555,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -569,7 +569,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set({
@@ -613,7 +613,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -627,7 +627,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set({
@@ -641,7 +641,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 ])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -679,25 +679,25 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -732,7 +732,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -746,14 +746,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

@@ -46,12 +46,12 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) => {
+        let response = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -81,12 +81,12 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let { body: response, headers } = await new Promise((resolve) => {
+        let { body: response, headers } = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -140,12 +140,12 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let { body: response, headers } = await new Promise((resolve) => {
+        let { body: response, headers } = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -193,12 +193,12 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let { body: response, headers } = await new Promise((resolve) => {
+        let { body: response, headers } = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -244,12 +244,12 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let { body: response, headers } = await new Promise((resolve) => {
+        let { body: response, headers } = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

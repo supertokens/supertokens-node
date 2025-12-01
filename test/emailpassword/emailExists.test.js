@@ -73,7 +73,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/emailpassword/email/exists")
                 .query({
@@ -82,7 +82,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -126,7 +126,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -134,7 +134,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -169,7 +169,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -178,7 +178,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -211,7 +211,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -220,7 +220,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -257,7 +257,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -266,7 +266,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -303,7 +303,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -312,7 +312,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -345,14 +345,14 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query()
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -386,7 +386,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -395,7 +395,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -432,7 +432,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -441,7 +441,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -481,7 +481,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -490,7 +490,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

@@ -183,7 +183,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .set("rid", "thirdpartypasswordless")
@@ -195,7 +195,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -221,7 +221,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .set("rid", "thirdpartypasswordless")
@@ -233,7 +233,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -289,7 +289,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .set("rid", "thirdpartyemailpassword")
@@ -301,7 +301,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -327,7 +327,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .set("rid", "thirdpartyemailpassword")
@@ -339,7 +339,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -413,7 +413,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -427,7 +427,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -463,7 +463,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -474,7 +474,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -500,7 +500,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -511,7 +511,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -566,7 +566,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -574,7 +574,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -613,7 +613,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -627,7 +627,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -662,7 +662,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -676,7 +676,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -734,7 +734,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -748,7 +748,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -810,7 +810,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -824,7 +824,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -863,7 +863,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -877,7 +877,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -922,7 +922,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -936,7 +936,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -973,13 +973,13 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({})
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -988,7 +988,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response1.statusCode, 400);
         assert.strictEqual(response1.body.message, "Please provide the thirdPartyId in request body");
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -996,7 +996,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1008,7 +1008,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             "Please provide one of redirectURIInfo or oAuthTokens in the request body"
         );
 
-        let response3 = await new Promise((resolve) =>
+        let response3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -1016,7 +1016,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1025,7 +1025,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response3.statusCode, 400);
         assert.strictEqual(response3.body.message, "Please provide the thirdPartyId in request body");
 
-        let response4 = await new Promise((resolve) =>
+        let response4 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -1033,7 +1033,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1044,7 +1044,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response8 = await new Promise((resolve) =>
+        let response8 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -1058,7 +1058,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1164,7 +1164,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").times(1).reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -1178,7 +1178,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1304,7 +1304,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -1318,7 +1318,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1377,7 +1377,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -1391,7 +1391,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

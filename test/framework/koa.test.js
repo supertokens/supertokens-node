@@ -86,7 +86,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -100,14 +100,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -158,25 +158,25 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(router.routes());
         this.server = app.listen(9999);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/auth/signout")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -244,7 +244,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -259,7 +259,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -274,7 +274,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -284,14 +284,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 })
         );
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -342,7 +342,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -357,7 +357,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -372,7 +372,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -382,14 +382,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 })
         );
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -449,7 +449,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -467,14 +467,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -485,7 +485,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -505,7 +505,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -525,14 +525,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         ProcessState.getInstance().reset();
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -541,7 +541,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
@@ -549,7 +549,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -589,7 +589,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -603,14 +603,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/auth/signout")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -665,7 +665,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -683,14 +683,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -701,7 +701,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -721,7 +721,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -741,14 +741,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         ProcessState.getInstance().reset();
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -757,7 +757,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
@@ -765,7 +765,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -816,7 +816,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -830,14 +830,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -845,14 +845,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
         assert.strictEqual(res2.body.userId, "id1");
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -905,7 +905,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -919,13 +919,13 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -933,13 +933,13 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
         assert.strictEqual(response2.body.userId, "id1");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1002,7 +1002,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         this.server = app.listen(9999);
 
         let response = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -1015,7 +1015,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                     })
             )
         );
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1023,7 +1023,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1035,20 +1035,20 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/usercreate")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
         let userCreateResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/usercreate")
                     .expect(200)
@@ -1062,7 +1062,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             )
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/revokeUserid")
                 .set("Cookie", ["sAccessToken=" + userCreateResponse.accessToken])
@@ -1070,19 +1070,19 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
-        let sessionHandleResponse = await new Promise((resolve) =>
+        let sessionHandleResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/getSessionsWithUserId1")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1140,7 +1140,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         //create a new session
         let response = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -1155,7 +1155,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
 
         //call the updateSessionData api to add session data
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/updateSessionData")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1163,7 +1163,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1171,7 +1171,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
 
         //call the getSessionData api to get session data
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/getSessionData")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1179,7 +1179,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1190,7 +1190,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert.strictEqual(response2.body.key, "value");
 
         // change the value of the inserted session data
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/updateSessionData2")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1198,14 +1198,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
         //retrieve the changed session data
-        response2 = await new Promise((resolve) =>
+        response2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/getSessionData")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1213,7 +1213,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1224,7 +1224,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert.deepStrictEqual(response2.body, {});
 
         //invalid session handle when updating the session data
-        let invalidSessionResponse = await new Promise((resolve) =>
+        let invalidSessionResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/updateSessionDataInvalidSessionHandle")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1232,7 +1232,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1295,7 +1295,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         //create a new session
         let response = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/create")
                     .expect(200)
@@ -1317,7 +1317,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/updateAccessTokenPayload")
                     .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1341,7 +1341,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         //call the getAccessTokenPayload api to get jwt payload
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/getAccessTokenPayload")
                 .set("Cookie", ["sAccessToken=" + updatedResponse.accessToken])
@@ -1349,7 +1349,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1360,7 +1360,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         // refresh session
         response2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + response.refreshToken])
@@ -1385,7 +1385,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(this.server)
                     .post("/updateAccessTokenPayload2")
                     .set("Cookie", ["sAccessToken=" + response2.accessToken])
@@ -1408,7 +1408,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //retrieve the changed jwt payload
-        response2 = await new Promise((resolve) =>
+        response2 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/getAccessTokenPayload")
                 .set("Cookie", ["sAccessToken=" + updatedResponse2.accessToken])
@@ -1416,7 +1416,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1440,7 +1440,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             ])
         );
         //invalid session handle when updating the jwt payload
-        let invalidSessionResponse = await new Promise((resolve) =>
+        let invalidSessionResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/updateAccessTokenPayloadInvalidSessionHandle")
                 .set("Cookie", ["sAccessToken=" + updatedResponse2.accessToken])
@@ -1448,7 +1448,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1494,13 +1494,13 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/signup/email/exists?email=test@example.com")
                 .expect(203)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1547,14 +1547,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users/count")
                 .set("Content-Type", "application/json")
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1598,14 +1598,14 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/search/tags")
                 .set("Content-Type", "application/json")
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1653,7 +1653,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(EmailPassword);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -1664,7 +1664,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1711,7 +1711,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(EmailPassword);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -1722,7 +1722,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1769,7 +1769,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(EmailPassword);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -1780,7 +1780,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1830,7 +1830,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(null, Passwordless);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -1841,7 +1841,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1891,7 +1891,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(null, Passwordless);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -1902,7 +1902,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1993,7 +1993,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(null, null, ThirdParty);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -2004,7 +2004,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -2099,7 +2099,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         await createUsers(null, Passwordless, ThirdParty);
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
@@ -2111,7 +2111,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .set("Authorization", "Bearer testapikey")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

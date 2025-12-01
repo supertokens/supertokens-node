@@ -76,7 +76,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         let res = extractInfoFromResponse(response);
 
         let response2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signout")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -136,13 +136,13 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .set("rid", "emailpassword")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -222,7 +222,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         await new Promise((r) => setTimeout(r, 5000));
 
-        let signOutResponse = await new Promise((resolve) =>
+        let signOutResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .set("rid", "session")
@@ -230,7 +230,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -240,7 +240,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         assert.strictEqual(signOutResponse.body.message, "try refresh token");
 
         let refreshedResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
@@ -258,7 +258,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         );
 
         signOutResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signout")
                     .set("rid", "session")

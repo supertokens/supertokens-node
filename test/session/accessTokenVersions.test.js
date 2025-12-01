@@ -50,7 +50,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
             const app = getTestExpressApp();
 
-            let res = await new Promise((resolve) =>
+            let res = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -96,7 +96,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
             const app = getTestExpressApp();
 
-            let res = await new Promise((resolve) =>
+            let res = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -814,7 +814,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
             const app = getTestExpressApp();
 
-            let res = await new Promise((resolve) =>
+            let res = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -900,7 +900,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
             const app = getTestExpressApp();
 
-            let res = await new Promise((resolve) =>
+            let res = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)

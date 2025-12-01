@@ -56,13 +56,13 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .set("rid", "session")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -90,12 +90,12 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -130,7 +130,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .set("rid", "passwordless")
@@ -148,7 +148,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -183,7 +183,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .set("rid", "random")
@@ -201,7 +201,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -235,7 +235,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .set("rid", "passwordless")
@@ -253,7 +253,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -281,13 +281,13 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .set("rid", "anti-csrf")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -315,13 +315,13 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .set("rid", "random")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -368,13 +368,13 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists?email=test@example.com")
                 .expect(201)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

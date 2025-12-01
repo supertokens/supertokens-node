@@ -160,12 +160,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/email/verify/token")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(undefined);
                     } else {
                         resolve(res);
                     }
@@ -481,7 +481,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(undefined);
                     } else {
                         resolve(res);
                     }
@@ -699,12 +699,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/user/email/verify")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(undefined);
                     } else {
                         resolve(res);
                     }
@@ -899,7 +899,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(response.body.status === "OK");
         assert(Object.keys(response.body).length === 1);
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/email/verify")
                 .send({
@@ -909,7 +909,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(err);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }

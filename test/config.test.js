@@ -1478,7 +1478,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             let res = extractInfoFromResponse(
-                await new Promise((resolve) =>
+                await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
@@ -1492,7 +1492,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 )
             );
 
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -1538,7 +1538,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             let res = extractInfoFromResponse(
-                await new Promise((resolve) =>
+                await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
@@ -1552,7 +1552,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 )
             );
 
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/hello/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -1598,7 +1598,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             let res = extractInfoFromResponse(
-                await new Promise((resolve) =>
+                await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
@@ -1612,7 +1612,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 )
             );
 
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/hello/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])

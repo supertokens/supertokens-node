@@ -74,7 +74,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .set("st-auth-mode", "cookie")
@@ -89,14 +89,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -141,7 +141,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .set("st-auth-mode", "cookie")
@@ -156,12 +156,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -221,7 +221,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -236,7 +236,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -251,7 +251,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -261,14 +261,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -317,7 +317,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -332,7 +332,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -347,7 +347,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -357,14 +357,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -418,7 +418,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -436,14 +436,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -454,7 +454,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -474,7 +474,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -494,14 +494,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         ProcessState.getInstance().reset();
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -510,7 +510,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
@@ -518,7 +518,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -573,7 +573,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -595,13 +595,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.ok(res.refreshTokenFromHeader);
         assert.strictEqual(res.refreshToken, undefined);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Authorization", `Bearer ${res.accessTokenFromHeader}`)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -612,7 +612,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Authorization", `Bearer ${res.refreshTokenFromHeader}`)
@@ -634,7 +634,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(res2.refreshToken, undefined);
 
         let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Authorization", `Bearer ${res2.accessTokenFromHeader}`)
@@ -653,14 +653,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         ProcessState.getInstance().reset();
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Authorization", `Bearer ${res3.accessTokenFromHeader}`)
 
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -669,7 +669,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
                 .set("Authorization", `Bearer ${res3.accessTokenFromHeader}`)
@@ -677,7 +677,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -715,13 +715,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             res.status(200).send("");
         });
-        const res = await new Promise((resolve) =>
+        const res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -762,13 +762,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             res.status(200).send("");
         });
-        const res = await new Promise((resolve) =>
+        const res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -806,7 +806,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -820,14 +820,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -873,7 +873,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -889,14 +889,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         await Session.revokeSession(sessionHandle);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -949,7 +949,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -967,14 +967,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -985,7 +985,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -1005,7 +1005,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -1025,14 +1025,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         ProcessState.getInstance().reset();
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1041,7 +1041,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
@@ -1049,7 +1049,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1094,7 +1094,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1108,14 +1108,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1123,14 +1123,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.strictEqual(res2.body.userId, "id1");
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1178,7 +1178,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1192,13 +1192,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1206,13 +1206,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.strictEqual(response2.body.userId, "id1");
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1270,7 +1270,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let response = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1283,7 +1283,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     })
             )
         );
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1291,7 +1291,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1303,20 +1303,20 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/usercreate")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
         let userCreateResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/usercreate")
                     .expect(200)
@@ -1330,7 +1330,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revokeUserid")
                 .set("Cookie", ["sAccessToken=" + userCreateResponse.accessToken])
@@ -1338,19 +1338,19 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
-        let sessionHandleResponse = await new Promise((resolve) =>
+        let sessionHandleResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/getSessionsWithUserId1")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1404,7 +1404,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         //create a new session
         let response = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1419,7 +1419,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //call the updateSessionData api to add session data
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/updateSessionData")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1427,7 +1427,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1435,7 +1435,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //call the getSessionData api to get session data
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/getSessionData")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1443,7 +1443,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1454,7 +1454,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(response2.body.key, "value");
 
         // change the value of the inserted session data
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/updateSessionData2")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1462,14 +1462,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
         //retrieve the changed session data
-        response2 = await new Promise((resolve) =>
+        response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/getSessionData")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1477,7 +1477,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1488,7 +1488,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepStrictEqual(response2.body, {});
 
         //invalid session handle when updating the session data
-        let invalidSessionResponse = await new Promise((resolve) =>
+        let invalidSessionResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/updateSessionDataInvalidSessionHandle")
                 .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1496,7 +1496,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1556,7 +1556,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         //create a new session
         let response = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1578,7 +1578,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/updateAccessTokenPayload")
                     .set("Cookie", ["sAccessToken=" + response.accessToken])
@@ -1602,7 +1602,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         //call the getAccessTokenPayload api to get jwt payload
-        let response2 = await new Promise((resolve) =>
+        let response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/getAccessTokenPayload")
                 .set("Cookie", ["sAccessToken=" + updatedResponse.accessToken])
@@ -1610,7 +1610,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1621,7 +1621,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         // refresh session
         response2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + response.refreshToken])
@@ -1646,7 +1646,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/updateAccessTokenPayload2")
                     .set("Cookie", ["sAccessToken=" + response2.accessToken])
@@ -1669,7 +1669,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //retrieve the changed jwt payload
-        response2 = await new Promise((resolve) =>
+        response2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/getAccessTokenPayload")
                 .set("Cookie", ["sAccessToken=" + updatedResponse2.accessToken])
@@ -1677,7 +1677,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1702,7 +1702,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.strictEqual(response2.body.iss, "https://api.supertokens.io/auth");
         //invalid session handle when updating the jwt payload
-        let invalidSessionResponse = await new Promise((resolve) =>
+        let invalidSessionResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/updateAccessTokenPayloadInvalidSessionHandle")
                 .set("Cookie", ["sAccessToken=" + updatedResponse2.accessToken])
@@ -1710,7 +1710,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1743,13 +1743,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         //create a new session
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1796,7 +1796,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1810,13 +1810,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let res2 = await new Promise((resolve) =>
+        let res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1824,13 +1824,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.strictEqual(res2.body.userId, "id1");
 
-        let res3 = await new Promise((resolve) =>
+        let res3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1867,12 +1867,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).json({ success: false });
         });
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1917,12 +1917,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).json({ success: false });
         });
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1975,7 +1975,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -1990,7 +1990,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2005,7 +2005,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res2.status, 401);
             assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
 
-            let res3 = await new Promise((resolve) =>
+            let res3 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2022,7 +2022,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         }
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify-optional")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2037,7 +2037,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res2.status, 401);
             assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
 
-            let res3 = await new Promise((resolve) =>
+            let res3 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify-optional")
                     .end((err, res) => {
@@ -2052,7 +2052,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res3.body.hasSession, false);
         }
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verifyAntiCsrfFalse")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2066,7 +2066,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             );
             assert.deepStrictEqual(res2.body.userId, "id1");
 
-            let res3 = await new Promise((resolve) =>
+            let res3 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verifyAntiCsrfFalse")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2107,7 +2107,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2122,7 +2122,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -2194,7 +2194,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2209,7 +2209,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2224,7 +2224,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res2.status, 401);
             assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
 
-            let res3 = await new Promise((resolve) =>
+            let res3 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2313,7 +2313,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2335,14 +2335,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.refreshToken !== undefined);
         session = undefined;
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -2353,7 +2353,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -2377,7 +2377,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         session = undefined;
 
         let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/session/verify")
                     .set("Cookie", ["sAccessToken=" + res2.accessToken])
@@ -2400,14 +2400,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         ProcessState.getInstance().reset();
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -2416,7 +2416,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
                 .set("Cookie", ["sAccessToken=" + res3.accessToken])
@@ -2424,7 +2424,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -2487,7 +2487,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2505,7 +2505,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/signout")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2513,7 +2513,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -2587,13 +2587,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             });
         });
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -2664,7 +2664,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2682,7 +2682,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/signout")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -2690,7 +2690,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -2724,7 +2724,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2739,7 +2739,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -2782,7 +2782,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -2797,7 +2797,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -2866,13 +2866,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             }
         });
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
                 .expect(403)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -2925,7 +2925,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .set("st-auth-mode", "cookie")
@@ -2944,14 +2944,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.notStrictEqual(res.antiCsrf, undefined);
         assert.notStrictEqual(res.refreshToken, undefined);
 
-        let resp = await new Promise((resolve) =>
+        let resp = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -3017,7 +3017,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .set("st-auth-mode", "cookie")
@@ -3036,14 +3036,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        let resp = await new Promise((resolve) =>
+        let resp = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -3111,7 +3111,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .set("st-auth-mode", "cookie")
@@ -3130,14 +3130,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        let resp = await new Promise((resolve) =>
+        let resp = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -3202,7 +3202,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/create")
                     .set("st-auth-mode", "cookie")
@@ -3221,14 +3221,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
-        let resp = await new Promise((resolve) =>
+        let resp = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -3286,13 +3286,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        let res = await new Promise((resolve) =>
+        let res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -3304,14 +3304,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(headers["st-refresh-token"] !== undefined);
         assert(headers["set-cookie"] === undefined);
 
-        res = await new Promise((resolve) =>
+        res = await new Promise((resolve, reject) =>
             request(app)
                 .post("/create")
                 .set("origin", "http://localhost:3002")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

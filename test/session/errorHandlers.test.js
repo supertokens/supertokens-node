@@ -96,7 +96,7 @@ describe(`errorHandlers: ${printPath("[test/errorHandlers.test.js]")}`, function
 
         app.use(errorHandler());
 
-        const res1 = await new Promise((resolve) =>
+        const res1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/test/unauthorized")
                 .end((err, res) => {
@@ -107,7 +107,7 @@ describe(`errorHandlers: ${printPath("[test/errorHandlers.test.js]")}`, function
         assert.strictEqual(res1.status, 401);
         assert.deepStrictEqual(res1.text, '{"message":"unauthorised from errorHandler"}');
 
-        const res2 = await new Promise((resolve) =>
+        const res2 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/test/token-theft")
                 .end((err, res) => {
@@ -118,7 +118,7 @@ describe(`errorHandlers: ${printPath("[test/errorHandlers.test.js]")}`, function
         assert.strictEqual(res2.status, 403);
         assert.deepStrictEqual(res2.text, '{"message":"token theft detected from errorHandler"}');
 
-        const res3 = await new Promise((resolve) =>
+        const res3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/test/try-refresh")
                 .end((err, res) => {
@@ -129,7 +129,7 @@ describe(`errorHandlers: ${printPath("[test/errorHandlers.test.js]")}`, function
         assert.strictEqual(res3.status, 401);
         assert.deepStrictEqual(res3.text, '{"message":"try refresh session from errorHandler"}');
 
-        const res4 = await new Promise((resolve) =>
+        const res4 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/test/claim-validation")
                 .end((err, res) => {
@@ -140,7 +140,7 @@ describe(`errorHandlers: ${printPath("[test/errorHandlers.test.js]")}`, function
         assert.strictEqual(res4.status, 403);
         assert.deepStrictEqual(res4.text, '{"message":"invalid claim from errorHandler"}');
 
-        const res5 = await new Promise((resolve) =>
+        const res5 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/test/clear-duplicate-session")
                 .end((err, res) => {
