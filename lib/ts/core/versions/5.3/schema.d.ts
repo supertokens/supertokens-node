@@ -12,8 +12,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Check if primary user can be created for given user id
-         *      */
+        /** @description Check if primary user can be created for given user id */
         get: operations["canCreatePrimaryUser"];
         put?: never;
         post?: never;
@@ -30,8 +29,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Check if accounts can be linked for given primary and recipe user id
-         *      */
+        /** @description Check if accounts can be linked for given primary and recipe user id */
         get: operations["canLinkAccounts"];
         put?: never;
         post?: never;
@@ -50,8 +48,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a primary user for given user id
-         *      */
+        /** @description Create a primary user for given user id */
         post: operations["createPrimaryUser"];
         delete?: never;
         options?: never;
@@ -68,8 +65,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Link accounts for given primary and recipe user id
-         *      */
+        /** @description Link accounts for given primary and recipe user id */
         post: operations["linkAccounts"];
         delete?: never;
         options?: never;
@@ -86,8 +82,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Unlink accounts for given recipe user id
-         *      */
+        /** @description Unlink accounts for given recipe user id */
         post: operations["unlinkAccounts"];
         delete?: never;
         options?: never;
@@ -103,11 +98,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Update the name of a TOTP device for a user.
-         *      */
+        /** @description Update the name of a TOTP device for a user. */
         put: operations["updateTotpDeviceName"];
-        /** @description Add a TOTP device for a user and enable TOTP if not already enabled.
-         *      */
+        /** @description Add a TOTP device for a user and enable TOTP if not already enabled. */
         post: operations["createTotpDevice"];
         delete?: never;
         options?: never;
@@ -122,8 +115,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrieve a list of TOTP devices for a user.
-         *      */
+        /** @description Retrieve a list of TOTP devices for a user. */
         get: operations["getTotpDevices"];
         put?: never;
         post?: never;
@@ -142,8 +134,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Add a TOTP device for a user and enable TOTP if not already enabled.
-         *      */
+        /** @description Add a TOTP device for a user and enable TOTP if not already enabled. */
         post: operations["importTotpDevice"];
         delete?: never;
         options?: never;
@@ -160,8 +151,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Remove a TOTP device for a user. If all devices are removed, TOTP is disabled for the user.
-         *      */
+        /** @description Remove a TOTP device for a user. If all devices are removed, TOTP is disabled for the user. */
         post: operations["removeTotpDevice"];
         delete?: never;
         options?: never;
@@ -178,8 +168,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Check if a TOTP code is valid against any of the TOTP devices for a user.
-         *      */
+        /** @description Check if a TOTP code is valid against any of the TOTP devices for a user. */
         post: operations["verifyTotpCode"];
         delete?: never;
         options?: never;
@@ -196,8 +185,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Mark a TOTP device as verified if the given TOTP code is valid for that device.
-         *      */
+        /** @description Mark a TOTP device as verified if the given TOTP code is valid for that device. */
         post: operations["verifyTotpDevice"];
         delete?: never;
         options?: never;
@@ -212,12 +200,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrieve a UserIdMapping
-         *      */
+        /** @description Retrieve a UserIdMapping */
         get: operations["userIdMappingGetMapping"];
         put?: never;
-        /** @description Create a mapping between a SuperTokens userId and an external userId.
-         *      */
+        /** @description Create a mapping between a SuperTokens userId and an external userId. */
         post: operations["userIdMappingCreateMapping"];
         delete?: never;
         options?: never;
@@ -234,8 +220,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete a mapping between a SuperTokens userId and an external userId.
-         *      */
+        /** @description Delete a mapping between a SuperTokens userId and an external userId. */
         post: operations["userIdMappingRemoveMapping"];
         delete?: never;
         options?: never;
@@ -251,8 +236,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Update or delete externalUserIdInfo
-         *      */
+        /** @description Update or delete externalUserIdInfo */
         put: operations["userIdMappingUpateExternalUserIdInfo"];
         post?: never;
         delete?: never;
@@ -270,8 +254,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Tries to check if the passed userInputCode+deviceId combo or the linkCode is valid
-         *      */
+        /** @description Tries to check if the passed userInputCode+deviceId combo or the linkCode is valid */
         post: operations["passwordlessCheckCode"];
         delete?: never;
         options?: never;
@@ -288,8 +271,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Tries to consume the passed userInputCode+deviceId combo or the linkCode to sign the user in
-         *      */
+        /** @description Tries to consume the passed userInputCode+deviceId combo or the linkCode to sign the user in */
         post: operations["passwordlessTryUseCode"];
         delete?: never;
         options?: never;
@@ -306,9 +288,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Starts a sign in process by requesting a linkCode and a deviceId + userInputCode combination the user can use to sign in.
+        /**
+         * @description Starts a sign in process by requesting a linkCode and a deviceId + userInputCode combination the user can use to sign in.
          *     Passing the optional deviceId signifies a resend code flow.
-         *      */
+         */
         post: operations["passwordlessStartSignIn"];
         delete?: never;
         options?: never;
@@ -325,8 +308,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Revokes a code by id
-         *      */
+        /** @description Revokes a code by id */
         post: operations["passwordlessRevokeCode"];
         delete?: never;
         options?: never;
@@ -341,8 +323,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lists all active passwordless codes of the user
-         *      */
+        /** @description Lists all active passwordless codes of the user */
         get: operations["passwordlessListCodes"];
         put?: never;
         post?: never;
@@ -361,8 +342,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Revokes all codes issued for the user
-         *      */
+        /** @description Revokes all codes issued for the user */
         post: operations["passwordlessRevokeAllCodesOfUser"];
         delete?: never;
         options?: never;
@@ -385,12 +365,12 @@ export interface paths {
          *     If querying by userId, tenantId will be ignored.
          *
          *     Note that there is an invisible character at the end of the path, this was to avoid a conflict with the OpenAPI spec.
-         *
          */
         get: operations["passwordlessGetUser"];
-        /** @description Update a user's information.
+        /**
+         * @description Update a user's information.
          *     If the email or phoneNumber is set to null the previous value will be deleted. If they are not set (i.e., undefined/missing from the request), they are left as-is.
-         *      */
+         */
         put: operations["passwordlessPutUser"];
         post?: never;
         delete?: never;
@@ -408,8 +388,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Signin a user with email ID and password
-         *      */
+        /** @description Signin a user with email ID and password */
         post: operations["emailPasswordSignin"];
         delete?: never;
         options?: never;
@@ -426,8 +405,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Signup a user with email ID and password
-         *      */
+        /** @description Signup a user with email ID and password */
         post: operations["emailPasswordSignup"];
         delete?: never;
         options?: never;
@@ -448,11 +426,9 @@ export interface paths {
          *
          *     API is tenant specific if querying by email.
          *     If querying by userId, tenantId will be ignored.
-         *
          */
         get: operations["emailPasswordGetUser"];
-        /** @description Update a user's information
-         *      */
+        /** @description Update a user's information */
         put: operations["emailPasswordPutUser"];
         post?: never;
         delete?: never;
@@ -470,8 +446,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Generate a new reset password token for this user
-         *      */
+        /** @description Generate a new reset password token for this user */
         post: operations["emailPasswordGetPasswordResetToken"];
         delete?: never;
         options?: never;
@@ -491,7 +466,6 @@ export interface paths {
         /**
          * @deprecated
          * @description Reset a password using password reset token
-         *
          */
         post: operations["emailPasswordGetPasswordReset"];
         delete?: never;
@@ -509,8 +483,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Import a user with email ID and password hash
-         *      */
+        /** @description Import a user with email ID and password hash */
         post: operations["userImport"];
         delete?: never;
         options?: never;
@@ -527,8 +500,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Consume a password reset token
-         *      */
+        /** @description Consume a password reset token */
         post: operations["emailPasswordResetPasswordConsumeToken"];
         delete?: never;
         options?: never;
@@ -545,8 +517,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Signin/up a user
-         *      */
+        /** @description Signin/up a user */
         post: operations["thirdPartySigninup"];
         delete?: never;
         options?: never;
@@ -569,7 +540,6 @@ export interface paths {
          *     If querying by userId, tenantId will be ignored.
          *
          *     Note that there is an invisible character at the end of the path, this was to avoid a conflict with the OpenAPI spec.
-         *
          */
         get: operations["thirdPartyGetUser"];
         put?: never;
@@ -590,7 +560,6 @@ export interface paths {
         /**
          * @deprecated
          * @description Get all users accounts associated with given email
-         *
          */
         get: operations["thirdPartyGetUsersByEmail"];
         put?: never;
@@ -610,8 +579,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Generate a new email verification token for this user
-         *      */
+        /** @description Generate a new email verification token for this user */
         post: operations["emailVerificationVerifyToken"];
         delete?: never;
         options?: never;
@@ -628,8 +596,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Remove all unused email verification tokens for this user
-         *      */
+        /** @description Remove all unused email verification tokens for this user */
         post: operations["emailVerificationVerifyTokenRemove"];
         delete?: never;
         options?: never;
@@ -646,8 +613,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Verify an email
-         *      */
+        /** @description Verify an email */
         post: operations["emailVerificationVerify"];
         delete?: never;
         options?: never;
@@ -662,8 +628,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Check if an email is verified
-         *      */
+        /** @description Check if an email is verified */
         get: operations["emailVerificationVerifyGet"];
         put?: never;
         post?: never;
@@ -682,8 +647,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Unverify an email
-         *      */
+        /** @description Unverify an email */
         post: operations["emailVerificationVerifyRemove"];
         delete?: never;
         options?: never;
@@ -698,10 +662,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Gets the stored metadata object of the user
-         *      */
+        /** @description Gets the stored metadata object of the user */
         get: operations["userMetadataRead"];
-        /** @description Updates the metadata object stored about the user by doing a shallow merge of the stored and the update JSONs
+        /**
+         * @description Updates the metadata object stored about the user by doing a shallow merge of the stored and the update JSONs
          *     and removing properties set to null on the root level of the update object. The merged object is then reserialized and stored.
          *
          *     e.g.:
@@ -710,7 +674,7 @@ export interface paths {
          *       - update: `{ "notifications": { "sms": true }, "todos": null }`
          *
          *       - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
-         *      */
+         */
         put: operations["userMetadataUpdate"];
         post?: never;
         delete?: never;
@@ -728,8 +692,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Removes the entire metadata JSON stored about the user.
-         *      */
+        /** @description Removes the entire metadata JSON stored about the user. */
         post: operations["userMetadataDelete"];
         delete?: never;
         options?: never;
@@ -745,8 +708,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Creates a User Role mapping
-         *      */
+        /** @description Creates a User Role mapping */
         put: operations["addUserRole"];
         post?: never;
         delete?: never;
@@ -764,8 +726,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Removes a User Role mapping
-         *      */
+        /** @description Removes a User Role mapping */
         post: operations["removeUserRole"];
         delete?: never;
         options?: never;
@@ -780,8 +741,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrive the roles associated with the user.
-         *      */
+        /** @description Retrive the roles associated with the user. */
         get: operations["getUserRoles"];
         put?: never;
         post?: never;
@@ -798,8 +758,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrive the users associated with the role.
-         *      */
+        /** @description Retrive the users associated with the role. */
         get: operations["getRoleUsers"];
         put?: never;
         post?: never;
@@ -817,8 +776,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Creates a role with permissions, can also be used to add permissions to a role
-         *      */
+        /** @description Creates a role with permissions, can also be used to add permissions to a role */
         put: operations["putRole"];
         post?: never;
         delete?: never;
@@ -834,8 +792,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrive the permissions associated with a role
-         *      */
+        /** @description Retrive the permissions associated with a role */
         get: operations["getRolePermissions"];
         put?: never;
         post?: never;
@@ -854,8 +811,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Removes permissions mapped to a role, if no permissions are passed all permissions mapped to the role are removed
-         *      */
+        /** @description Removes permissions mapped to a role, if no permissions are passed all permissions mapped to the role are removed */
         post: operations["removeRolePermissions"];
         delete?: never;
         options?: never;
@@ -870,8 +826,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrive the roles associated with the permission
-         *      */
+        /** @description Retrive the roles associated with the permission */
         get: operations["getPermissionRoles"];
         put?: never;
         post?: never;
@@ -890,8 +845,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Deletes a role
-         *      */
+        /** @description Deletes a role */
         post: operations["removeRole"];
         delete?: never;
         options?: never;
@@ -906,8 +860,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrive all created roles
-         *      */
+        /** @description Retrive all created roles */
         get: operations["getRoles"];
         put?: never;
         post?: never;
@@ -926,8 +879,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a new Session
-         *      */
+        /** @description Create a new Session */
         post: operations["createNewSession"];
         delete?: never;
         options?: never;
@@ -942,8 +894,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user and session information for a given session handle
-         *      */
+        /** @description Get user and session information for a given session handle */
         get: operations["getSessionInfo"];
         put?: never;
         post?: never;
@@ -962,12 +913,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete a sesion
+        /**
+         * @description Delete a sesion
          *
          *     If revoking session by `userId`, the sessions are cleared across all tenants by default.
          *
          *     Note: If `revokeAcrossAllTenants` is set to `true`, this API can only be called from `public` tenant.
-         *      */
+         */
         post: operations["deleteSession"];
         delete?: never;
         options?: never;
@@ -984,12 +936,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete a sesion
+        /**
+         * @description Delete a sesion
          *
          *     If revoking session by `userId`, the sessions are cleared across all tenants by default.
          *
          *     Note: If `revokeAcrossAllTenants` is set to `true`, this API can only be called from `public` tenant.
-         *      */
+         */
         post: operations["deleteSession"];
         delete?: never;
         options?: never;
@@ -1006,8 +959,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Verify a Session
-         *      */
+        /** @description Verify a Session */
         post: operations["verifySession"];
         delete?: never;
         options?: never;
@@ -1024,8 +976,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Refresh a Session
-         *      */
+        /** @description Refresh a Session */
         post: operations["refreshSession"];
         delete?: never;
         options?: never;
@@ -1040,12 +991,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get session handles for a user
+        /**
+         * @description Get session handles for a user
          *
          *     By default, the session handles are fetched across all tenants. Set `fetchAcrossAllTenants` to `false` to get sessionHandles for the user for a particular tenant.
          *
          *     Note: If `fetchAcrossAllTenants` is set to `true`, this API can only be called from `public` tenant.
-         *      */
+         */
         get: operations["getUserSessionHandles"];
         put?: never;
         post?: never;
@@ -1062,12 +1014,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get session handles for a user
+        /**
+         * @description Get session handles for a user
          *
          *     By default, the session handles are fetched across all tenants. Set `fetchAcrossAllTenants` to `false` to get sessionHandles for the user for a particular tenant.
          *
          *     Note: If `fetchAcrossAllTenants` is set to `true`, this API can only be called from `public` tenant.
-         *      */
+         */
         get: operations["getUserSessionHandles"];
         put?: never;
         post?: never;
@@ -1086,8 +1039,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Regenerate a session
-         *      */
+        /** @description Regenerate a session */
         post: operations["regenerateSession"];
         delete?: never;
         options?: never;
@@ -1105,11 +1057,9 @@ export interface paths {
         /**
          * @deprecated
          * @description Get session data
-         *
          */
         get: operations["getSessionData"];
-        /** @description Change session data
-         *      */
+        /** @description Change session data */
         put: operations["putSessionData"];
         post?: never;
         delete?: never;
@@ -1127,8 +1077,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a signed JWT
-         *      */
+        /** @description Create a signed JWT */
         post: operations["createSignedJWT"];
         delete?: never;
         options?: never;
@@ -1146,7 +1095,6 @@ export interface paths {
         /**
          * @deprecated
          * @description Retrieve JWKs for JWT verification, containing both static and dynamic keys.
-         *
          */
         get: {
             parameters: {
@@ -1200,8 +1148,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrieve JWKs for JWT verification, containing both static and dynamic keys.
-         *      */
+        /** @description Retrieve JWKs for JWT verification, containing both static and dynamic keys. */
         get: {
             parameters: {
                 query?: never;
@@ -1245,11 +1192,9 @@ export interface paths {
         /**
          * @deprecated
          * @description Get JWT data for a session
-         *
          */
         get: operations["getJWTData"];
-        /** @description Change JWT data for a session
-         *      */
+        /** @description Change JWT data for a session */
         put: operations["putJWTData"];
         post?: never;
         delete?: never;
@@ -1266,14 +1211,11 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Update a user's email or password
-         *      */
+        /** @description Update a user's email or password */
         put: operations["updateDashboardUser"];
-        /** @description Create a dashboard user
-         *      */
+        /** @description Create a dashboard user */
         post: operations["createDashboardUser"];
-        /** @description Delete a dashboard user with their userId or email
-         *      */
+        /** @description Delete a dashboard user with their userId or email */
         delete: operations["deleteDashboardUser"];
         options?: never;
         head?: never;
@@ -1287,8 +1229,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of call the dashboard users
-         *      */
+        /** @description Get a list of call the dashboard users */
         get: operations["getAllDashboardUsers"];
         put?: never;
         post?: never;
@@ -1307,8 +1248,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Verify a Dashboard user's sessionId
-         *      */
+        /** @description Verify a Dashboard user's sessionId */
         post: operations["verifyDashboardUserSession"];
         delete?: never;
         options?: never;
@@ -1326,8 +1266,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** @description Revoke a Dashboard user's session
-         *      */
+        /** @description Revoke a Dashboard user's session */
         delete: operations["RevokeDashboardUsersSession"];
         options?: never;
         head?: never;
@@ -1343,8 +1282,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Signin a Dashboard user
-         *      */
+        /** @description Signin a Dashboard user */
         post: operations["signInDashboardUser"];
         delete?: never;
         options?: never;
@@ -1359,8 +1297,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of the sessions for the dashboard user
-         *      */
+        /** @description Get a list of the sessions for the dashboard user */
         get: operations["getAllSessionsForDashboardUser"];
         put?: never;
         post?: never;
@@ -1377,8 +1314,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of compatible CDI versions
-         *      */
+        /** @description Get a list of compatible CDI versions */
         get: operations["getApiVersion"];
         put?: never;
         post?: never;
@@ -1395,8 +1331,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get path to the loaded config file
-         *      */
+        /** @description Get path to the loaded config file */
         get: operations["getConfig"];
         put?: never;
         post?: never;
@@ -1413,8 +1348,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return a simple hello message
-         *      */
+        /** @description Return a simple hello message */
         get: operations["getHelloOnRootPath"];
         put?: never;
         post?: never;
@@ -1431,17 +1365,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return a simple hello message
-         *      */
+        /** @description Return a simple hello message */
         get: operations["getHello"];
-        /** @description Return a simple hello message
-         *      */
+        /** @description Return a simple hello message */
         put: operations["putHello"];
-        /** @description Return a simple hello message
-         *      */
+        /** @description Return a simple hello message */
         post: operations["postHello"];
-        /** @description Return a simple hello message
-         *      */
+        /** @description Return a simple hello message */
         delete: operations["deleteHello"];
         options?: never;
         head?: never;
@@ -1455,8 +1385,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Returns the telemetryID if it exists
-         *      */
+        /** @description Returns the telemetryID if it exists */
         get: operations["getTelemetry"];
         put?: never;
         post?: never;
@@ -1473,11 +1402,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get number of users.
+        /**
+         * @description Get number of users.
          *
          *     API is tenant specific if `includeAllTenants` is false.
          *     Else, `tenantId` is ignored.
-         *      */
+         */
         get: operations["getUsersCount"];
         put?: never;
         post?: never;
@@ -1494,8 +1424,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get number of active users.
-         *      */
+        /** @description Get number of active users. */
         get: operations["getActiveUsersCount"];
         put?: never;
         post?: never;
@@ -1512,8 +1441,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description User Pagination
-         *      */
+        /** @description User Pagination */
         get: operations["getUsers"];
         put?: never;
         post?: never;
@@ -1532,8 +1460,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete user
-         *      */
+        /** @description Delete user */
         post: operations["deleteUser"];
         delete?: never;
         options?: never;
@@ -1548,8 +1475,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrieve available tags for search
-         *      */
+        /** @description Retrieve available tags for search */
         get: operations["getSearchTags"];
         put?: never;
         post?: never;
@@ -1566,8 +1492,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of the enabled enterprise features
-         *      */
+        /** @description Get a list of the enabled enterprise features */
         get: operations["getFeatureFlag"];
         put?: never;
         post?: never;
@@ -1584,15 +1509,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrieve license key
-         *      */
+        /** @description Retrieve license key */
         get: operations["getLicense"];
-        /** @description Set or sync license key
-         *      */
+        /** @description Set or sync license key */
         put: operations["setLicense"];
         post?: never;
-        /** @description Delete license key
-         *      */
+        /** @description Delete license key */
         delete: operations["deleteLicense"];
         options?: never;
         head?: never;
@@ -1606,8 +1528,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user id from email or phone number
-         *      */
+        /** @description Get user id from email or phone number */
         get: operations["getUserId"];
         put?: never;
         post?: never;
@@ -1624,8 +1545,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get users by email, phoneNumber or thirdParty info
-         *      */
+        /** @description Get users by email, phoneNumber or thirdParty info */
         get: operations["getUsersByAccountInfo"];
         put?: never;
         post?: never;
@@ -1642,12 +1562,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get requests stats for last 24 hours
+        /**
+         * @description Get requests stats for last 24 hours
          *
          *     `averageRequestsPerSecond` and `peakRequestsPerSecond` would countain `1440` values corresponding to `now - 1440 minutes` until `now - 1 minute`.
          *
          *     A value of `-1` would mean that there is no data for that minute.
-         *      */
+         */
         get: operations["getRequestsStats"];
         put?: never;
         post?: never;
@@ -1691,7 +1612,6 @@ export interface paths {
          *     Note: The core config must contain a unique connection to the storage layer, because sharing of database between 2 different connection uri domains is not allowed.
          *
          *     Note: Updation of core config is not allowed for the default connectionUriDomain. In order to update config for the default connectionUriDomain, you must edit the config.yaml or the docker env directly.
-         *
          */
         put: operations["createOrUpdateConnectionURIDomainPUT"];
         post?: never;
@@ -1709,7 +1629,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Create or update a connection uri domain.
+        /**
+         * @description Create or update a connection uri domain.
          *
          *     SuperTokens subscription license key is required, if not using the base connection uri domain.
          *
@@ -1756,7 +1677,7 @@ export interface paths {
          *     Note: The core config must contain a unique connection to the storage layer, because sharing of database between 2 different connection uri domains is not allowed.
          *
          *     Note: Updation of core config is not allowed for the default connectionUriDomain. In order to update config for the default connectionUriDomain, you must edit the config.yaml or the docker env directly.
-         *      */
+         */
         put: operations["createOrUpdateConnectionURIDomainV2PUT"];
         post?: never;
         delete?: never;
@@ -1774,14 +1695,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete a connection uri domain.
+        /**
+         * @description Delete a connection uri domain.
          *
          *     Deletion of base connection uri domain is not allowed.
          *
          *     The request must originate from base connection uri domain and public app and tenant.
          *
          *     Note: There should be no apps or tenants (other than the public app and public tenant) belonging to the connection uri domain to be able to delete it.
-         *      */
+         */
         post: operations["deleteConnectionUriDomainPOST"];
         delete?: never;
         options?: never;
@@ -1805,7 +1727,6 @@ export interface paths {
          *     Get a list of all connection uri domains.
          *
          *     Request must originate from base connection uri domain and public app and tenant.
-         *
          */
         get: operations["connectionUriDomainListGET"];
         put?: never;
@@ -1823,7 +1744,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of all connection uri domains.
+        /**
+         * @description Get a list of all connection uri domains.
          *
          *     The value of `firstFactors` can be as follows:
          *     - `null`: When set to `null`, the SDK will use firstFactors defined in the SDK
@@ -1831,7 +1753,7 @@ export interface paths {
          *     - non-empty array: The first factors that are enabled for the tenant
          *
          *     Request must originate from base connection uri domain and public app and tenant.
-         *      */
+         */
         get: operations["connectionUriDomainListV2GET"];
         put?: never;
         post?: never;
@@ -1873,7 +1795,6 @@ export interface paths {
          *     this request originates and the request must originate from public app and public tenant.
          *
          *     Note: Updation of core config is not allowed for the default connectionUriDomain, public app. In order to update config for the default connectionUriDomain and public app, you must edit the config.yaml or the docker env directly.
-         *
          */
         put: operations["createOrUpdateAppPUT"];
         post?: never;
@@ -1891,7 +1812,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Create or update an app.
+        /**
+         * @description Create or update an app.
          *
          *     SuperTokens subscription license key is required.
          *
@@ -1936,7 +1858,7 @@ export interface paths {
          *     this request originates and the request must originate from public app and public tenant.
          *
          *     Note: Updation of core config is not allowed for the default connectionUriDomain, public app. In order to update config for the default connectionUriDomain and public app, you must edit the config.yaml or the docker env directly.
-         *      */
+         */
         put: operations["createOrUpdateAppV2PUT"];
         post?: never;
         delete?: never;
@@ -1954,12 +1876,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete an app.
+        /**
+         * @description Delete an app.
          *
          *     Request must originate from public app and tenant.
          *
          *     Note: No tenants (other than the public tenant) must belong to the app to be able to delete it.
-         *      */
+         */
         post: operations["deleteAppPOST"];
         delete?: never;
         options?: never;
@@ -1983,7 +1906,6 @@ export interface paths {
          *     Get a list of all apps in a connection uri domain.
          *
          *     Request must originate from public app and tenant.
-         *
          */
         get: operations["appListGET"];
         put?: never;
@@ -2001,7 +1923,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of all apps in a connection uri domain.
+        /**
+         * @description Get a list of all apps in a connection uri domain.
          *
          *     The value of `firstFactors` can be as follows:
          *     - `null`: When set to `null`, the SDK will use firstFactors defined in the SDK
@@ -2009,7 +1932,7 @@ export interface paths {
          *     - non-empty array: The first factors that are enabled for the tenant
          *
          *     Request must originate from public app and tenant.
-         *      */
+         */
         get: operations["appListV2GET"];
         put?: never;
         post?: never;
@@ -2050,7 +1973,6 @@ export interface paths {
          *     The request must originate from public tenant, and the new tenant will use connectionUriDomain and app from which the request originates.
          *
          *     Note: Updation of core config is not allowed for the default connectionUriDomain, public app and tenant. In order to update config for the default connectionUriDomain, public app and tenant, you must edit the config.yaml or the docker env directly.
-         *
          */
         put: operations["createOrUpdateTenantPUT"];
         post?: never;
@@ -2068,7 +1990,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Creates or updates a tenant.
+        /**
+         * @description Creates or updates a tenant.
          *
          *     SuperTokens subscription license key is required.
          *
@@ -2112,7 +2035,7 @@ export interface paths {
          *     The request must originate from public tenant, and the new tenant will use connectionUriDomain and app from which the request originates.
          *
          *     Note: Updation of core config is not allowed for the default connectionUriDomain, public app and tenant. In order to update config for the default connectionUriDomain, public app and tenant, you must edit the config.yaml or the docker env directly.
-         *      */
+         */
         put: operations["createOrUpdateTenantV2PUT"];
         post?: never;
         delete?: never;
@@ -2139,7 +2062,6 @@ export interface paths {
          *     SuperTokens subscription license key is required if querying any tenant other than the base tenant.
          *
          *     Returns recipes with their enabled flag and recipe specific configs saved in core
-         *
          */
         get: operations["tenantConfigGet"];
         put?: never;
@@ -2157,7 +2079,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a tenant config of the tenant specified by the url prefix.
+        /**
+         * @description Get a tenant config of the tenant specified by the url prefix.
          *
          *     The value of `firstFactors` can be as follows:
          *     - `null`: When set to `null`, the SDK will use firstFactors defined in the SDK
@@ -2167,7 +2090,7 @@ export interface paths {
          *     SuperTokens subscription license key is required if querying any tenant other than the base tenant.
          *
          *     Returns recipes with their enabled flag and recipe specific configs saved in core
-         *      */
+         */
         get: operations["tenantConfigV2Get"];
         put?: never;
         post?: never;
@@ -2184,8 +2107,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get the core config of the tenant specified by the url prefix, along with the metadata of each of the fields.
-         *      */
+        /** @description Get the core config of the tenant specified by the url prefix, along with the metadata of each of the fields. */
         get: operations["tenantCoreConfigForDashboardGET"];
         put?: never;
         post?: never;
@@ -2204,10 +2126,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete a tenant.
+        /**
+         * @description Delete a tenant.
          *
          *     Request must originate from public tenant.
-         *      */
+         */
         post: operations["deleteTenantPOST"];
         delete?: never;
         options?: never;
@@ -2231,7 +2154,6 @@ export interface paths {
          *     Get a list of all tenants in an app.
          *
          *     Request must originate from public tenant.
-         *
          */
         get: operations["tenantListGET"];
         put?: never;
@@ -2249,7 +2171,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a list of all tenants in an app.
+        /**
+         * @description Get a list of all tenants in an app.
          *
          *     The value of `firstFactors` can be as follows:
          *     - `null`: When set to `null`, the SDK will use firstFactors defined in the SDK
@@ -2257,7 +2180,7 @@ export interface paths {
          *     - non-empty array: The first factors that are enabled for the tenant
          *
          *     Request must originate from public tenant.
-         *      */
+         */
         get: operations["tenantListV2GET"];
         put?: never;
         post?: never;
@@ -2275,7 +2198,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Creates or updates ThirdParty Provider Config for a tenant.
+        /**
+         * @description Creates or updates ThirdParty Provider Config for a tenant.
          *
          *     If `skipValidation` is set to true, the config will be saved without any validation.
          *
@@ -2314,7 +2238,7 @@ export interface paths {
          *     Boxy SAML (id: boxy-saml):
          *       - `clients`
          *         - `additionalConfig` in the each element must contain `boxyURL` and must be non-empty string
-         *      */
+         */
         put: operations["createOrUpdateTenantConfigPUT"];
         post?: never;
         delete?: never;
@@ -2332,8 +2256,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete ThirdParty Provider config for a tenant.
-         *      */
+        /** @description Delete ThirdParty Provider config for a tenant. */
         post: operations["deleteTenantConfigPOST"];
         delete?: never;
         options?: never;
@@ -2350,13 +2273,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Add user's association with the tenant.
+        /**
+         * @description Add user's association with the tenant.
          *
          *     User will be added to the tenant based on the url prefix of the request.
          *
          *     Note: To associate a user to a tenant, the tenant must be in the same database
          *     and user must already exist in the app
-         *      */
+         */
         post: operations["addUserToTenant"];
         delete?: never;
         options?: never;
@@ -2373,10 +2297,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Remove user's association with the tenant
+        /**
+         * @description Remove user's association with the tenant
          *
          *     User will be removed from the tenant based on the url prefix of the request.
-         *      */
+         */
         post: operations["removeUserFromTenant"];
         delete?: never;
         options?: never;
@@ -2391,14 +2316,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get OAuth2 Client
-         *      */
+        /** @description Get OAuth2 Client */
         get: operations["getOAuth2Client"];
-        /** @description Update OAuth2 Client
-         *      */
+        /** @description Update OAuth2 Client */
         put: operations["updateOAuth2Client"];
-        /** @description Create OAuth2 Client
-         *      */
+        /** @description Create OAuth2 Client */
         post: operations["createOAuth2Client"];
         delete?: never;
         options?: never;
@@ -2413,8 +2335,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List OAuth2 Clients
-         *      */
+        /** @description List OAuth2 Clients */
         get: operations["listOAuth2Clients"];
         put?: never;
         post?: never;
@@ -2433,8 +2354,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Remove OAuth2 Client
-         *      */
+        /** @description Remove OAuth2 Client */
         post: operations["removeOAuth2Client"];
         delete?: never;
         options?: never;
@@ -2449,8 +2369,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get OAuth2 Consent Request
-         *      */
+        /** @description Get OAuth2 Consent Request */
         get: operations["getOAuth2ConsentRequest"];
         put?: never;
         post?: never;
@@ -2468,8 +2387,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Accept OAuth2 Consent Request
-         *      */
+        /** @description Accept OAuth2 Consent Request */
         put: operations["acceptOAuth2ConsentRequest"];
         post?: never;
         delete?: never;
@@ -2486,8 +2404,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Reject OAuth2 Consent Request
-         *      */
+        /** @description Reject OAuth2 Consent Request */
         put: operations["rejectOAuth2ConsentRequest"];
         post?: never;
         delete?: never;
@@ -2503,8 +2420,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get OAuth2 Login Request
-         *      */
+        /** @description Get OAuth2 Login Request */
         get: operations["getOAuth2LoginRequest"];
         put?: never;
         post?: never;
@@ -2522,8 +2438,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Accept OAuth2 Login Request
-         *      */
+        /** @description Accept OAuth2 Login Request */
         put: operations["acceptOAuth2LoginRequest"];
         post?: never;
         delete?: never;
@@ -2540,8 +2455,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Reject OAuth2 Login Request
-         *      */
+        /** @description Reject OAuth2 Login Request */
         put: operations["rejectOAuth2LoginRequest"];
         post?: never;
         delete?: never;
@@ -2558,8 +2472,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Accept OAuth2 Logout Request
-         *      */
+        /** @description Accept OAuth2 Logout Request */
         put: operations["acceptOAuth2LogoutRequest"];
         post?: never;
         delete?: never;
@@ -2576,8 +2489,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Reject OAuth2 Logout Request
-         *      */
+        /** @description Reject OAuth2 Logout Request */
         put: operations["rejectOAuth2LogoutRequest"];
         post?: never;
         delete?: never;
@@ -2595,8 +2507,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Revoke OAuth2 Session
-         *      */
+        /** @description Revoke OAuth2 Session */
         post: operations["revokeOAuth2Session"];
         delete?: never;
         options?: never;
@@ -2613,8 +2524,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Revoke OAuth2 Token
-         *      */
+        /** @description Revoke OAuth2 Token */
         post: operations["revokeOAuth2Token"];
         delete?: never;
         options?: never;
@@ -2631,8 +2541,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Revoke OAuth2 Token
-         *      */
+        /** @description Revoke OAuth2 Token */
         post: operations["revokeOAuth2Tokens"];
         delete?: never;
         options?: never;
@@ -2647,12 +2556,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get OAuth2 Auth
-         *      */
+        /** @description Get OAuth2 Auth */
         get: operations["getOAuth2Auth"];
         put?: never;
-        /** @description Exchange OAuth2 Auth request for redirect or error.
-         *      */
+        /** @description Exchange OAuth2 Auth request for redirect or error. */
         post: operations["postOAuth2Auth"];
         delete?: never;
         options?: never;
@@ -2669,8 +2576,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Get OAuth2 Token
-         *      */
+        /** @description Get OAuth2 Token */
         post: operations["getOAuth2Token"];
         delete?: never;
         options?: never;
@@ -2685,8 +2591,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get OAuth2 Sessions Logout
-         *      */
+        /** @description Get OAuth2 Sessions Logout */
         get: operations["getOAuth2SessionsLogout"];
         put?: never;
         post?: never;
@@ -2705,9 +2610,110 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Introspect OAuth2 Token
-         *      */
+        /** @description Introspect OAuth2 Token */
         post: operations["introspectOAuth2Token"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Create or update a SAML client for the specified tenant. */
+        put: operations["createOrUpdateSamlClient"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/clients/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get the list of all SAML clients configured for the specified tenant. */
+        get: operations["listSamlClients"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/clients/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Delete a SAML client for the specified tenant. */
+        post: operations["removeSamlClient"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Create a new login redirect URL for a given SAML client ID. */
+        post: operations["createSamlLoginRedirect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Handle the SAML response from the Identity Provider (IdP). */
+        post: operations["handleSamlCallback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/<tenantId>/recipe/saml/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Get user information using an access token. */
+        post: operations["getSamlUserInfo"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2721,12 +2727,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Paginated API to get bulk import users
-         *      */
+        /** @description Paginated API to get bulk import users */
         get: operations["getBulkImportUsers"];
         put?: never;
-        /** @description Add users for bulk import. Maximum 10000 users can be added in one request.
-         *      */
+        /** @description Add users for bulk import. Maximum 10000 users can be added in one request. */
         post: operations["addBulkImportUsers"];
         delete?: never;
         options?: never;
@@ -2743,8 +2747,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Delete bulk import users by id. Multiple ids can be passed in the request body.
-         *      */
+        /** @description Delete bulk import users by id. Multiple ids can be passed in the request body. */
         post: operations["deleteBulkImportUsers"];
         delete?: never;
         options?: never;
@@ -3100,19 +3103,25 @@ export interface components {
             clientName?: string;
             /** @example T98n1YIMWqr4wOM.~bV4HOPFmO */
             clientSecret?: string;
-            /** @example [
+            /**
+             * @example [
              *       "http://localhost:3000/auth/callback/ory"
-             *     ] */
+             *     ]
+             */
             redirectUris?: string[];
-            /** @example [
+            /**
+             * @example [
              *       "authorization_code",
              *       "refresh_token"
-             *     ] */
+             *     ]
+             */
             grantTypes?: string[];
-            /** @example [
+            /**
+             * @example [
              *       "code",
              *       "id_token"
-             *     ] */
+             *     ]
+             */
             responseTypes?: string[];
             /** @example offline_access openid email */
             scope?: string;
@@ -3140,9 +3149,11 @@ export interface components {
              * @example 2025-02-24T08:14:40.362463Z
              */
             updatedAt?: string;
-            /** @example [
+            /**
+             * @example [
              *       "http://localhost:3000"
-             *     ] */
+             *     ]
+             */
             postLogoutRedirectUris?: string[];
             /** @example {} */
             metadata?: {
@@ -3168,6 +3179,16 @@ export interface components {
             refreshTokenGrantRefreshTokenLifespan?: string | null;
             /** @example false */
             enableRefreshTokenRotation?: boolean;
+        };
+        samlClient: {
+            clientId: string;
+            clientSecret?: string;
+            defaultRedirectURI: string;
+            redirectURIs: string[];
+            idpEntityId: string;
+            idpSigningCertificate?: string;
+            allowIDPInitiatedLogin: boolean;
+            enableRequestSigning: boolean;
         };
         /**
          * @description should be a JSON object (not a JSON literal nor an array)
@@ -3563,6 +3584,8 @@ export interface components {
         multitenancyRid: string;
         /** @example oauth */
         oauthRid: string;
+        /** @example saml */
+        samlRid: string;
         /** @example usermetadata */
         userMetadataRid: string;
         /** @example userroles */
@@ -7786,10 +7809,12 @@ export interface operations {
                 content: {
                     "application/json": {
                         status: components["schemas"]["statusOK"];
-                        /** @example [
+                        /**
+                         * @example [
                          *       "feature_1",
                          *       "feature_2"
-                         *     ] */
+                         *     ]
+                         */
                         features?: string[];
                         usageStats?: Record<string, unknown>;
                     };
@@ -10132,10 +10157,12 @@ export interface operations {
                               jti?: string;
                               /** @example 1740992368 */
                               nbf?: number;
-                              /** @example [
+                              /**
+                               * @example [
                                *       "openid",
                                *       "offline_access"
-                               *     ] */
+                               *     ]
+                               */
                               scp?: string[];
                               /** @example 137d053d-0d69-4dea-8a19-06ddbdfa4f96 */
                               sub?: string;
@@ -10160,6 +10187,299 @@ export interface operations {
             400: components["responses"]["400"];
             401: components["responses"]["401"];
             402: components["responses"]["402"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    createOrUpdateSamlClient: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    clientId?: string;
+                    clientSecret?: string;
+                    redirectURIs: string[];
+                    defaultRedirectURI?: string;
+                    metadataXML: string;
+                    allowIDPInitiatedLogin?: boolean;
+                    enableRequestSigning?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns the created or updated SAML client */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | ({
+                              status: components["schemas"]["statusOK"];
+                          } & components["schemas"]["samlClient"])
+                        | {
+                              /**
+                               * @example INVALID_METADATA_XML_ERROR
+                               * @enum {string}
+                               */
+                              status: "DUPLICATE_IDP_ENTITY_ERROR";
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    listSamlClients: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns all SAML clients */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        clients: components["schemas"]["samlClient"][];
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    removeSamlClient: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    clientId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Indicates whether the client existed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status: components["schemas"]["statusOK"];
+                        didExist: boolean;
+                    };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    createSamlLoginRedirect: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    clientId: string;
+                    redirectURI: string;
+                    acsURL: string;
+                    state?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns the URL to redirect the user to the IdP */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              ssoRedirectURI: string;
+                          }
+                        | {
+                              /** @enum {string} */
+                              status: "INVALID_CLIENT_ERROR";
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    handleSamlCallback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    samlResponse: string;
+                    relayState?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns an intermediate code on success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              redirectURI: string;
+                          }
+                        | {
+                              /** @enum {string} */
+                              status:
+                                  | "INVALID_RELAY_STATE_ERROR"
+                                  | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
+                                  | "INVALID_CLIENT_ERROR"
+                                  | "IDP_LOGIN_DISALLOWED_ERROR";
+                              message: string;
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
+    getSamlUserInfo: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @example saml */
+                rid?: components["parameters"]["samlRid"];
+                /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
+                Authorization?: components["parameters"]["api-key"];
+                /**
+                 * @description X.Y of the X.Y.Z CDI version.
+                 * @example 5.2
+                 */
+                "cdi-version"?: components["parameters"]["cdi-version"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    accessToken: string;
+                    clientId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Returns user information on success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json":
+                        | {
+                              status: components["schemas"]["statusOK"];
+                              sub: string;
+                              email: string;
+                              aud?: string;
+                              claims: Record<string, unknown>;
+                          }
+                        | {
+                              /** @enum {string} */
+                              status: "INVALID_TOKEN_ERROR";
+                          };
+                };
+            };
+            400: components["responses"]["400"];
+            401: components["responses"]["401"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };

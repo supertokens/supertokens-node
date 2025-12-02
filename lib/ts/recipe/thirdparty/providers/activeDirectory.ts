@@ -25,9 +25,12 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {
+        if (originalImplementation.type !== "oauth2") {
+            throw new Error(`Invalid provider type for Active Directory: ${originalImplementation.type}`);
+        }
         const oGetConfig = originalImplementation.getConfigForClientType;
-        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
-            const config = await oGetConfig({ clientType, userContext });
+        originalImplementation.getConfigForClientType = async function ({ tenantId, clientType, userContext }) {
+            const config = await oGetConfig({ tenantId, clientType, userContext });
 
             if (config.additionalConfig !== undefined && config.additionalConfig.directoryId !== undefined) {
                 config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/.well-known/openid-configuration`;

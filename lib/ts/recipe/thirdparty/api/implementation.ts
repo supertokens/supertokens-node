@@ -6,8 +6,9 @@ import type SuperTokens from "../../../supertokens";
 
 export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
     return {
-        authorisationUrlGET: async function ({ provider, redirectURIOnProviderDashboard, userContext }) {
+        authorisationUrlGET: async function ({ tenantId, provider, redirectURIOnProviderDashboard, userContext }) {
             const authUrl = await provider.getAuthorisationRedirectURL({
+                tenantId,
                 redirectURIOnProviderDashboard,
                 userContext,
             });
@@ -39,17 +40,25 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
             let oAuthTokensToUse: any = {};
 
             if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
-                oAuthTokensToUse = await provider.exchangeAuthCodeForOAuthTokens({
-                    redirectURIInfo: input.redirectURIInfo,
-                    userContext,
-                });
+                if (provider.type === "oauth2") {
+                    oAuthTokensToUse = await provider.exchangeAuthCodeForOAuthTokens({
+                        tenantId,
+                        redirectURIInfo: input.redirectURIInfo,
+                        userContext,
+                    });
+                } else if (provider.type === "saml") {
+                    oAuthTokensToUse.access_token = input.redirectURIInfo.redirectURIQueryParams.code;
+                }
             } else if ("oAuthTokens" in input && input.oAuthTokens !== undefined) {
                 oAuthTokensToUse = input.oAuthTokens;
             } else {
                 throw Error("should never come here");
             }
 
-            const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });
+            const userInfo =
+                provider.type === "oauth2"
+                    ? await provider.getUserInfo({ tenantId, oAuthTokens: oAuthTokensToUse, userContext })
+                    : await provider.getUserInfo({ tenantId, accessToken: oAuthTokensToUse.access_token, userContext });
 
             if (userInfo.email === undefined && provider.config.requireEmail === false) {
                 userInfo.email = {

@@ -127,7 +127,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .set("rid", "passwordless")
@@ -152,7 +152,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .set("rid", "thirdpartypasswordless")
@@ -176,7 +176,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .set("rid", "thirdpartyemailpassword")
@@ -200,7 +200,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .set("rid", "emailpassword")
@@ -224,7 +224,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .query({
@@ -310,7 +310,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/email/exists")
                     .query({
@@ -334,7 +334,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/email/exists")
                     .query({
@@ -357,7 +357,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/emailpassword/email/exists")
                     .query({
@@ -384,7 +384,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             emailPasswordEmailExistsCalled = false;
             passwordlessEmailExistsCalled = false;
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/email/exists")
                     .query({
@@ -461,7 +461,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         const email = "test@example.com";
         // createCodeAPI with email
-        let validCreateCodeResponse = await new Promise((resolve) =>
+        let validCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .set("rid", "thirdpartypasswordless")
@@ -471,7 +471,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -566,7 +566,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         const email = "test@example.com";
         // createCodeAPI with email
-        let validCreateCodeResponse = await new Promise((resolve) =>
+        let validCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -575,7 +575,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -669,7 +669,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         const phoneNumber = "+12345678901";
         // createCodeAPI with phoneNumber
-        let validCreateCodeResponse = await new Promise((resolve) =>
+        let validCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -678,7 +678,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -691,7 +691,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(Object.keys(validCreateCodeResponse).length === 4);
 
         // consumeCode API
-        let validUserInputCodeResponse = await new Promise((resolve) =>
+        let validUserInputCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/consume")
                 .send({
@@ -702,7 +702,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -771,7 +771,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         // createCodeAPI with email
-        let validCreateCodeResponse = await new Promise((resolve) =>
+        let validCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -780,7 +780,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -792,7 +792,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         isCreateAndSendCustomEmailCalled = false;
 
         // resendCode API
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/resend")
                 .send({
@@ -802,7 +802,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -866,7 +866,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         // createCodeAPI with email
-        let validCreateCodeResponse = await new Promise((resolve) =>
+        let validCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -875,7 +875,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -887,7 +887,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         isCreateAndSendCustomTextMessageCalled = false;
 
         // resendCode API
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/resend")
                 .send({
@@ -897,7 +897,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -960,7 +960,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // sending both email and phone in createCode API throws bad request
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -981,7 +981,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // sending neither email and phone in createCode API throws bad request
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({})
@@ -999,7 +999,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // sending empty body in createCode API throws bad request
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .expect(400)
@@ -1072,7 +1072,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         // create a passwordless user with email
-        let emailCreateCodeResponse = await new Promise((resolve) =>
+        let emailCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1081,7 +1081,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1090,7 +1090,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(emailCreateCodeResponse.status === "OK");
 
         // consumeCode API
-        let emailUserInputCodeResponse = await new Promise((resolve) =>
+        let emailUserInputCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/consume")
                 .send({
@@ -1101,7 +1101,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1117,7 +1117,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // sign in user with phone numbers
-        let phoneCreateCodeResponse = await new Promise((resolve) =>
+        let phoneCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1126,7 +1126,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1135,7 +1135,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         assert(phoneCreateCodeResponse.status === "OK");
 
-        let phoneUserInputCodeResponse = await new Promise((resolve) =>
+        let phoneUserInputCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/consume")
                 .send({
@@ -1146,7 +1146,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1201,7 +1201,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // dont send linkCode or (deviceId+userInputCode)
-            let badResponse = await new Promise((resolve) =>
+            let badResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code/consume")
                     .send({
@@ -1454,7 +1454,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             });
 
             await new Promise((r) => setTimeout(r, 2000)); // wait for code to expire
-            let expiredUserInputCodeResponse = await new Promise((resolve) =>
+            let expiredUserInputCodeResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code/consume")
                     .send({
@@ -1528,7 +1528,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // passing valid field
-            let validCreateCodeResponse = await new Promise((resolve) =>
+            let validCreateCodeResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -1552,7 +1552,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // passing invalid email
-            let invalidEmailCreateCodeResponse = await new Promise((resolve) =>
+            let invalidEmailCreateCodeResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -1620,7 +1620,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // passing valid field
-            let validCreateCodeResponse = await new Promise((resolve) =>
+            let validCreateCodeResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -1644,7 +1644,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // passing invalid phoneNumber
-            let invalidPhoneNumberCreateCodeResponse = await new Promise((resolve) =>
+            let invalidPhoneNumberCreateCodeResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -1714,7 +1714,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // passing valid field
-            let validCreateCodeResponse = await new Promise((resolve) =>
+            let validCreateCodeResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -1782,7 +1782,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // email does not exist
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .query({
@@ -1816,7 +1816,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 linkCode: codeInfo.linkCode,
             });
 
-            let emailExistsResponse = await new Promise((resolve) =>
+            let emailExistsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/email/exists")
                     .query({
@@ -1877,7 +1877,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // email does not exist
-            let emailDoesNotExistResponse = await new Promise((resolve) =>
+            let emailDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/email/exists")
                     .query({
@@ -1911,7 +1911,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 linkCode: codeInfo.linkCode,
             });
 
-            let emailExistsResponse = await new Promise((resolve) =>
+            let emailExistsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/email/exists")
                     .query({
@@ -1972,7 +1972,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // phoneNumber does not exist
-            let phoneNumberDoesNotExistResponse = await new Promise((resolve) =>
+            let phoneNumberDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/phonenumber/exists")
                     .query({
@@ -2006,7 +2006,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 linkCode: codeInfo.linkCode,
             });
 
-            let phoneNumberExistsResponse = await new Promise((resolve) =>
+            let phoneNumberExistsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/signup/phonenumber/exists")
                     .query({
@@ -2067,7 +2067,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // phoneNumber does not exist
-            let phoneNumberDoesNotExistResponse = await new Promise((resolve) =>
+            let phoneNumberDoesNotExistResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/phonenumber/exists")
                     .query({
@@ -2101,7 +2101,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 linkCode: codeInfo.linkCode,
             });
 
-            let phoneNumberExistsResponse = await new Promise((resolve) =>
+            let phoneNumberExistsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .get("/auth/passwordless/phonenumber/exists")
                     .query({
@@ -2169,7 +2169,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             });
 
             // valid response
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code/resend")
                     .send({
@@ -2190,7 +2190,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // invalid preAuthSessionId and deviceId
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code/resend")
                     .send({
@@ -2286,7 +2286,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             {
                 // invalid preAuthSessionId and deviceId
-                let response = await new Promise((resolve) =>
+                let response = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/auth/signinup/code/resend")
                         .send({
@@ -2368,7 +2368,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         // createCodeAPI with email
-        let validCreateCodeResponse = await new Promise((resolve) =>
+        let validCreateCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/t1/signinup/code")
                 .send({
@@ -2377,7 +2377,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -2389,7 +2389,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         isCreateAndSendCustomEmailCalled = false;
 
         // resendCode API
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/t2/signinup/code/resend")
                 .send({
@@ -2399,7 +2399,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

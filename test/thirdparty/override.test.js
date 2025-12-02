@@ -163,7 +163,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             res.json(user);
         });
 
-        let signUpResponse = await new Promise((resolve) =>
+        let signUpResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -177,7 +177,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -191,7 +191,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         user = undefined;
         assert.strictEqual(user, undefined);
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -205,7 +205,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -219,7 +219,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         user = undefined;
         assert.strictEqual(user, undefined);
 
-        let userByIdResponse = await new Promise((resolve) =>
+        let userByIdResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/user")
                 .query({
@@ -228,7 +228,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -298,7 +298,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
-        let signUpResponse = await new Promise((resolve) =>
+        let signUpResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -312,7 +312,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -326,7 +326,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         user = undefined;
         assert.strictEqual(user, undefined);
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -340,7 +340,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -436,7 +436,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             });
         });
 
-        let signUpResponse = await new Promise((resolve) =>
+        let signUpResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -460,7 +460,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(signUpResponse, { error: "signup error", customError: true });
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -483,7 +483,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         assert.deepStrictEqual(signInResponse, { error: "signin error", customError: true });
 
-        let userByIdResponse = await new Promise((resolve) =>
+        let userByIdResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/user")
                 .query({
@@ -561,7 +561,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             });
         });
 
-        let signUpResponse = await new Promise((resolve) =>
+        let signUpResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -586,7 +586,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         assert.strictEqual(newUser, true);
         assert.deepStrictEqual(signUpResponse, { error: "signup error", customError: true });
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({

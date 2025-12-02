@@ -142,7 +142,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             // check if validatePhoneNumber is called
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -164,7 +164,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             // check if validateEmailAddress is called
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -241,7 +241,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             // check if createAndSendCustomEmail is called
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -319,7 +319,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             // check if createAndSendCustomTextMessage is called
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -434,7 +434,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             // If you return undefined from the function, the API works
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -491,7 +491,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             });
 
             {
-                let response = await new Promise((resolve) =>
+                let response = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/auth/signinup/code")
                         .send({
@@ -571,7 +571,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -580,7 +580,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -639,7 +639,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -648,7 +648,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -705,7 +705,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -714,7 +714,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -776,7 +776,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             res.status(500).send(message);
         });
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -785,7 +785,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(500)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -891,7 +891,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             // If you return undefined from the function, the API works
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
@@ -946,7 +946,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             });
 
             {
-                let response = await new Promise((resolve) =>
+                let response = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/auth/signinup/code")
                         .send({
@@ -1027,7 +1027,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1036,7 +1036,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1095,7 +1095,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1104,7 +1104,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1161,7 +1161,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1170,7 +1170,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1233,7 +1233,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             res.status(500).send(message);
         });
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1242,7 +1242,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(500)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -1371,7 +1371,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let createCodeResponse = await new Promise((resolve) =>
+        let createCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1380,7 +1380,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1394,7 +1394,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         customCode = undefined;
         userCodeSent = undefined;
 
-        let resendUserCodeResponse = await new Promise((resolve) =>
+        let resendUserCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/resend")
                 .send({
@@ -1404,7 +1404,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1460,7 +1460,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let createCodeResponse = await new Promise((resolve) =>
+        let createCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1469,7 +1469,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1487,7 +1487,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         assert(createNewCodeForDeviceResponse.status === "USER_INPUT_CODE_ALREADY_USED_ERROR");
 
-        let resendUserCodeResponse = await new Promise((resolve) =>
+        let resendUserCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/resend")
                 .send({
@@ -1497,7 +1497,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -1562,7 +1562,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         app.use(errorHandler());
 
-        let createCodeResponse = await new Promise((resolve) =>
+        let createCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -1571,7 +1571,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

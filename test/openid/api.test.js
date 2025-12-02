@@ -36,12 +36,12 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) => {
+        let response = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/.well-known/openid-configuration")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -74,12 +74,12 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) => {
+        let response = await new Promise((resolve, reject) => {
             request(app)
                 .get("/.well-known/openid-configuration")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -124,12 +124,12 @@ describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) => {
+        let response = await new Promise((resolve, reject) => {
             request(app)
                 .get("/.well-known/openid-configuration")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

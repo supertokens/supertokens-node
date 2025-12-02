@@ -969,7 +969,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
 
         app.use(errorHandler());
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
@@ -978,7 +978,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -988,7 +988,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let currentUrl = new URL(url);
         assert(currentUrl.origin === "http://localhost:3000");
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code")
                 .set("origin", "localhost:3002")
@@ -998,7 +998,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

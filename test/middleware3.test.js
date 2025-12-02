@@ -56,7 +56,7 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/public/signup")
                 .set("st-auth-mode", "cookie")
@@ -74,7 +74,7 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -107,7 +107,7 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/public/dashboard/api/signin")
                 .send({
@@ -116,7 +116,7 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

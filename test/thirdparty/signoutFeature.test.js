@@ -88,7 +88,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -102,7 +102,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -114,7 +114,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         let res = extractInfoFromResponse(response1);
 
         let response2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signout")
                     .set("Cookie", ["sAccessToken=" + res.accessToken])
@@ -177,13 +177,13 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .set("rid", "thirdparty")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -220,13 +220,13 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -266,7 +266,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup")
                 .send({
@@ -280,7 +280,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -293,7 +293,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         await new Promise((r) => setTimeout(r, 5000));
 
-        let signOutResponse = await new Promise((resolve) =>
+        let signOutResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .set("rid", "session")
@@ -301,7 +301,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -311,7 +311,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         assert.strictEqual(signOutResponse.body.message, "try refresh token");
 
         let refreshedResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
@@ -330,7 +330,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         );
 
         signOutResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signout")
                     .set("rid", "session")

@@ -2,6 +2,7 @@
 import { UserContext } from "../../../types";
 import { ProviderConfig, ProviderInput, TypeProvider } from "../types";
 export declare function findAndCreateProviderInstance(
+    tenantId: string,
     providers: ProviderInput[],
     thirdPartyId: string,
     clientType: string | undefined,

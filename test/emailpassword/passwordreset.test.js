@@ -78,7 +78,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .send({
@@ -92,7 +92,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -123,7 +123,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .send({
@@ -137,7 +137,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -188,7 +188,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(JSON.parse(response.text).status === "OK");
         assert(response.status === 200);
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .send({
@@ -202,7 +202,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -241,7 +241,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -256,7 +256,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -309,7 +309,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -324,7 +324,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -352,7 +352,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -366,7 +366,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -394,7 +394,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -409,7 +409,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -482,7 +482,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         let userInfo = JSON.parse(response.text).user;
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .send({
@@ -496,14 +496,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -518,7 +518,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -527,7 +527,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
 
-        let failureResponse = await new Promise((resolve) =>
+        let failureResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -545,7 +545,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -553,7 +553,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         );
         assert(failureResponse.status === "WRONG_CREDENTIALS_ERROR");
 
-        let successResponse = await new Promise((resolve) =>
+        let successResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -571,7 +571,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -646,7 +646,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         let userInfo = JSON.parse(response.text).user;
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .send({
@@ -660,14 +660,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
                 })
         );
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -682,7 +682,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -691,7 +691,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
 
-        let failureResponse = await new Promise((resolve) =>
+        let failureResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -709,7 +709,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -717,7 +717,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         );
         assert(failureResponse.status === "WRONG_CREDENTIALS_ERROR");
 
-        let successResponse = await new Promise((resolve) =>
+        let successResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -735,7 +735,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -987,7 +987,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         let currentUrl = new URL(emailPasswordLink);
         assert(currentUrl.origin === "http://localhost:3000");
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .set("origin", "localhost:3002")
@@ -1002,7 +1002,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

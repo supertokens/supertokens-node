@@ -53,12 +53,12 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) => {
+        let response = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/.well-known/openid-configuration")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -108,12 +108,12 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) => {
+        let response = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/.well-known/openid-configuration")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

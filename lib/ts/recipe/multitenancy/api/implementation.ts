@@ -33,6 +33,7 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
             for (const providerInput of mergedProviders) {
                 try {
                     const providerInstance = await findAndCreateProviderInstance(
+                        tenantId,
                         mergedProviders,
                         providerInput.config.thirdPartyId,
                         clientType,

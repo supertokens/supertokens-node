@@ -18,6 +18,7 @@ export declare function normaliseHttpMethod(method: string): HTTPMethod;
 export declare function sendNon200ResponseWithMessage(res: BaseResponse, message: string, statusCode: number): void;
 export declare function sendNon200Response(res: BaseResponse, statusCode: number, body: JSONObject): void;
 export declare function send200Response(res: BaseResponse, responseJson: any): void;
+export declare function sendRedirectResponse(res: BaseResponse, location: string): void;
 export declare function getNormalisedShouldTryLinkingWithSessionUserFlag(req: BaseRequest, body: any): any;
 export declare function getBackwardsCompatibleUserInfo(
     req: BaseRequest,

@@ -158,7 +158,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         user = undefined;
         assert.strictEqual(user, undefined);
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -176,7 +176,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -189,7 +189,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         user = undefined;
         assert.strictEqual(user, undefined);
 
-        let userByIdResponse = await new Promise((resolve) =>
+        let userByIdResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/user")
                 .query({
@@ -198,7 +198,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -287,7 +287,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.use(errorHandler());
 
-        let emailExistsResponse = await new Promise((resolve) =>
+        let emailExistsResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -296,7 +296,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -309,7 +309,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         assert.notStrictEqual(user, undefined);
         assertJSONEquals(signUpResponse.body.user, user);
 
-        emailExistsResponse = await new Promise((resolve) =>
+        emailExistsResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -318,7 +318,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -330,7 +330,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         user = undefined;
         assert.strictEqual(user, undefined);
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -348,7 +348,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -443,7 +443,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(signUpResponse.body, { error: "signup error", customError: true });
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -470,7 +470,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         assert.deepStrictEqual(signInResponse, { error: "signin error", customError: true });
 
-        let userByIdResponse = await new Promise((resolve) =>
+        let userByIdResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/user")
                 .query({
@@ -554,7 +554,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
             });
         });
 
-        let emailExistsResponse = await new Promise((resolve) =>
+        let emailExistsResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -576,7 +576,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(signUpResponse.body, { error: "signup error", customError: true });
 
-        emailExistsResponse = await new Promise((resolve) =>
+        emailExistsResponse = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/signup/email/exists")
                 .query({
@@ -585,7 +585,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -594,7 +594,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         assert.deepStrictEqual(emailExistsResponse, { error: "email exists error", customError: true });
         assert.strictEqual(emailExists, true);
 
-        let signInResponse = await new Promise((resolve) =>
+        let signInResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -612,7 +612,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }

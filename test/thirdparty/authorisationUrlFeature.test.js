@@ -104,12 +104,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -154,12 +154,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
             res.status(500).send(err.message);
         });
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -211,12 +211,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
             res.status(500).send(err.message);
         });
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -267,14 +267,14 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .get(
                     "/auth/authorisationurl?thirdPartyId=custom&redirectURIOnProviderDashboard=redirect&dynamic=example.com"
                 )
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -315,12 +315,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -357,12 +357,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         app.use(errorHandler());
 
-        let response1 = await new Promise((resolve) =>
+        let response1 = await new Promise((resolve, reject) =>
             request(app)
                 .get("/auth/authorisationurl")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

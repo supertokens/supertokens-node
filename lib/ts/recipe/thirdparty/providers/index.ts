@@ -11,6 +11,7 @@ import ProviderOkta from "./okta";
 import ProviderBitbucket from "./bitbucket";
 import ProviderGitlab from "./gitlab";
 import ProviderTwitter from "./twitter";
+import ProviderSAML from "./saml";
 
 export let ActiveDirectory = ProviderActiveDirectory;
 export let BoxySAML = ProviderBoxySAML;
@@ -25,3 +26,4 @@ export let Okta = ProviderOkta;
 export let Bitbucket = ProviderBitbucket;
 export let Gitlab = ProviderGitlab;
 export let Twitter = ProviderTwitter;
+export let SAML = ProviderSAML;

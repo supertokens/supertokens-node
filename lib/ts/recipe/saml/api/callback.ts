@@ -1,0 +1,41 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+import { send200Response, sendRedirectResponse } from "../../../utils";
+import { APIInterface, APIOptions } from "..";
+import { UserContext } from "../../../types";
+
+export default async function callbackAPI(
+    apiImplementation: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: UserContext
+): Promise<boolean> {
+    if (apiImplementation.callbackPOST === undefined) {
+        return false;
+    }
+
+    const inputBody = await options.req.getBodyAsJSONOrFormData();
+    const samlResponse: string = inputBody.SAMLResponse;
+    const relayState: string | undefined = inputBody.RelayState;
+
+    const response = await apiImplementation.callbackPOST({ tenantId, options, userContext, samlResponse, relayState });
+    if (response.status === "OK") {
+        sendRedirectResponse(options.res, response.redirectURI);
+        return true;
+    }
+    send200Response(options.res, response);
+    return true;
+}

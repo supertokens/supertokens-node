@@ -39,6 +39,7 @@ import type { TypeInput as TotpTypeInput } from "./recipe/totp/types";
 import type { TypeInput as UserMetadataTypeInput } from "./recipe/usermetadata/types";
 import type { TypeInput as UserRolesTypeInput } from "./recipe/userroles/types";
 import type { TypeInput as WebauthnTypeInput } from "./recipe/webauthn/types";
+import type { TypeInput as SAMLTypeInput } from "./recipe/saml/types";
 import type SuperTokens from "./supertokens";
 
 declare const __brand: unique symbol;
@@ -105,6 +106,7 @@ export type AllRecipeConfigs = {
     usermetadata: UserMetadataTypeInput;
     userroles: UserRolesTypeInput;
     webauthn: WebauthnTypeInput;
+    saml: SAMLTypeInput;
 };
 
 export type RecipePluginOverride<T extends keyof AllRecipeConfigs> = {

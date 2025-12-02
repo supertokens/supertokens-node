@@ -150,7 +150,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             manualCall: true,
         });
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -167,7 +167,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -252,7 +252,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             manualCall: true,
         });
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -269,7 +269,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -385,7 +385,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             manualCall: true,
         });
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -407,7 +407,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -550,7 +550,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 {
                     fileName: "lib/ts/recipe/thirdparty/types.ts",
                     shouldNotContain: ["userContext: Record<String, any>", "userContext?: Record<String, any>"],
-                    canContain: [{ text: "userContext?: UserContext", count: 4 }],
+                    canContain: [{ text: "userContext?: UserContext", count: 6 }],
                 },
             ];
 

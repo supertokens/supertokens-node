@@ -1,0 +1,154 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+import { RecipeInterface } from "./";
+import { Querier } from "../../querier";
+import { TypeNormalisedInput } from "./types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+
+export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
+    void querier;
+    void config;
+    return {
+        createOrUpdateClient: async function (
+            this: RecipeInterface,
+            {
+                tenantId,
+                clientId,
+                clientSecret,
+                redirectURIs,
+                defaultRedirectURI,
+                metadataXML,
+                allowIDPInitiatedLogin,
+                enableRequestSigning,
+                userContext,
+            }
+        ) {
+            return await querier.sendPutRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/clients",
+                    params: {
+                        tenantId,
+                    },
+                },
+                {
+                    clientId,
+                    clientSecret,
+                    redirectURIs,
+                    defaultRedirectURI,
+                    metadataXML,
+                    allowIDPInitiatedLogin,
+                    enableRequestSigning,
+                },
+                {},
+                userContext
+            );
+        },
+
+        listClients: async function (this: RecipeInterface, { tenantId, userContext }) {
+            return await querier.sendGetRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/clients/list",
+                    params: { tenantId },
+                },
+                {},
+                userContext
+            );
+        },
+
+        removeClient: async function (this: RecipeInterface, { tenantId, clientId, userContext }) {
+            return await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/clients/remove",
+                    params: { tenantId },
+                },
+                {
+                    clientId,
+                },
+                userContext
+            );
+        },
+
+        verifySAMLResponse: async function (
+            this: RecipeInterface,
+            { tenantId, samlResponse, relayState, userContext }
+        ) {
+            const resp = await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/callback",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
+                    samlResponse,
+                    relayState,
+                },
+                userContext
+            );
+            return resp;
+        },
+
+        createLoginRequest: async function (
+            this: RecipeInterface,
+            { tenantId, clientId, redirectURI, state, acsURL, userContext }
+        ) {
+            const resp = await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/login",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
+                    clientId,
+                    redirectURI,
+                    state,
+                    acsURL,
+                },
+                userContext
+            );
+
+            if (resp.status !== "OK") {
+                return {
+                    status: resp.status,
+                };
+            }
+
+            return {
+                status: "OK",
+                redirectURI: resp.ssoRedirectURI,
+            };
+        },
+
+        getUserInfo: async function ({ tenantId, accessToken, clientId, userContext }) {
+            const resp = await querier.sendPostRequest(
+                {
+                    path: "/<tenantId>/recipe/saml/user",
+                    params: {
+                        tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                    },
+                },
+                {
+                    accessToken,
+                    clientId,
+                },
+                userContext
+            );
+
+            return resp;
+        },
+    };
+}

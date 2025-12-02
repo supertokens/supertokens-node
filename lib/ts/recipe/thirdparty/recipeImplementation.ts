@@ -197,6 +197,7 @@ export default function getRecipeImplementation(
             );
 
             const provider = await findAndCreateProviderInstance(
+                tenantId,
                 mergedProviders,
                 thirdPartyId,
                 clientType,

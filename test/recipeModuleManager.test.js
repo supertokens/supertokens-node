@@ -172,13 +172,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             res.status(200).json({ message: "success" });
         });
 
-        let r1 = await new Promise((resolve) =>
+        let r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -186,14 +186,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert(r1.message === "success TestRecipe /");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/")
                 .set("rid", "testRecipe")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -201,14 +201,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert(r1.message === "success TestRecipe /");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user-api")
                 .set("rid", "testRecipe")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -216,13 +216,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert(r1.message === "success");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user-api")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -255,7 +255,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
             app.use(errorHandler());
 
-            let r1 = await new Promise((resolve) =>
+            let r1 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/")
                     .expect(200)
@@ -269,7 +269,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             );
             assert(r1.message === "success TestRecipe /");
 
-            r1 = await new Promise((resolve) =>
+            r1 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/")
                     .set("rid", "testRecipe")
@@ -284,7 +284,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             );
             assert(r1.message === "success TestRecipe /");
 
-            r1 = await new Promise((resolve) =>
+            r1 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/user-api")
                     .set("rid", "testRecipe")
@@ -299,7 +299,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             );
             assert(r1.message === "success");
 
-            r1 = await new Promise((resolve) =>
+            r1 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/user-api")
                     .expect(200)
@@ -335,13 +335,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         app.use(middleware());
 
-        let r1 = await new Promise((resolve) =>
+        let r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/hello")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -349,14 +349,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert(r1.body.message === "success TestRecipe /hello" || r1.body.message === "success TestRecipe1 /hello");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/hello")
                 .set("rid", "testRecipe1")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -364,14 +364,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert(r1.body.message === "success TestRecipe1 /hello");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/hello")
                 .set("rid", "testRecipe")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -406,13 +406,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             }
         });
 
-        let r1 = await new Promise((resolve) =>
+        let r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/error/general")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.text);
                     }
@@ -420,13 +420,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert.strictEqual(r1, "General error handled in user error handler");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/error/badinput")
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }
@@ -462,13 +462,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             }
         });
 
-        let r1 = await new Promise((resolve) =>
+        let r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/error")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -476,13 +476,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         );
         assert(r1.message === "error from TestRecipe /error ");
 
-        r1 = await new Promise((resolve) =>
+        r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/error/api-error")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -518,13 +518,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         app.use(errorHandler());
 
-        let r1 = await new Promise((resolve) =>
+        let r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/default-route-disabled")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body.message);
                     }
@@ -559,13 +559,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             }
         });
 
-        let r1 = await new Promise((resolve) =>
+        let r1 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/error/throw-error")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.text);
                     }

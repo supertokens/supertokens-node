@@ -394,7 +394,7 @@ module.exports.signUPRequest = async function (app, email, password) {
             })
             .end((err, res) => {
                 if (err) {
-                    reject(undefined);
+                    reject(err);
                 } else {
                     resolve(res);
                 }

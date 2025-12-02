@@ -71,7 +71,7 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
             res.json(await JWTRecipe.createJWT(payload, 1000));
         });
 
-        let createJWTResponse = await new Promise((resolve) => {
+        let createJWTResponse = await new Promise((resolve, reject) => {
             request(app)
                 .post("/jwtcreate")
                 .send({
@@ -79,7 +79,7 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
                 })
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -89,12 +89,12 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
         assert.notStrictEqual(jwtCreated, undefined);
         assert.deepStrictEqual(jwtCreated, createJWTResponse.jwt);
 
-        let getJWKSResponse = await new Promise((resolve) => {
+        let getJWKSResponse = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }
@@ -143,12 +143,12 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
 
         app.use(errorHandler());
 
-        let getJWKSResponse = await new Promise((resolve) => {
+        let getJWKSResponse = await new Promise((resolve, reject) => {
             request(app)
                 .get("/auth/jwt/jwks.json")
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res.body);
                     }

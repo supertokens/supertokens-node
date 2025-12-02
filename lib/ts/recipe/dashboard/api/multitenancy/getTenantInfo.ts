@@ -103,6 +103,7 @@ export default async function getTenantInfo({
                 mergedProvidersFromCoreAndStatic.map(async (provider) => {
                     try {
                         const providerInstance = await findAndCreateProviderInstance(
+                            tenantId,
                             mergedProvidersFromCoreAndStatic,
                             provider.config.thirdPartyId,
                             provider.config.clients![0].clientType,

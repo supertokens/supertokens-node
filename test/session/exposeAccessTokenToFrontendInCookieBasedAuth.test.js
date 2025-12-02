@@ -73,7 +73,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
                 const app = getTestExpressApp();
 
-                let res = await new Promise((resolve) =>
+                let res = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
@@ -106,7 +106,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
                 const app = getTestExpressApp();
 
-                let createRes = await new Promise((resolve) =>
+                let createRes = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
@@ -164,7 +164,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
                 const app = getTestExpressApp();
 
-                let createRes = await new Promise((resolve) =>
+                let createRes = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
@@ -226,7 +226,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
                 const app = getTestExpressApp();
 
-                let createRes = await new Promise((resolve) =>
+                let createRes = await new Promise((resolve, reject) =>
                     request(app)
                         .post("/create")
                         .expect(200)
