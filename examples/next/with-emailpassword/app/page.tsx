@@ -69,7 +69,7 @@ function ProtectedPage() {
                 <div className={styles.innerContent}>
                     <div>Your userID is:</div>
                     <div className={`${styles.truncate} ${styles.userId}`}>{session.userId}</div>
-                    <div onClick={fetchUserData} className={styles.sessionButton}>
+                    <div onClick={fetchUserData} className={styles.sessionButton} data-testid="call-api-btn">
                         Call API
                     </div>
                 </div>
