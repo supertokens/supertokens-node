@@ -24,17 +24,18 @@ require("jsdom-global")();
 
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
+function getTestEmail() {
+    return `john.doe+${Date.now()}@supertokens.io`;
+}
+
 describe("Auth API Tests", () => {
+    const email = getTestEmail();
+    const password = "Str0ngP@ssw0rd";
+
     const signupBody = {
         formFields: [
-            {
-                id: "email",
-                value: "test@test.com",
-            },
-            {
-                id: "password",
-                value: "testpw1234",
-            },
+            { id: "email", value: email },
+            { id: "password", value: password },
         ],
     };
 
@@ -50,8 +51,7 @@ describe("Auth API Tests", () => {
         const data = await response.json();
 
         assert.strictEqual(response.status, 200, "Expected status code to be 200");
-        assert.strictEqual(data.status, "FIELD_ERROR", "Expected status to be FIELD_ERROR");
-        assert.strictEqual(data.formFields.length, 1, "Expected formFields length to be 1");
+        assert.strictEqual(data.status, "OK", "Expected status to be OK");
     });
 
     it("should sign in successfully and return status 200 with OK status", async () => {
