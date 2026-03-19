@@ -1,0 +1,2 @@
+kind: Fixed
+body: Upgrade cross-fetch to v4.1.0 to fix XMLHttpRequest error in Cloudflare Workers edge runtime
