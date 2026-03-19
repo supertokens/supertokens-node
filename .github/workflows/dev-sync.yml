@@ -1,0 +1,164 @@
+name: "Sync Dev to Version Branch"
+
+# On every push to dev, computes the next version from unreleased changelog
+# fragments and creates or force-updates a release PR:
+#
+#   release/vX.Y.Z  ->  X.Y  (version branch)
+#
+# Can also be triggered manually to override the bump type.
+
+on:
+    push:
+        branches:
+            - dev
+    workflow_dispatch:
+        inputs:
+            bump:
+                description: "Override bump type (default: auto — inferred from change kinds)"
+                type: choice
+                default: auto
+                options:
+                    - auto
+                    - minor
+                    - patch
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    sync:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: dev
+                  fetch-depth: 0
+                  token: ${{ secrets.ALL_REPO_PAT }}
+
+            - name: Setup git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git fetch --all --tags
+
+            - uses: miniscruff/changie-action@v2
+              with:
+                  version: latest
+
+            - name: Compute next version
+              id: next
+              run: |
+                  bump="${{ inputs.bump || 'auto' }}"
+
+                  if ! raw_version=$(changie next $bump 2>&1); then
+                    echo "changie next returned: $raw_version"
+                    echo "No bumpable fragments found. Skipping sync."
+                    echo "skip=true" >> $GITHUB_OUTPUT
+                    exit 0
+                  fi
+
+                  version="${raw_version#v}"
+                  version_branch=$(echo "$version" | grep -oE '^[0-9]+\.[0-9]+')
+
+                  echo "version=$version"               >> $GITHUB_OUTPUT
+                  echo "version_branch=$version_branch" >> $GITHUB_OUTPUT
+                  echo "pr_branch=release/v$version"    >> $GITHUB_OUTPUT
+
+            - name: Create version branch if it doesn't exist
+              if: steps.next.outputs.skip != 'true'
+              run: |
+                  version_branch="${{ steps.next.outputs.version_branch }}"
+                  if ! git show-ref --verify --quiet "refs/remotes/origin/$version_branch"; then
+                    git checkout -b "$version_branch"
+                    git push origin "$version_branch"
+                    echo "Created new version branch: $version_branch"
+                  else
+                    echo "Version branch $version_branch already exists."
+                  fi
+
+            - name: Install Node
+              if: steps.next.outputs.skip != 'true'
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Build release branch
+              if: steps.next.outputs.skip != 'true'
+              run: |
+                  pr_branch="${{ steps.next.outputs.pr_branch }}"
+                  version_branch="${{ steps.next.outputs.version_branch }}"
+                  version="${{ steps.next.outputs.version }}"
+
+                  # Start from version branch, merge dev on top (dev wins on conflicts).
+                  if git show-ref --verify --quiet "refs/remotes/origin/$pr_branch"; then
+                    git checkout "$pr_branch"
+                    git reset --hard "origin/$version_branch"
+                  else
+                    git checkout -b "$pr_branch" "origin/$version_branch"
+                  fi
+
+                  git merge origin/dev --no-edit -X theirs
+
+                  changie batch "v$version"
+                  changie merge
+
+                  # Rebuild to update lib/build/ with version changes
+                  npm ci
+                  npm run build
+
+                  git add .changes/ CHANGELOG.md package.json lib/ts/version.ts lib/build/
+                  git diff --staged --quiet \
+                    || git commit -m "chore: prepare release v$version"
+
+                  git push origin "$pr_branch" --force
+
+            - name: Create or update pull request
+              if: steps.next.outputs.skip != 'true'
+              env:
+                  GH_TOKEN: ${{ secrets.ALL_REPO_PAT }}
+              run: |
+                  version="${{ steps.next.outputs.version }}"
+                  pr_branch="${{ steps.next.outputs.pr_branch }}"
+                  target_branch="${{ steps.next.outputs.version_branch }}"
+
+                  pr_number=$(gh pr list \
+                    --base "$target_branch" \
+                    --head "$pr_branch" \
+                    --json number \
+                    --jq '.[0].number')
+
+                  notes=$(sed '1d' ".changes/v${version}.md" | sed '/./,$!d')
+
+                  body=$(cat <<EOF
+                  ## Release v${version}
+
+                  This PR is automatically kept in sync with \`dev\`. It will be force-updated on every push to \`dev\`.
+
+                  **Review checklist:**
+                  - [ ] Version \`${version}\` is correct (check \`package.json\` and version constant)
+                  - [ ] Changelog entries below are accurate and complete
+
+                  **After merging:** the [Release Pipeline](../actions/workflows/pipeline-release-tag.yml) will start automatically, or trigger it manually with branch \`${target_branch}\`.
+
+                  ---
+
+                  ${notes}
+                  EOF
+                  )
+
+                  if [[ -n "$pr_number" ]]; then
+                    gh pr edit "$pr_number" \
+                      --title "chore: prepare release v${version}" \
+                      --body "$body" \
+                      --add-label "run-tests"
+                    echo "Updated PR #$pr_number"
+                  else
+                    gh pr create \
+                      --base "$target_branch" \
+                      --head "$pr_branch" \
+                      --title "chore: prepare release v${version}" \
+                      --body "$body" \
+                      --label "run-tests,Skip-Changelog"
+                    echo "Created new release PR"
+                  fi
