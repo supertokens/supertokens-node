@@ -28,6 +28,7 @@ kinds:
 newlines:
     afterChangelogHeader: 2
     afterVersion: 1
+    beforeChangelogVersion: 1
 
 replacements:
     - path: package.json
