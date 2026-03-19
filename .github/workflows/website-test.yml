@@ -68,6 +68,9 @@ jobs:
             matrix: ${{ fromJSON(needs.define-versions.outputs.testMatrix) }}
 
         steps:
+            - name: Add localhost.org to /etc/hosts
+              run: echo "127.0.0.1 localhost.org" | sudo tee -a /etc/hosts
+
             - name: Setup ENVs
               id: envs
               run: |
