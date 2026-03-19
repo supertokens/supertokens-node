@@ -106,7 +106,7 @@ jobs:
                   npm install
                   npm start &
 
-            - uses: supertokens/backend-sdk-testing-action@main
+            - uses: supertokens/actions/backend-sdk-testing-action@main
               with:
                   version: ${{ matrix.fdi-version }}
                   check-name-suffix: "[CDI=${{ matrix.cdi-version }}][Core=${{ steps.core-version.outputs.coreVersion }}][FDI=${{ matrix.fdi-version }}][Node=${{ matrix.node-version }}]"

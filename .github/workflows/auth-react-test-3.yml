@@ -89,7 +89,7 @@ jobs:
                   mkdir -p $AUTH_REACT__LOG_DIR
                   node . &> $AUTH_REACT__LOG_DIR/node.log &
 
-            - uses: supertokens/auth-react-testing-action@main
+            - uses: supertokens/actions/auth-react-testing-action@main
               with:
                   fdi-version: ${{ inputs.fdi-version }}
                   check-name-suffix: "[FDI=${{ inputs.fdi-version }}][Node=${{ matrix.node-version }}][Spec=${{ matrix.spec }}]"

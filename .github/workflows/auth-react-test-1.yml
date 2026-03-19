@@ -87,7 +87,7 @@ jobs:
                   echo "nodeVersion=${nodeVersion}" >> $GITHUB_OUTPUT
                   echo "authReactVersion=${authReactVersion}" >> $GITHUB_OUTPUT
 
-            - uses: supertokens/auth-react-testing-action/setup@main
+            - uses: supertokens/actions/auth-react-testing-action/setup@main
               id: envs
               with:
                   auth-react-version: ${{ steps.versions.outputs.authReactVersion }}
@@ -95,7 +95,7 @@ jobs:
                   fdi-version: ${{ matrix.fdi-version }}
 
             - id: setup-matrix
-              uses: supertokens/extended-matrix-action@main
+              uses: supertokens/actions/extended-matrix-action@main
               with:
                   artifact-id: ${{ matrix.fdi-version }}
                   matrix: |
