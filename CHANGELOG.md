@@ -23,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Updates custom framework to following correct CollectingResponse flow order (to ensure that subsequent calls to the `sendJSONResponse` doesn't overwrite the response).
 -   Updated/expanded plugin support.
 -   Reworked internals to avoid dynamic requires and circular dependencies
--   Fix signup error when a form field value is null
 
 ## [23.0.1] - 2025-07-31
 
