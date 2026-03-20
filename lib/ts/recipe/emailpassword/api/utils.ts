@@ -109,12 +109,12 @@ async function validateFormOrThrowError(
 
         // Add the not optional error if input is not passed
         // and the field is not optional.
-        const isValidInput =
-            !!input &&
-            ((typeof input.value === "string"
-                ? input.value.length > 0
-                : input.value !== null && typeof input.value !== "undefined") ||
-                (typeof input.value === "object" && Object.values(input.value).length > 0));
+        const hasNonEmptyStringValue = typeof input?.value === "string" && input.value.length > 0;
+        const hasNonNullishNonStringValue =
+            typeof input?.value !== "string" && input?.value !== null && input?.value !== undefined;
+
+        const isValidInput = !!input && (hasNonEmptyStringValue || hasNonNullishNonStringValue);
+
         if (!formField.optional && !isValidInput) {
             validationErrors.push({
                 error: "Field is not optional",

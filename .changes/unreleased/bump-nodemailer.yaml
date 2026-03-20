@@ -1,0 +1,2 @@
+kind: Security
+body: Bump nodemailer from 6.9 to 8.0.2 to address CVE
