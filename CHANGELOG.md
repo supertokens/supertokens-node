@@ -13,8 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Fix return types for exported SAML functions
 
--   chore(deps): bump nodemailer from 6.9 to 8.0.2 to address CVE
-
 ## [24.0.0] - 2025-12-02
 
 -   Adds support for SAML
