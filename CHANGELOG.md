@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Fix SAML exported function return types
 
+## [24.0.1] - 2026-01-26
+
+-   Fix return types for exported SAML functions
+
 ## [24.0.0] - 2025-12-02
 
 -   Adds support for SAML

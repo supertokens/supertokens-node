@@ -2445,4 +2445,17 @@ async function samlTest() {
     console.log(removeClientRes.status);
     const verifySAMLResponseRes = await SAML.verifySAMLResponse({} as any);
     console.log(verifySAMLResponseRes.status);
+    SAML.init({
+        override: {
+            functions: (oI) => ({
+                ...oI,
+                createLoginRequest(input) {
+                    return oI.createLoginRequest({
+                        ...input,
+                        acsURL: "custom!",
+                    });
+                },
+            }),
+        },
+    });
 }

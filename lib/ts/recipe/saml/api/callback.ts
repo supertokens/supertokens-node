@@ -36,6 +36,7 @@ export default async function callbackAPI(
         sendRedirectResponse(options.res, response.redirectURI);
         return true;
     }
+    // Both GeneralErrorResponse and SAML error statuses are returned as JSON
     send200Response(options.res, response);
     return true;
 }

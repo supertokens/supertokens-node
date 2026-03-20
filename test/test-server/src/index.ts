@@ -22,6 +22,7 @@ import { TypeInput as MFATypeInput } from "../../../lib/build/recipe/multifactor
 import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import OAuth2ProviderRecipe from "../../../lib/build/recipe/oauth2provider/recipe";
 import { TypeInput as OAuth2ProviderTypeInput } from "../../../lib/build/recipe/oauth2provider/types";
+import SAMLRecipe from "../../../lib/build/recipe/saml/recipe";
 import { TypeInput as OpenIdRecipeTypeInput } from "../../../lib/build/recipe/openid/types";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
@@ -39,6 +40,7 @@ import { getResponseHeaderNameForTokenType, getCookieNameForTokenType } from "..
 import ThirdParty from "../../../recipe/thirdparty";
 import TOTP from "../../../recipe/totp";
 import OAuth2Provider from "../../../recipe/oauth2provider";
+import SAML from "../../../recipe/saml";
 import accountlinkingRoutes from "./accountlinking";
 import emailpasswordRoutes from "./emailpassword";
 import emailverificationRoutes from "./emailverification";
@@ -52,6 +54,7 @@ import sessionRoutes from "./session";
 import supertokensRoutes from "./supertokens";
 import thirdPartyRoutes from "./thirdparty";
 import userMetadataRoutes from "./usermetadata";
+import samlRoutes from "./saml";
 import TOTPRoutes from "./totp";
 import { getFunc, resetOverrideParams, getOverrideParams } from "./testFunctionMapper";
 import OverrideableBuilder from "supertokens-js-override";
@@ -104,6 +107,7 @@ function STReset() {
     MultiFactorAuthRecipe.reset();
     TOTPRecipe.reset();
     OAuth2ProviderRecipe.reset();
+    SAMLRecipe.reset();
     SuperTokensRecipe.reset();
     DashboardRecipe.reset();
     WebauthnRecipe.reset();
@@ -372,6 +376,18 @@ function initST(config: any) {
                 })
             );
         }
+
+        if (recipe.recipeId === "saml") {
+            recipeList.push(
+                SAML.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("SAML.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging("SAML.override.functions", config?.override?.functions),
+                    },
+                })
+            );
+        }
     });
 
     init.recipeList = recipeList;
@@ -479,6 +495,7 @@ app.use("/test/totp", TOTPRoutes);
 app.use("/test/usermetadata", userMetadataRoutes);
 app.use("/test/oauth2provider", OAuth2ProviderRoutes);
 app.use("/test/webauthn", webauthnRoutes);
+app.use("/test/saml", samlRoutes);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {

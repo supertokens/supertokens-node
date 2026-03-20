@@ -66,23 +66,52 @@ jobs:
                       exit 1
                   fi
 
+            - name: Check if source files changed since last docs update
+              id: check-source
+              run: |
+                  # Find the commit where docs/ was last modified
+                  LAST_DOCS_COMMIT=$(git log -1 --format="%H" -- docs/)
+
+                  if [ -z "$LAST_DOCS_COMMIT" ]; then
+                    echo "No docs found, need to generate"
+                    echo "needs_rebuild=true" >> "$GITHUB_OUTPUT"
+                    exit 0
+                  fi
+
+                  echo "Last docs commit: $LAST_DOCS_COMMIT"
+
+                  # Check if any TypeScript source files changed since that commit
+                  # Also check package.json in case typedoc version changed
+                  CHANGED_FILES=$(git diff --name-only "$LAST_DOCS_COMMIT" HEAD -- 'lib/ts/**/*.ts' 'package.json' 'package-lock.json')
+
+                  if [ -n "$CHANGED_FILES" ]; then
+                    echo "Source files changed since last docs update:"
+                    echo "$CHANGED_FILES"
+                    echo "needs_rebuild=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "No source files changed since last docs update, skipping rebuild"
+                    echo "needs_rebuild=false" >> "$GITHUB_OUTPUT"
+                  fi
+
             - name: Install dependencies
+              if: steps.check-source.outputs.needs_rebuild == 'true'
               run: npm install
 
             - name: Build docs
+              if: steps.check-source.outputs.needs_rebuild == 'true'
               run: |
                   npm run build-pretty
                   npm run build-docs
 
-            - name: Check for changes in docs and create a commit if necessary
+            - name: Commit and push docs
+              if: steps.check-source.outputs.needs_rebuild == 'true'
               run: |
-                  git update-index --really-refresh
+                  git add docs/
 
-                  if git diff-index --quiet HEAD; then
-                    # No-op, docs are updated
+                  # Check if there are staged changes to commit
+                  if git diff --cached --quiet; then
+                    echo "No changes to commit"
                   else
-                    # Update docs and create a commit on the branch
-                    git add --all
-                    git commit -nm "doc: update docs for v${{ steps.versions.outputs.packageVersion }} tag"
+                    git commit -m "doc: update docs for v${{ steps.versions.outputs.packageVersion }} tag"
                     git push
                   fi

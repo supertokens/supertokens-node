@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { sendRedirectResponse } from "../../../utils";
+import { send200Response, sendRedirectResponse } from "../../../utils";
 import STError from "../../thirdparty/error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
@@ -57,9 +57,12 @@ export default async function loginAPI(
 
     if (response.status === "OK") {
         sendRedirectResponse(options.res, response.redirectURI);
+    } else if (response.status === "GENERAL_ERROR") {
+        send200Response(options.res, response);
     } else {
-        // INVALID_CLIENT_ERROR
-        sendRedirectResponse(options.res, `${redirectURI}?error=invalid_client_error`);
+        // Per RFC 6749 §4.1.2.1: when client_id is invalid, we cannot validate
+        // redirect_uri against registered URIs — MUST NOT redirect (open redirect risk).
+        send200Response(options.res, response);
     }
 
     return true;
