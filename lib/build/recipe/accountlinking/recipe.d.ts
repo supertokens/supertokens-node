@@ -14,55 +14,26 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: "accountlinking";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
-    constructor(
-        stInstance: SuperTokens,
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        config: TypeInput | undefined,
-        _recipes: {},
-        _ingredients: {}
-    );
+    constructor(stInstance: SuperTokens, recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput | undefined, _recipes: {}, _ingredients: {});
     static init(config?: TypeInput): RecipeListFunction;
     static getInstanceOrThrowError(): Recipe;
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest(
-        _id: string,
-        _tenantId: string,
-        _req: BaseRequest,
-        _response: BaseResponse,
-        _path: normalisedURLPath,
-        _method: HTTPMethod
-    ): Promise<boolean>;
+    handleAPIRequest(_id: string, _tenantId: string, _req: BaseRequest, _response: BaseResponse, _path: normalisedURLPath, _method: HTTPMethod): Promise<boolean>;
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
-    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
-        tenantId,
-        user,
-        userContext,
-    }: {
+    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({ tenantId, user, userContext, }: {
         tenantId: string;
         user: User;
         userContext: UserContext;
     }) => Promise<User | undefined>;
-    getOldestUserThatCanBeLinkedToRecipeUser: ({
-        tenantId,
-        user,
-        userContext,
-    }: {
+    getOldestUserThatCanBeLinkedToRecipeUser: ({ tenantId, user, userContext, }: {
         tenantId: string;
         user: User;
         userContext: UserContext;
     }) => Promise<User | undefined>;
-    isSignInAllowed: ({
-        user,
-        accountInfo,
-        tenantId,
-        session,
-        signInVerifiesLoginMethod,
-        userContext,
-    }: {
+    isSignInAllowed: ({ user, accountInfo, tenantId, session, signInVerifiesLoginMethod, userContext, }: {
         user: User;
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         session: SessionContainerInterface | undefined;
@@ -70,28 +41,14 @@ export default class Recipe extends RecipeModule {
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;
-    isSignUpAllowed: ({
-        newUser,
-        isVerified,
-        session,
-        tenantId,
-        userContext,
-    }: {
+    isSignUpAllowed: ({ newUser, isVerified, session, tenantId, userContext, }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;
-    isSignInUpAllowedHelper: ({
-        accountInfo,
-        isVerified,
-        session,
-        tenantId,
-        isSignIn,
-        user,
-        userContext,
-    }: {
+    isSignInUpAllowedHelper: ({ accountInfo, isVerified, session, tenantId, isSignIn, user, userContext, }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
@@ -106,43 +63,27 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              allowed: true;
-          }
-        | {
-              allowed: false;
-              reason: "PRIMARY_USER_CONFLICT" | "ACCOUNT_TAKEOVER_RISK";
-          }
-    >;
+    }) => Promise<{
+        allowed: true;
+    } | {
+        allowed: false;
+        reason: "PRIMARY_USER_CONFLICT" | "ACCOUNT_TAKEOVER_RISK";
+    }>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
         user: User;
         recipeUserId: RecipeUserId;
         userContext: UserContext;
     }) => Promise<void>;
-    shouldBecomePrimaryUser(
-        user: User,
-        tenantId: string,
-        session: SessionContainerInterface | undefined,
-        userContext: UserContext
-    ): Promise<boolean>;
-    tryLinkingByAccountInfoOrCreatePrimaryUser({
-        inputUser,
-        session,
-        tenantId,
-        userContext,
-    }: {
+    shouldBecomePrimaryUser(user: User, tenantId: string, session: SessionContainerInterface | undefined, userContext: UserContext): Promise<boolean>;
+    tryLinkingByAccountInfoOrCreatePrimaryUser({ inputUser, session, tenantId, userContext, }: {
         tenantId: string;
         inputUser: User;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "NO_LINK";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "NO_LINK";
+    }>;
 }

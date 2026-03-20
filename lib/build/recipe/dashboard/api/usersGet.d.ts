@@ -5,12 +5,7 @@ export type Response = {
     nextPaginationToken?: string;
     users: UserWithFirstAndLastName[];
 };
-export default function usersGet({
-    stInstance,
-    tenantId,
-    options,
-    userContext,
-}: Parameters<APIFunction>[0]): Promise<Response>;
+export default function usersGet({ stInstance, tenantId, options, userContext, }: Parameters<APIFunction>[0]): Promise<Response>;
 export declare function getSearchParamsFromURL(path: string): {
     [key: string]: string;
 };

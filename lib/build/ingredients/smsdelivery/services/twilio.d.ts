@@ -10,40 +10,33 @@ import { UserContext } from "../../../types";
  * if none of "from" and "messagingServiceSid" is passed, error
  * should be thrown.
  */
-export type TwilioServiceConfig =
-    | {
-          accountSid: string;
-          authToken: string;
-          from: string;
-          opts?: ClientOpts;
-      }
-    | {
-          accountSid: string;
-          authToken: string;
-          messagingServiceSid: string;
-          opts?: ClientOpts;
-      };
+export type TwilioServiceConfig = {
+    accountSid: string;
+    authToken: string;
+    from: string;
+    opts?: ClientOpts;
+} | {
+    accountSid: string;
+    authToken: string;
+    messagingServiceSid: string;
+    opts?: ClientOpts;
+};
 export interface GetContentResult {
     body: string;
     toPhoneNumber: string;
 }
 export type TypeInputSendRawSms = GetContentResult & {
     userContext: UserContext;
-} & (
-        | {
-              from: string;
-          }
-        | {
-              messagingServiceSid: string;
-          }
-    );
+} & ({
+    from: string;
+} | {
+    messagingServiceSid: string;
+});
 export type ServiceInterface<T> = {
     sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
-    getContent: (
-        input: T & {
-            userContext: UserContext;
-        }
-    ) => Promise<GetContentResult>;
+    getContent: (input: T & {
+        userContext: UserContext;
+    }) => Promise<GetContentResult>;
 };
 export type TypeInput<T> = {
     twilioSettings: TwilioServiceConfig;

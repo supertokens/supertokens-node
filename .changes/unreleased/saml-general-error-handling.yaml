@@ -1,2 +1,0 @@
-kind: Fixed
-body: Add explicit GeneralErrorResponse handling to SAML login and callback API handlers

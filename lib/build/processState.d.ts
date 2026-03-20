@@ -8,7 +8,7 @@ export declare enum PROCESS_STATE {
     IS_SIGN_UP_ALLOWED_CALLED = 5,
     IS_SIGN_IN_ALLOWED_CALLED = 6,
     IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED = 7,
-    ADDING_NO_CACHE_HEADER_IN_FETCH = 8,
+    ADDING_NO_CACHE_HEADER_IN_FETCH = 8
 }
 export declare class ProcessState {
     history: PROCESS_STATE[];

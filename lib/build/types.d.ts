@@ -15,11 +15,7 @@ import type { TypeInput as MultitenancyTypeInput } from "./recipe/multitenancy/t
 import type { TypeInput as OAuth2ProviderTypeInput } from "./recipe/oauth2provider/types";
 import type { TypeInput as OpenIdTypeInput } from "./recipe/openid/types";
 import type { TypeInput as PasswordlessTypeInput } from "./recipe/passwordless/types";
-import type {
-    SessionContainerInterface,
-    TypeInput as SessionTypeInput,
-    VerifySessionOptions,
-} from "./recipe/session/types";
+import type { SessionContainerInterface, TypeInput as SessionTypeInput, VerifySessionOptions } from "./recipe/session/types";
 import type { TypeInput as ThirdPartyTypeInput } from "./recipe/thirdparty/types";
 import type { TypeInput as TotpTypeInput } from "./recipe/totp/types";
 import type { TypeInput as UserMetadataTypeInput } from "./recipe/usermetadata/types";
@@ -42,7 +38,10 @@ export type UserContext = Branded<Record<string, any>, "UserContext">;
 export type AppInfo = {
     appName: string;
     websiteDomain?: string;
-    origin?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
+    origin?: string | ((input: {
+        request: BaseRequest | undefined;
+        userContext: UserContext;
+    }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -50,10 +49,16 @@ export type AppInfo = {
 };
 export type NormalisedAppinfo = {
     appName: string;
-    getOrigin: (input: { request: BaseRequest | undefined; userContext: UserContext }) => NormalisedURLDomain;
+    getOrigin: (input: {
+        request: BaseRequest | undefined;
+        userContext: UserContext;
+    }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string;
+    getTopLevelWebsiteDomain: (input: {
+        request: BaseRequest | undefined;
+        userContext: UserContext;
+    }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
@@ -96,12 +101,7 @@ export type PluginRouteHandler = {
     method: HTTPMethod;
     path: string;
     verifySessionOptions?: VerifySessionOptions;
-    handler: (
-        req: BaseRequest,
-        res: BaseResponse,
-        session: SessionContainerInterface | undefined,
-        userContext: UserContext
-    ) => Promise<{
+    handler: (req: BaseRequest, res: BaseResponse, session: SessionContainerInterface | undefined, userContext: UserContext) => Promise<{
         status: number;
         body: JSONObject;
     } | null>;
@@ -111,46 +111,29 @@ export type SuperTokensPlugin = {
     version?: string;
     compatibleSDKVersions?: string | string[];
     init?: (config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => void;
-    dependencies?: (
-        config: SuperTokensPublicConfig,
-        pluginsAbove: SuperTokensPublicPlugin[],
-        sdkVersion: string
-    ) =>
-        | {
-              status: "OK";
-              pluginsToAdd?: SuperTokensPlugin[];
-          }
-        | {
-              status: "ERROR";
-              message: string;
-          };
+    dependencies?: (config: SuperTokensPublicConfig, pluginsAbove: SuperTokensPublicPlugin[], sdkVersion: string) => {
+        status: "OK";
+        pluginsToAdd?: SuperTokensPlugin[];
+    } | {
+        status: "ERROR";
+        message: string;
+    };
     overrideMap?: {
         [recipeId in keyof AllRecipeConfigs]?: RecipePluginOverride<recipeId> & {
             recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
         };
     };
-    routeHandlers?:
-        | ((
-              config: SuperTokensPublicConfig,
-              allPlugins: SuperTokensPublicPlugin[],
-              sdkVersion: string
-          ) =>
-              | {
-                    status: "OK";
-                    routeHandlers: PluginRouteHandler[];
-                }
-              | {
-                    status: "ERROR";
-                    message: string;
-                })
-        | PluginRouteHandler[];
+    routeHandlers?: ((config: SuperTokensPublicConfig, allPlugins: SuperTokensPublicPlugin[], sdkVersion: string) => {
+        status: "OK";
+        routeHandlers: PluginRouteHandler[];
+    } | {
+        status: "ERROR";
+        message: string;
+    }) | PluginRouteHandler[];
     config?: (config: SuperTokensPublicConfig) => Omit<SuperTokensPublicConfig, "appInfo"> | undefined;
     exports?: Record<string, any>;
 };
-export type SuperTokensPublicPlugin = Pick<
-    SuperTokensPlugin,
-    "id" | "version" | "compatibleSDKVersions" | "exports"
-> & {
+export type SuperTokensPublicPlugin = Pick<SuperTokensPlugin, "id" | "version" | "compatibleSDKVersions" | "exports"> & {
     initialized: boolean;
 };
 export declare const nonPublicConfigProperties: readonly ["recipeList", "experimental"];
@@ -192,12 +175,7 @@ export interface HttpRequest {
     params?: Record<string, boolean | number | string | undefined>;
     body?: any;
 }
-export type RecipeListFunction = (
-    superTokens: SuperTokens,
-    appInfo: NormalisedAppinfo,
-    isInServerlessEnv: boolean,
-    overrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[]
-) => RecipeModule;
+export type RecipeListFunction = (superTokens: SuperTokens, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, overrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[]) => RecipeModule;
 export type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;
     method: HTTPMethod;
@@ -233,8 +211,13 @@ export type User = {
         verified: boolean;
         hasSameEmailAs: (email: string | undefined) => boolean;
         hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
-        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
-        hasSameWebauthnInfoAs: (webauthn?: { credentialId: string }) => boolean;
+        hasSameThirdPartyInfoAs: (thirdParty?: {
+            id: string;
+            userId: string;
+        }) => boolean;
+        hasSameWebauthnInfoAs: (webauthn?: {
+            credentialId: string;
+        }) => boolean;
         toJson: () => any;
     })[];
     toJson: () => any;
