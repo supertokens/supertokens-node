@@ -15,8 +15,13 @@ export declare class LoginMethod implements RecipeLevelUser {
     constructor(loginMethod: UserWithoutHelperFunctions["loginMethods"][number]);
     hasSameEmailAs(email: string | undefined): boolean;
     hasSamePhoneNumberAs(phoneNumber: string | undefined): boolean;
-    hasSameThirdPartyInfoAs(thirdParty?: { id: string; userId: string }): boolean;
-    hasSameWebauthnInfoAs(webauthn?: { credentialId: string }): boolean;
+    hasSameThirdPartyInfoAs(thirdParty?: {
+        id: string;
+        userId: string;
+    }): boolean;
+    hasSameWebauthnInfoAs(webauthn?: {
+        credentialId: string;
+    }): boolean;
     toJson(): JSONObject;
 }
 export declare class User implements UserType {
@@ -41,11 +46,9 @@ export declare class User implements UserType {
      * @param apiUser - The API response from the user endpoint.
      * @returns A User object.
      */
-    static fromApi(
-        apiUser: Omit<UserWithoutHelperFunctions, "id"> & {
-            id: string;
-        }
-    ): User;
+    static fromApi(apiUser: Omit<UserWithoutHelperFunctions, "id"> & {
+        id: string;
+    }): User;
     toJson(): JSONObject;
 }
 export type UserWithoutHelperFunctions = {

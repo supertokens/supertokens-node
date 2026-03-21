@@ -7,12 +7,7 @@ import type SuperTokens from "../../supertokens";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare function sendUnauthorisedAccess(res: BaseResponse): void;
 export declare function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser;
-export declare function getUserForRecipeId(
-    stInstance: SuperTokens,
-    recipeUserId: RecipeUserId,
-    recipeId: string,
-    userContext: UserContext
-): Promise<{
+export declare function getUserForRecipeId(stInstance: SuperTokens, recipeUserId: RecipeUserId, recipeId: string, userContext: UserContext): Promise<{
     user: UserWithFirstAndLastName | undefined;
     recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 }>;

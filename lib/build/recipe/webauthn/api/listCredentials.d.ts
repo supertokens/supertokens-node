@@ -2,10 +2,4 @@
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import type SuperTokens from "../../../supertokens";
-export default function listCredentialsAPI(
-    stInstance: SuperTokens,
-    apiImplementation: APIInterface,
-    _: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<boolean>;
+export default function listCredentialsAPI(stInstance: SuperTokens, apiImplementation: APIInterface, _: string, options: APIOptions, userContext: UserContext): Promise<boolean>;

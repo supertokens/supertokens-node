@@ -93,7 +93,7 @@ describe("SuperTokens Example Basic tests", function () {
             await page.waitForNavigation();
             const userList = await SuperTokensNode.listUsersByAccountInfo("public", { email });
             const user = userList[0];
-            const callApiBtn = await page.waitForSelector(".ProtectedHome_sessionButton__ihFAK");
+            const callApiBtn = await page.waitForSelector("[data-testid='call-api-btn']");
 
             // we save the cookies..
             let originalCookies = (await page._client.send("Network.getAllCookies")).cookies;

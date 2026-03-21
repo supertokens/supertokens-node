@@ -4,25 +4,15 @@ import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static getUserMetadata(
-        userId: string,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getUserMetadata(userId: string, userContext?: Record<string, any>): Promise<{
         status: "OK";
         metadata: any;
     }>;
-    static updateUserMetadata(
-        userId: string,
-        metadataUpdate: JSONObject,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: Record<string, any>): Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
-    static clearUserMetadata(
-        userId: string,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static clearUserMetadata(userId: string, userContext?: Record<string, any>): Promise<{
         status: "OK";
     }>;
 }

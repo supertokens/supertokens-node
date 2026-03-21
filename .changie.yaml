@@ -1,0 +1,45 @@
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.md
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: '## [{{.VersionNoPrefix}}] - {{.Time.Format "2006-01-02"}}'
+kindFormat: "### {{.Kind}}"
+changeFormat: "- {{.Body}}"
+
+kinds:
+    - label: Added
+      auto: minor
+    - label: Changed
+      auto: patch
+    - label: Fixed
+      auto: patch
+    - label: Breaking Changes
+      auto: minor
+    - label: Infrastructure
+      auto: none
+    - label: Deprecated
+      auto: patch
+    - label: Removed
+      auto: minor
+    - label: Security
+      auto: patch
+
+newlines:
+    afterChangelogHeader: 2
+    afterVersion: 1
+    beforeChangelogVersion: 1
+
+replacements:
+    - path: package.json
+      find: '"version": "[0-9]+\.[0-9]+\.[0-9]+"'
+      replace: '"version": "{{.VersionNoPrefix}}"'
+      flags: ""
+    - path: lib/ts/version.ts
+      find: 'export const version = "[0-9]+\.[0-9]+\.[0-9]+"'
+      replace: 'export const version = "{{.VersionNoPrefix}}"'
+      flags: ""
+    - path: lib/build/version.js
+      find: 'exports.version = "[0-9]+\.[0-9]+\.[0-9]+"'
+      replace: 'exports.version = "{{.VersionNoPrefix}}"'
+      flags: ""

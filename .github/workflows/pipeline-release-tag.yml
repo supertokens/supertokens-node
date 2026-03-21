@@ -1,6 +1,11 @@
 name: "Release Pipeline"
 
 on:
+    pull_request:
+        types: [closed]
+        branches:
+            - "[0-9]+.[0-9]+"
+
     workflow_dispatch:
         inputs:
             branch:
@@ -25,9 +30,13 @@ permissions:
 
 jobs:
     setup:
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            (github.event.pull_request.merged == true &&
+             startsWith(github.event.pull_request.head.ref, 'release/v'))
         runs-on: ubuntu-latest
-
         outputs:
+            branch: ${{ steps.params.outputs.branch }}
             packageVersion: ${{ steps.versions.outputs.packageVersion }}
             packageVersionXy: ${{ steps.versions.outputs.packageVersionXy }}
             packageLockVersion: ${{ steps.versions.outputs.packageLockVersion }}
@@ -40,9 +49,18 @@ jobs:
             artifactName: ${{ steps.versions.outputs.artifactName }}
 
         steps:
+            - name: Determine release branch
+              id: params
+              run: |
+                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                    echo "branch=${{ inputs.branch }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+                  fi
+
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ inputs.branch }}
+                  ref: ${{ steps.params.outputs.branch }}
                   # Need a complete fetch to make the master merge check work
                   fetch-depth: 0
                   fetch-tags: true
@@ -87,7 +105,7 @@ jobs:
                     exit 1
                   fi
 
-                  if [[ "${{ steps.versions.outputs.packageVersion }}" != ${{ inputs.branch }}* ]]
+                  if [[ "${{ steps.versions.outputs.packageVersion }}" != ${{ steps.params.outputs.branch }}* ]]
                   then
                     echo "Adding tag to wrong branch"
                     exit 1
@@ -109,14 +127,14 @@ jobs:
             - name: Check tests passed
               uses: supertokens/actions/check-tests-passed@main
               with:
-                  ref: ${{ inputs.branch }}
+                  ref: ${{ needs.setup.outputs.branch }}
                   ref-type: branch
                   repository: ${{ github.repository }}
                   run_id: ${{ github.run_id }}
                   setup-python: true
                   skip-test-checks: ${{ inputs.skip-test-checks }}
 
-            - if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
+            - if: inputs.skip-test-checks != true
               name: Mark as success
               run: |
                   curl --fail-with-body -X PATCH \
@@ -145,7 +163,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ inputs.branch }}
+                  ref: ${{ needs.setup.outputs.branch }}
                   fetch-tags: true
                   token: ${{ secrets.ALL_REPO_PAT }}
 
@@ -157,7 +175,7 @@ jobs:
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
             - name: Check tests passed
-              if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
+              if: inputs.skip-test-checks != true
               run: |
                   testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
 
@@ -167,7 +185,7 @@ jobs:
                       exit 1
                   fi
 
-            - if: ${{ inputs.skip-other-version-checks == 'false' || inputs.skip-other-version-checks == false }}
+            - if: inputs.skip-other-version-checks != true
               name: Check if core and frontend released
               run: |
                   canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
@@ -208,7 +226,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ inputs.branch }}
+                  ref: ${{ needs.setup.outputs.branch }}
                   # Need a complete fetch to make the master merge work
                   fetch-depth: 0
                   fetch-tags: true
@@ -232,13 +250,13 @@ jobs:
                   if [[ $isLatest == "true" ]]
                   then
                       git checkout master
-                      git checkout ${{ inputs.branch }}
+                      git checkout ${{ needs.setup.outputs.branch }}
 
                       git merge master
                       git checkout master
-                      git merge ${{ inputs.branch }}
+                      git merge ${{ needs.setup.outputs.branch }}
                       git push
-                      git checkout ${{ inputs.branch }}
+                      git checkout ${{ needs.setup.outputs.branch }}
                   fi
 
     publish-docs:

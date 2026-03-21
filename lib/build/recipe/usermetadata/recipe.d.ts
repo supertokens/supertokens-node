@@ -12,25 +12,12 @@ export default class Recipe extends RecipeModule {
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     isInServerlessEnv: boolean;
-    constructor(
-        stInstance: SuperTokens,
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config?: TypeInput
-    );
+    constructor(stInstance: SuperTokens, recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest: (
-        _: string,
-        _tenantId: string | undefined,
-        __: BaseRequest,
-        ___: BaseResponse,
-        ____: normalisedURLPath,
-        _____: HTTPMethod
-    ) => Promise<boolean>;
+    handleAPIRequest: (_: string, _tenantId: string | undefined, __: BaseRequest, ___: BaseResponse, ____: normalisedURLPath, _____: HTTPMethod) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;

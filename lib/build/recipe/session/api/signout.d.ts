@@ -2,9 +2,4 @@
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
 import type SuperTokens from "../../../supertokens";
-export default function signOutAPI(
-    stInstance: SuperTokens,
-    apiImplementation: APIInterface,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<boolean>;
+export default function signOutAPI(stInstance: SuperTokens, apiImplementation: APIInterface, options: APIOptions, userContext: UserContext): Promise<boolean>;
