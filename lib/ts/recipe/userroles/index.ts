@@ -117,3 +117,15 @@ export { UserRoleClaim } from "./userRoleClaim";
 export { PermissionClaim } from "./permissionClaim";
 
 export type { RecipeInterface };
+export type {
+    AddRoleToUserResponse,
+    RemoveUserRoleResponse,
+    GetRolesForUserResponse,
+    GetUsersThatHaveRoleResponse,
+    CreateNewRoleOrAddPermissionsResponse,
+    GetPermissionsForRoleResponse,
+    RemovePermissionsFromRoleResponse,
+    GetRolesThatHavePermissionResponse,
+    DeleteRoleResponse,
+    GetAllRolesResponse,
+} from "./types";

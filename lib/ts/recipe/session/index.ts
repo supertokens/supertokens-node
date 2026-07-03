@@ -515,3 +515,4 @@ export type {
     SessionInformation,
     SessionClaimValidator,
 };
+export type { ValidateClaimsResponse } from "./types";

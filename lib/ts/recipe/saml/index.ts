@@ -104,3 +104,11 @@ export let verifySAMLResponse = Wrapper.verifySAMLResponse;
 export let getUserInfo = Wrapper.getUserInfo;
 
 export type { RecipeInterface, APIOptions, APIInterface };
+
+export type {
+    ListClientsResponse,
+    RemoveClientResponse,
+    CreateLoginRequestResponse,
+    VerifySAMLResponse,
+    GetUserInfoResponse,
+} from "./types";

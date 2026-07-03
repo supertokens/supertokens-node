@@ -76,26 +76,39 @@ export type UserEmailInfo = {
     email: string;
 };
 
+export type CreateEmailVerificationTokenResponse =
+    | {
+          status: "OK";
+          token: string;
+      }
+    | { status: "EMAIL_ALREADY_VERIFIED_ERROR" };
+
+export type VerifyEmailUsingTokenResponse =
+    | { status: "OK"; user: UserEmailInfo }
+    | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" };
+
+export type RevokeEmailVerificationTokensResponse = {
+    status: "OK";
+};
+
+export type UnverifyEmailResponse = {
+    status: "OK";
+};
+
 export type RecipeInterface = {
     createEmailVerificationToken(input: {
         recipeUserId: RecipeUserId; // must be a recipeUserId
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
-    >;
+    }): Promise<CreateEmailVerificationTokenResponse>;
 
     verifyEmailUsingToken(input: {
         token: string;
         attemptAccountLinking: boolean;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
+    }): Promise<VerifyEmailUsingTokenResponse>;
 
     isEmailVerified(input: { recipeUserId: RecipeUserId; email: string; userContext: UserContext }): Promise<boolean>;
 
@@ -104,13 +117,13 @@ export type RecipeInterface = {
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK" }>;
+    }): Promise<RevokeEmailVerificationTokensResponse>;
 
     unverifyEmail(input: {
         recipeUserId: RecipeUserId;
         email: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK" }>;
+    }): Promise<UnverifyEmailResponse>;
 };
 
 export type APIOptions = {

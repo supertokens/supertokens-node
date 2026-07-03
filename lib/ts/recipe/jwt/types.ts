@@ -57,26 +57,29 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
+export type CreateJWTResponse =
+    | {
+          status: "OK";
+          jwt: string;
+      }
+    | {
+          status: "UNSUPPORTED_ALGORITHM_ERROR";
+      };
+
+export type GetJWKSResponse = {
+    keys: JsonWebKey[];
+    validityInSeconds?: number;
+};
+
 export type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
+    }): Promise<CreateJWTResponse>;
 
-    getJWKS(input: { userContext: UserContext }): Promise<{
-        keys: JsonWebKey[];
-        validityInSeconds?: number;
-    }>;
+    getJWKS(input: { userContext: UserContext }): Promise<GetJWKSResponse>;
 };
 
 export type APIInterface = {

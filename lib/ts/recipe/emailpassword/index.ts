@@ -372,6 +372,16 @@ export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, APIOptions, APIInterface };
 
+export type {
+    SignUpResponse,
+    CreateNewRecipeUserResponse,
+    SignInResponse,
+    VerifyCredentialsResponse,
+    CreateResetPasswordTokenResponse,
+    ConsumePasswordResetTokenResponse,
+    UpdateEmailOrPasswordResponse,
+} from "./types";
+
 export let createResetPasswordLink = Wrapper.createResetPasswordLink;
 
 export let sendResetPasswordEmail = Wrapper.sendResetPasswordEmail;

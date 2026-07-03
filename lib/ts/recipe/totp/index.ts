@@ -171,3 +171,13 @@ export let verifyDevice = Wrapper.verifyDevice;
 export let verifyTOTP = Wrapper.verifyTOTP;
 
 export type { RecipeInterface, APIOptions, APIInterface };
+
+export type {
+    GetUserIdentifierInfoForUserIdResponse,
+    CreateDeviceResponse,
+    UpdateDeviceResponse,
+    ListDevicesResponse,
+    RemoveDeviceResponse,
+    VerifyDeviceResponse,
+    VerifyTOTPResponse,
+} from "./types";

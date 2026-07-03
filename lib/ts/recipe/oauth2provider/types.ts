@@ -175,6 +175,69 @@ export type UserInfo = {
 
 export type InstrospectTokenResponse = { active: false } | ({ active: true } & JSONObject);
 
+export type GetOAuth2ClientResponse =
+    | {
+          status: "OK";
+          client: OAuth2Client;
+      }
+    | {
+          status: "ERROR";
+          error: string;
+          errorDescription: string;
+      };
+
+export type GetOAuth2ClientsResponse =
+    | {
+          status: "OK";
+          clients: Array<OAuth2Client>;
+          nextPaginationToken?: string;
+      }
+    | {
+          status: "ERROR";
+          error: string;
+          errorDescription: string;
+      };
+
+export type CreateOAuth2ClientResponse =
+    | {
+          status: "OK";
+          client: OAuth2Client;
+      }
+    | {
+          status: "ERROR";
+          error: string;
+          errorDescription: string;
+      };
+
+export type UpdateOAuth2ClientResponse =
+    | {
+          status: "OK";
+          client: OAuth2Client;
+      }
+    | {
+          status: "ERROR";
+          error: string;
+          errorDescription: string;
+      };
+
+export type DeleteOAuth2ClientResponse =
+    | {
+          status: "OK";
+      }
+    | {
+          status: "ERROR";
+          error: string;
+          errorDescription: string;
+      };
+
+export type ValidateOAuth2AccessTokenResponse = { status: "OK"; payload: JSONObject };
+
+export type RevokeTokensByClientIdResponse = { status: "OK" };
+
+export type RevokeTokensBySessionHandleResponse = { status: "OK" };
+
+export type RejectLogoutRequestResponse = { status: "OK" };
+
 export type RecipeInterface = {
     authorization(input: {
         params: Record<string, string>;
@@ -249,77 +312,27 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string; status: "OK" } | ErrorOAuth2>;
 
-    getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<
-        | {
-              status: "OK";
-              client: OAuth2Client;
-          }
-        | {
-              status: "ERROR";
-              error: string;
-              errorDescription: string;
-          }
-    >;
+    getOAuth2Client(input: { clientId: string; userContext: UserContext }): Promise<GetOAuth2ClientResponse>;
     getOAuth2Clients(
         input: GetOAuth2ClientsInput & {
             userContext: UserContext;
         }
-    ): Promise<
-        | {
-              status: "OK";
-              clients: Array<OAuth2Client>;
-              nextPaginationToken?: string;
-          }
-        | {
-              status: "ERROR";
-              error: string;
-              errorDescription: string;
-          }
-    >;
+    ): Promise<GetOAuth2ClientsResponse>;
     createOAuth2Client(
         input: CreateOAuth2ClientInput & {
             userContext: UserContext;
         }
-    ): Promise<
-        | {
-              status: "OK";
-              client: OAuth2Client;
-          }
-        | {
-              status: "ERROR";
-              error: string;
-              errorDescription: string;
-          }
-    >;
+    ): Promise<CreateOAuth2ClientResponse>;
     updateOAuth2Client(
         input: UpdateOAuth2ClientInput & {
             userContext: UserContext;
         }
-    ): Promise<
-        | {
-              status: "OK";
-              client: OAuth2Client;
-          }
-        | {
-              status: "ERROR";
-              error: string;
-              errorDescription: string;
-          }
-    >;
+    ): Promise<UpdateOAuth2ClientResponse>;
     deleteOAuth2Client(
         input: DeleteOAuth2ClientInput & {
             userContext: UserContext;
         }
-    ): Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "ERROR";
-              error: string;
-              errorDescription: string;
-          }
-    >;
+    ): Promise<DeleteOAuth2ClientResponse>;
 
     validateOAuth2AccessToken(input: {
         token: string;
@@ -330,7 +343,7 @@ export type RecipeInterface = {
         };
         checkDatabase?: boolean;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; payload: JSONObject }>;
+    }): Promise<ValidateOAuth2AccessTokenResponse>;
 
     getRequestedScopes(input: {
         recipeUserId: RecipeUserId | undefined;
@@ -396,8 +409,14 @@ export type RecipeInterface = {
             | { clientId: string; clientSecret?: string }
         )
     ): Promise<{ status: "OK" } | ErrorOAuth2>;
-    revokeTokensByClientId(input: { clientId: string; userContext: UserContext }): Promise<{ status: "OK" }>;
-    revokeTokensBySessionHandle(input: { sessionHandle: string; userContext: UserContext }): Promise<{ status: "OK" }>;
+    revokeTokensByClientId(input: {
+        clientId: string;
+        userContext: UserContext;
+    }): Promise<RevokeTokensByClientIdResponse>;
+    revokeTokensBySessionHandle(input: {
+        sessionHandle: string;
+        userContext: UserContext;
+    }): Promise<RevokeTokensBySessionHandleResponse>;
     introspectToken(input: {
         token: string;
         scopes?: string[];
@@ -413,7 +432,7 @@ export type RecipeInterface = {
         challenge: string;
         userContext: UserContext;
     }): Promise<{ redirectTo: string } | ErrorOAuth2>;
-    rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
+    rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<RejectLogoutRequestResponse>;
 };
 
 export type APIInterface = {

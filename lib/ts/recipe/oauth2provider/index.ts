@@ -181,3 +181,15 @@ export let revokeTokensByClientId = Wrapper.revokeTokensByClientId;
 export let revokeTokensBySessionHandle = Wrapper.revokeTokensBySessionHandle;
 
 export type { APIInterface, APIOptions, RecipeInterface };
+
+export type {
+    GetOAuth2ClientResponse,
+    GetOAuth2ClientsResponse,
+    CreateOAuth2ClientResponse,
+    UpdateOAuth2ClientResponse,
+    DeleteOAuth2ClientResponse,
+    ValidateOAuth2AccessTokenResponse,
+    RevokeTokensByClientIdResponse,
+    RevokeTokensBySessionHandleResponse,
+    RejectLogoutRequestResponse,
+} from "./types";

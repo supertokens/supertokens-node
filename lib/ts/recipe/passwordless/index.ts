@@ -415,7 +415,21 @@ export let signInUp = Wrapper.signInUp;
 
 export let checkCode = Wrapper.checkCode;
 
+// Re-exports the PasswordlessFlowType const (and its derived type) so consumers
+// can reference the flow type values instead of duplicating the string literals.
+export { PasswordlessFlowType } from "./types";
+
 export type { RecipeInterface, APIOptions, APIInterface };
+
+export type {
+    CreateCodeResponse,
+    CreateNewCodeForDeviceResponse,
+    ConsumeCodeResponse,
+    CheckCodeResponse,
+    UpdateUserResponse,
+    RevokeAllCodesResponse,
+    RevokeCodeResponse,
+} from "./types";
 
 export let sendEmail = Wrapper.sendEmail;
 

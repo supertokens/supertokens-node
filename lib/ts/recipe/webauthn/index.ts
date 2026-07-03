@@ -393,3 +393,22 @@ export let listCredentials = Wrapper.listCredentials;
 export let updateUserEmail = Wrapper.updateUserEmail;
 
 export type { RecipeInterface, APIOptions, APIInterface };
+
+export type {
+    RegisterOptionsResponse,
+    SignInOptionsResponse,
+    SignUpResponse,
+    SignInResponse,
+    VerifyCredentialsResponse,
+    CreateNewRecipeUserResponse,
+    GenerateRecoverAccountTokenResponse,
+    ConsumeRecoverAccountTokenResponse,
+    RegisterCredentialResponse,
+    GetUserFromRecoverAccountTokenResponse,
+    RemoveCredentialResponse,
+    GetCredentialResponse,
+    ListCredentialsResponse,
+    RemoveGeneratedOptionsResponse,
+    GetGeneratedOptionsResponse,
+    UpdateUserEmailResponse,
+} from "./types";

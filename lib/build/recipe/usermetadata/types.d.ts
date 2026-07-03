@@ -3,25 +3,36 @@ import OverrideableBuilder from "supertokens-js-override";
 import { JSONObject, UserContext } from "../../types";
 export type TypeInput = {
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type TypeNormalisedInput = {
     override: {
-        functions: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type APIInterface = {};
+export type GetUserMetadataResponse = {
+    status: "OK";
+    metadata: any;
+};
+export type UpdateUserMetadataResponse = {
+    status: "OK";
+    metadata: JSONObject;
+};
+export type ClearUserMetadataResponse = {
+    status: "OK";
+};
 export type RecipeInterface = {
-    getUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        metadata: any;
-    }>;
+    getUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<GetUserMetadataResponse>;
     /**
      * Updates the metadata object of the user by doing a shallow merge of the stored and the update JSONs
      * and removing properties set to null on the root level of the update object.
@@ -34,14 +45,6 @@ export type RecipeInterface = {
         userId: string;
         metadataUpdate: JSONObject;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        metadata: JSONObject;
-    }>;
-    clearUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-    }>;
+    }) => Promise<UpdateUserMetadataResponse>;
+    clearUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<ClearUserMetadataResponse>;
 };

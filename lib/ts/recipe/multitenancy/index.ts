@@ -182,3 +182,12 @@ export let disassociateUserFromTenant = Wrapper.disassociateUserFromTenant;
 
 export const AllowedDomainsClaim = Wrapper.AllowedDomainsClaim;
 export type { RecipeInterface, APIOptions, APIInterface };
+export type {
+    CreateOrUpdateTenantResponse,
+    DeleteTenantResponse,
+    ListAllTenantsResponse,
+    CreateOrUpdateThirdPartyConfigResponse,
+    DeleteThirdPartyConfigResponse,
+    AssociateUserToTenantResponse,
+    DisassociateUserFromTenantResponse,
+} from "./types";

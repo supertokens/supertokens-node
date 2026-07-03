@@ -46,3 +46,5 @@ export let createJWT = Wrapper.createJWT;
 export let getJWKS = Wrapper.getJWKS;
 
 export type { APIInterface, APIOptions, RecipeInterface, JsonWebKey };
+
+export type { CreateJWTResponse, GetJWKSResponse } from "./types";

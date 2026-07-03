@@ -15,26 +15,23 @@ export default class Wrapper {
         allowIDPInitiatedLogin?: boolean;
         enableRequestSigning?: boolean;
         userContext?: Record<string, any>;
-    }): Promise<({
-        status: "OK";
-    } & import("./types").SAMLClient) | {
-        status: "INVALID_METADATA_XML_ERROR" | "DUPLICATE_IDP_ENTITY_ERROR";
-    }>;
+    }): Promise<
+        | ({
+              status: "OK";
+          } & import("./types").SAMLClient)
+        | {
+              status: "INVALID_METADATA_XML_ERROR" | "DUPLICATE_IDP_ENTITY_ERROR";
+          }
+    >;
     static listClients(input: {
         tenantId: string;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK";
-        clients: import("./types").SAMLClient[];
-    }>;
+    }): Promise<import("./types").ListClientsResponse>;
     static removeClient(input: {
         tenantId: string;
         clientId: string;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK";
-        didExist: boolean;
-    }>;
+    }): Promise<import("./types").RemoveClientResponse>;
     static createLoginRequest(input: {
         tenantId: string;
         clientId: string;
@@ -42,36 +39,19 @@ export default class Wrapper {
         state?: string;
         acsURL: string;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK";
-        redirectURI: string;
-    } | {
-        status: "INVALID_CLIENT_ERROR";
-    }>;
+    }): Promise<import("./types").CreateLoginRequestResponse>;
     static verifySAMLResponse(input: {
         tenantId: string;
         samlResponse: string;
         relayState: string | undefined;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK";
-        redirectURI: string;
-    } | {
-        status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR" | "INVALID_CLIENT_ERROR" | "IDP_LOGIN_DISALLOWED_ERROR";
-    }>;
+    }): Promise<import("./types").VerifySAMLResponse>;
     static getUserInfo(input: {
         tenantId: string;
         accessToken: string;
         clientId: string;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK";
-        sub: string;
-        email: string;
-        claims: Record<string, any>;
-    } | {
-        status: "INVALID_TOKEN_ERROR";
-    }>;
+    }): Promise<import("./types").GetUserInfoResponse>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -82,3 +62,10 @@ export declare let createLoginRequest: typeof Wrapper.createLoginRequest;
 export declare let verifySAMLResponse: typeof Wrapper.verifySAMLResponse;
 export declare let getUserInfo: typeof Wrapper.getUserInfo;
 export type { RecipeInterface, APIOptions, APIInterface };
+export type {
+    ListClientsResponse,
+    RemoveClientResponse,
+    CreateLoginRequestResponse,
+    VerifySAMLResponse,
+    GetUserInfoResponse,
+} from "./types";
