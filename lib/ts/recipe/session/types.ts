@@ -177,6 +177,11 @@ export interface VerifySessionOptions {
     ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
 
+export type ValidateClaimsResponse = {
+    invalidClaims: ClaimValidationError[];
+    accessTokenPayloadUpdate?: any;
+};
+
 export type RecipeInterface = {
     createNewSession(input: {
         userId: string;
@@ -287,10 +292,7 @@ export type RecipeInterface = {
         accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
         userContext: UserContext;
-    }): Promise<{
-        invalidClaims: ClaimValidationError[];
-        accessTokenPayloadUpdate?: any;
-    }>;
+    }): Promise<ValidateClaimsResponse>;
     fetchAndSetClaim(input: {
         sessionHandle: string;
         claim: SessionClaim<any>;

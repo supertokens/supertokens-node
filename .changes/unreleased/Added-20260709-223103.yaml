@@ -1,0 +1,3 @@
+kind: Added
+body: Export named response types from recipe interfaces (e.g. `ConsumeCodeResponse`), re-exported from each recipe entry point, and add a runtime `PasswordlessFlowType` constant, so consumers can reference recipe function result shapes and flow-type values without redeclaring them.
+time: 2026-07-09T22:31:03Z

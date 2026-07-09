@@ -12,7 +12,17 @@ import customFramework, { CollectingResponse, PreParsedRequest } from "../../fra
 import NextJS from "../../nextjs";
 import ThirdParty from "../../recipe/thirdparty";
 import Multitenancy from "../../recipe/multitenancy";
-import Passwordless from "../../recipe/passwordless";
+import Passwordless, { PasswordlessFlowType } from "../../recipe/passwordless";
+import type {
+    ConsumeCodeResponse as PasswordlessConsumeCodeResponse,
+    CreateCodeResponse as PasswordlessCreateCodeResponse,
+    CheckCodeResponse as PasswordlessCheckCodeResponse,
+} from "../../recipe/passwordless";
+import type { SignInResponse as EmailPasswordSignInResponse } from "../../recipe/emailpassword";
+import type { SignInUpResponse as ThirdPartySignInUpResponse } from "../../recipe/thirdparty";
+import type { VerifyEmailUsingTokenResponse as EmailVerificationVerifyResponse } from "../../recipe/emailverification";
+import type { ValidateClaimsResponse as SessionValidateClaimsResponse } from "../../recipe/session";
+import type { VerifyTOTPResponse } from "../../recipe/totp";
 import OpenId from "../../recipe/openid";
 import OAuth2Provider from "../../recipe/oauth2provider";
 import { SMTPService as SMTPServiceTPP } from "../../recipe/passwordless/emaildelivery";
@@ -2458,4 +2468,16 @@ async function samlTest() {
             }),
         },
     });
+}
+
+// Verifies a representative spread of the newly-exported RecipeInterface
+// response types across recipes are importable and usable by consumers as
+// named types (they all carry a discriminating `status` field).
+function crossRecipeResponseTypeExports() {
+    const ep = {} as EmailPasswordSignInResponse;
+    const tp = {} as ThirdPartySignInUpResponse;
+    const ev = {} as EmailVerificationVerifyResponse;
+    const totp = {} as VerifyTOTPResponse;
+    const claims: SessionValidateClaimsResponse = { invalidClaims: [], accessTokenPayloadUpdate: undefined };
+    console.log(ep.status, tp.status, ev.status, totp.status, claims.invalidClaims.length);
 }

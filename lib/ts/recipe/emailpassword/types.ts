@@ -83,6 +83,66 @@ export type TypeInput = {
     };
 };
 
+export type SignUpResponse =
+    | {
+          status: "OK";
+          user: User;
+          recipeUserId: RecipeUserId;
+      }
+    | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    | {
+          status: "LINKING_TO_SESSION_USER_FAILED";
+          reason:
+              | "EMAIL_VERIFICATION_REQUIRED"
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+      };
+
+export type CreateNewRecipeUserResponse =
+    | {
+          status: "OK";
+          user: User;
+          recipeUserId: RecipeUserId;
+      }
+    | { status: "EMAIL_ALREADY_EXISTS_ERROR" };
+
+export type SignInResponse =
+    | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+    | { status: "WRONG_CREDENTIALS_ERROR" }
+    | {
+          status: "LINKING_TO_SESSION_USER_FAILED";
+          reason:
+              | "EMAIL_VERIFICATION_REQUIRED"
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+      };
+
+export type VerifyCredentialsResponse =
+    | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+    | { status: "WRONG_CREDENTIALS_ERROR" };
+
+export type CreateResetPasswordTokenResponse = { status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" };
+
+export type ConsumePasswordResetTokenResponse =
+    | {
+          status: "OK";
+          email: string;
+          userId: string;
+      }
+    | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" };
+
+export type UpdateEmailOrPasswordResponse =
+    | {
+          status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
+      }
+    | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string };
+
 export type RecipeInterface = {
     signUp(input: {
         email: string;
@@ -91,22 +151,7 @@ export type RecipeInterface = {
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }): Promise<SignUpResponse>;
     // this function is meant only for creating the recipe in the core and nothing else.
     // we added this even though signUp exists cause devs may override signup expecting it
     // to be called just during sign up. But we also need a version of signing up which can be
@@ -116,14 +161,7 @@ export type RecipeInterface = {
         password: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-    >;
+    }): Promise<CreateNewRecipeUserResponse>;
 
     signIn(input: {
         email: string;
@@ -132,25 +170,14 @@ export type RecipeInterface = {
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | { status: "WRONG_CREDENTIALS_ERROR" }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }): Promise<SignInResponse>;
 
     verifyCredentials(input: {
         email: string;
         password: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<VerifyCredentialsResponse>;
 
     /**
      * We pass in the email as well to this function cause the input userId
@@ -162,16 +189,13 @@ export type RecipeInterface = {
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
+    }): Promise<CreateResetPasswordTokenResponse>;
 
-    consumePasswordResetToken(input: { token: string; tenantId: string; userContext: UserContext }): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-    >;
+    consumePasswordResetToken(input: {
+        token: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<ConsumePasswordResetTokenResponse>;
 
     updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId; // the id should only be a recipeUserId cause if we give just an id
@@ -182,16 +206,7 @@ export type RecipeInterface = {
         userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
-    }): Promise<
-        | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
-    >;
+    }): Promise<UpdateEmailOrPasswordResponse>;
 };
 
 export type APIOptions = {

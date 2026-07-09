@@ -151,3 +151,5 @@ export let getProvider = Wrapper.getProvider;
 export let manuallyCreateOrUpdateUser = Wrapper.manuallyCreateOrUpdateUser;
 
 export type { RecipeInterface, APIInterface, APIOptions, TypeProvider };
+
+export type { SignInUpResponse, ManuallyCreateOrUpdateUserResponse } from "./types";

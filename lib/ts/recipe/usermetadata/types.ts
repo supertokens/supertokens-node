@@ -38,11 +38,22 @@ export type TypeNormalisedInput = {
 
 export type APIInterface = {};
 
+export type GetUserMetadataResponse = {
+    status: "OK";
+    metadata: any;
+};
+
+export type UpdateUserMetadataResponse = {
+    status: "OK";
+    metadata: JSONObject;
+};
+
+export type ClearUserMetadataResponse = {
+    status: "OK";
+};
+
 export type RecipeInterface = {
-    getUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        metadata: any;
-    }>;
+    getUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<GetUserMetadataResponse>;
 
     /**
      * Updates the metadata object of the user by doing a shallow merge of the stored and the update JSONs
@@ -52,12 +63,11 @@ export type RecipeInterface = {
      *   - update: `{ "notifications": { "sms": true }, "todos": null }`
      *   - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
      */
-    updateUserMetadata: (input: { userId: string; metadataUpdate: JSONObject; userContext: UserContext }) => Promise<{
-        status: "OK";
-        metadata: JSONObject;
-    }>;
+    updateUserMetadata: (input: {
+        userId: string;
+        metadataUpdate: JSONObject;
+        userContext: UserContext;
+    }) => Promise<UpdateUserMetadataResponse>;
 
-    clearUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-    }>;
+    clearUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<ClearUserMetadataResponse>;
 };

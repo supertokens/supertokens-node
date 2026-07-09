@@ -7,14 +7,20 @@ import RecipeUserId from "../../recipeUserId";
 export type TypeInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type TypeNormalisedInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -28,11 +34,50 @@ export type TenantConfig = {
         [key: string]: any;
     };
 };
+export type CreateOrUpdateTenantResponse = {
+    status: "OK";
+    createdNew: boolean;
+};
+export type DeleteTenantResponse = {
+    status: "OK";
+    didExist: boolean;
+};
+export type ListAllTenantsResponse = {
+    status: "OK";
+    tenants: (TenantConfig & {
+        tenantId: string;
+    })[];
+};
+export type CreateOrUpdateThirdPartyConfigResponse = {
+    status: "OK";
+    createdNew: boolean;
+};
+export type DeleteThirdPartyConfigResponse = {
+    status: "OK";
+    didConfigExist: boolean;
+};
+export type AssociateUserToTenantResponse =
+    | {
+          status: "OK";
+          wasAlreadyAssociated: boolean;
+      }
+    | {
+          status:
+              | "UNKNOWN_USER_ID_ERROR"
+              | "EMAIL_ALREADY_EXISTS_ERROR"
+              | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+              | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+          reason: string;
+      };
+export type DisassociateUserFromTenantResponse = {
+    status: "OK";
+    wasAssociated: boolean;
+};
 export type RecipeInterface = {
-    getTenantId: (input: {
-        tenantIdFromFrontend: string;
-        userContext: UserContext;
-    }) => Promise<string>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
@@ -43,69 +88,36 @@ export type RecipeInterface = {
             };
         };
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        createdNew: boolean;
-    }>;
-    deleteTenant: (input: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        didExist: boolean;
-    }>;
-    getTenant: (input: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<({
-        status: "OK";
-    } & TenantConfig) | undefined>;
-    listAllTenants: (input: {
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        tenants: (TenantConfig & {
-            tenantId: string;
-        })[];
-    }>;
+    }) => Promise<CreateOrUpdateTenantResponse>;
+    deleteTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<DeleteTenantResponse>;
+    getTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<
+        | ({
+              status: "OK";
+          } & TenantConfig)
+        | undefined
+    >;
+    listAllTenants: (input: { userContext: UserContext }) => Promise<ListAllTenantsResponse>;
     createOrUpdateThirdPartyConfig: (input: {
         tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        createdNew: boolean;
-    }>;
+    }) => Promise<CreateOrUpdateThirdPartyConfigResponse>;
     deleteThirdPartyConfig: (input: {
         tenantId: string;
         thirdPartyId: string;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        didConfigExist: boolean;
-    }>;
+    }) => Promise<DeleteThirdPartyConfigResponse>;
     associateUserToTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        wasAlreadyAssociated: boolean;
-    } | {
-        status: "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR" | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
-    } | {
-        status: "ASSOCIATION_NOT_ALLOWED_ERROR";
-        reason: string;
-    }>;
+    }) => Promise<AssociateUserToTenantResponse>;
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        wasAssociated: boolean;
-    }>;
+    }) => Promise<DisassociateUserFromTenantResponse>;
 };
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -124,21 +136,24 @@ export type APIInterface = {
         clientType?: string;
         options: APIOptions;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        emailPassword: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: {
-                id: string;
-                name?: string;
-            }[];
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        firstFactors: string[];
-    } | GeneralErrorResponse>;
+    }) => Promise<
+        | {
+              status: "OK";
+              emailPassword: {
+                  enabled: boolean;
+              };
+              thirdParty: {
+                  enabled: boolean;
+                  providers: {
+                      id: string;
+                      name?: string;
+                  }[];
+              };
+              passwordless: {
+                  enabled: boolean;
+              };
+              firstFactors: string[];
+          }
+        | GeneralErrorResponse
+    >;
 };

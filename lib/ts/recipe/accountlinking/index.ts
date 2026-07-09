@@ -208,3 +208,12 @@ export const isSignInAllowed = Wrapper.isSignInAllowed;
 export const isEmailChangeAllowed = Wrapper.isEmailChangeAllowed;
 
 export type { RecipeInterface };
+export type {
+    GetUsersResponse,
+    CanCreatePrimaryUserResponse,
+    CreatePrimaryUserResponse,
+    CanLinkAccountsResponse,
+    LinkAccountsResponse,
+    UnlinkAccountResponse,
+    DeleteUserResponse,
+} from "./types";

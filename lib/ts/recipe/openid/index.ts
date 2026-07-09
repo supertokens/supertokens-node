@@ -13,3 +13,5 @@ export default class OpenIdRecipeWrapper {
 
 export let init = OpenIdRecipeWrapper.init;
 export let getOpenIdDiscoveryConfiguration = OpenIdRecipeWrapper.getOpenIdDiscoveryConfiguration;
+
+export type { GetOpenIdDiscoveryConfigurationResponse, CreateJWTResponse } from "./types";

@@ -68,6 +68,87 @@ export type TypeNormalisedInput = {
     };
 };
 
+export type GetUsersResponse = {
+    users: User[];
+    nextPaginationToken?: string;
+};
+
+export type CanCreatePrimaryUserResponse =
+    | {
+          status: "OK";
+          wasAlreadyAPrimaryUser: boolean;
+      }
+    | {
+          status:
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      };
+
+export type CreatePrimaryUserResponse =
+    | {
+          status: "OK";
+          user: User;
+          wasAlreadyAPrimaryUser: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      };
+
+export type CanLinkAccountsResponse =
+    | {
+          status: "OK";
+          accountsAlreadyLinked: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          description: string;
+          primaryUserId: string;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+      };
+
+export type LinkAccountsResponse =
+    | {
+          status: "OK";
+          accountsAlreadyLinked: boolean;
+          user: User;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          user: User;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+      };
+
+export type UnlinkAccountResponse = {
+    status: "OK";
+    wasRecipeUserDeleted: boolean;
+    wasLinked: boolean;
+};
+
+export type DeleteUserResponse = { status: "OK" };
+
 export type RecipeInterface = {
     getUsers: (input: {
         tenantId: string;
@@ -77,87 +158,26 @@ export type RecipeInterface = {
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
         userContext: UserContext;
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    canCreatePrimaryUser: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              wasAlreadyAPrimaryUser: boolean;
-          }
-        | {
-              status:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-    >;
-    createPrimaryUser: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              user: User;
-              wasAlreadyAPrimaryUser: boolean;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-    >;
+    }) => Promise<GetUsersResponse>;
+    canCreatePrimaryUser: (input: {
+        recipeUserId: RecipeUserId;
+        userContext: UserContext;
+    }) => Promise<CanCreatePrimaryUserResponse>;
+    createPrimaryUser: (input: {
+        recipeUserId: RecipeUserId;
+        userContext: UserContext;
+    }) => Promise<CreatePrimaryUserResponse>;
     canLinkAccounts: (input: {
         recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              accountsAlreadyLinked: boolean;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              description: string;
-              primaryUserId: string;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-        | {
-              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-          }
-    >;
-    linkAccounts: (input: { recipeUserId: RecipeUserId; primaryUserId: string; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              accountsAlreadyLinked: boolean;
-              user: User;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              user: User;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-        | {
-              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-          }
-    >;
-    unlinkAccount: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<{
-        status: "OK";
-        wasRecipeUserDeleted: boolean;
-        wasLinked: boolean;
-    }>;
+    }) => Promise<CanLinkAccountsResponse>;
+    linkAccounts: (input: {
+        recipeUserId: RecipeUserId;
+        primaryUserId: string;
+        userContext: UserContext;
+    }) => Promise<LinkAccountsResponse>;
+    unlinkAccount: (input: { recipeUserId: RecipeUserId; userContext: UserContext }) => Promise<UnlinkAccountResponse>;
     getUser: (input: { userId: string; userContext: UserContext }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
         tenantId: string;
@@ -169,7 +189,7 @@ export type RecipeInterface = {
         userId: string;
         removeAllLinkedAccounts: boolean;
         userContext: UserContext;
-    }) => Promise<{ status: "OK" }>;
+    }) => Promise<DeleteUserResponse>;
 };
 
 export type AccountInfo = {

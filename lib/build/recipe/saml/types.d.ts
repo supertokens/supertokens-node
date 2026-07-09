@@ -4,13 +4,19 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, NormalisedAppinfo, UserContext } from "../../types";
 export type TypeInput = {
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type TypeNormalisedInput = {
     override: {
-        functions: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -23,6 +29,44 @@ export type SAMLClient = {
     allowIDPInitiatedLogin: boolean;
     enableRequestSigning: boolean;
 };
+export type ListClientsResponse = {
+    status: "OK";
+    clients: SAMLClient[];
+};
+export type RemoveClientResponse = {
+    status: "OK";
+    didExist: boolean;
+};
+export type CreateLoginRequestResponse =
+    | {
+          status: "OK";
+          redirectURI: string;
+      }
+    | {
+          status: "INVALID_CLIENT_ERROR";
+      };
+export type VerifySAMLResponse =
+    | {
+          status: "OK";
+          redirectURI: string;
+      }
+    | {
+          status:
+              | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
+              | "INVALID_RELAY_STATE_ERROR"
+              | "INVALID_CLIENT_ERROR"
+              | "IDP_LOGIN_DISALLOWED_ERROR";
+      };
+export type GetUserInfoResponse =
+    | {
+          status: "OK";
+          sub: string;
+          email: string;
+          claims: Record<string, any>;
+      }
+    | {
+          status: "INVALID_TOKEN_ERROR";
+      };
 export type RecipeInterface = {
     createOrUpdateClient: (input: {
         tenantId: string;
@@ -34,26 +78,20 @@ export type RecipeInterface = {
         allowIDPInitiatedLogin?: boolean;
         enableRequestSigning?: boolean;
         userContext: UserContext;
-    }) => Promise<({
-        status: "OK";
-    } & SAMLClient) | {
-        status: "INVALID_METADATA_XML_ERROR" | "DUPLICATE_IDP_ENTITY_ERROR";
-    }>;
-    listClients: (input: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        clients: SAMLClient[];
-    }>;
+    }) => Promise<
+        | ({
+              status: "OK";
+          } & SAMLClient)
+        | {
+              status: "INVALID_METADATA_XML_ERROR" | "DUPLICATE_IDP_ENTITY_ERROR";
+          }
+    >;
+    listClients: (input: { tenantId: string; userContext: UserContext }) => Promise<ListClientsResponse>;
     removeClient: (input: {
         tenantId: string;
         clientId: string;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        didExist: boolean;
-    }>;
+    }) => Promise<RemoveClientResponse>;
     createLoginRequest: (input: {
         tenantId: string;
         clientId: string;
@@ -61,36 +99,19 @@ export type RecipeInterface = {
         state?: string;
         acsURL: string;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        redirectURI: string;
-    } | {
-        status: "INVALID_CLIENT_ERROR";
-    }>;
+    }) => Promise<CreateLoginRequestResponse>;
     verifySAMLResponse: (input: {
         tenantId: string;
         samlResponse: string;
         relayState: string | undefined;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        redirectURI: string;
-    } | {
-        status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR" | "INVALID_CLIENT_ERROR" | "IDP_LOGIN_DISALLOWED_ERROR";
-    }>;
+    }) => Promise<VerifySAMLResponse>;
     getUserInfo: (input: {
         tenantId: string;
         accessToken: string;
         clientId: string;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        sub: string;
-        email: string;
-        claims: Record<string, any>;
-    } | {
-        status: "INVALID_TOKEN_ERROR";
-    }>;
+    }) => Promise<GetUserInfoResponse>;
 };
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -102,30 +123,46 @@ export type APIOptions = {
     res: BaseResponse;
 };
 export type APIInterface = {
-    loginGET: undefined | ((input: {
-        tenantId: string;
-        clientId: string;
-        redirectURI: string;
-        state?: string;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        redirectURI: string;
-        state?: string;
-    } | {
-        status: "INVALID_CLIENT_ERROR";
-    } | GeneralErrorResponse>);
-    callbackPOST: undefined | ((input: {
-        tenantId: string;
-        options: APIOptions;
-        userContext: UserContext;
-        samlResponse: string;
-        relayState: string | undefined;
-    }) => Promise<{
-        status: "OK";
-        redirectURI: string;
-    } | {
-        status: "SAML_RESPONSE_VERIFICATION_FAILED_ERROR" | "INVALID_RELAY_STATE_ERROR" | "INVALID_CLIENT_ERROR" | "IDP_LOGIN_DISALLOWED_ERROR";
-    } | GeneralErrorResponse>);
+    loginGET:
+        | undefined
+        | ((input: {
+              tenantId: string;
+              clientId: string;
+              redirectURI: string;
+              state?: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    redirectURI: string;
+                    state?: string;
+                }
+              | {
+                    status: "INVALID_CLIENT_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
+    callbackPOST:
+        | undefined
+        | ((input: {
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+              samlResponse: string;
+              relayState: string | undefined;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    redirectURI: string;
+                }
+              | {
+                    status:
+                        | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
+                        | "INVALID_RELAY_STATE_ERROR"
+                        | "INVALID_CLIENT_ERROR"
+                        | "IDP_LOGIN_DISALLOWED_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
 };

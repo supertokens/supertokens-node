@@ -66,33 +66,38 @@ export type APIInterface = {
           >);
 };
 
+export type GetOpenIdDiscoveryConfigurationResponse = {
+    status: "OK";
+    issuer: string;
+    jwks_uri: string;
+    authorization_endpoint: string;
+    token_endpoint: string;
+    userinfo_endpoint: string;
+    revocation_endpoint: string;
+    token_introspection_endpoint: string;
+    end_session_endpoint: string;
+    subject_types_supported: string[];
+    id_token_signing_alg_values_supported: string[];
+    response_types_supported: string[];
+};
+
+export type CreateJWTResponse =
+    | {
+          status: "OK";
+          jwt: string;
+      }
+    | {
+          status: "UNSUPPORTED_ALGORITHM_ERROR";
+      };
+
 export type RecipeInterface = {
-    getOpenIdDiscoveryConfiguration(input: { userContext: UserContext }): Promise<{
-        status: "OK";
-        issuer: string;
-        jwks_uri: string;
-        authorization_endpoint: string;
-        token_endpoint: string;
-        userinfo_endpoint: string;
-        revocation_endpoint: string;
-        token_introspection_endpoint: string;
-        end_session_endpoint: string;
-        subject_types_supported: string[];
-        id_token_signing_alg_values_supported: string[];
-        response_types_supported: string[];
-    }>;
+    getOpenIdDiscoveryConfiguration(input: {
+        userContext: UserContext;
+    }): Promise<GetOpenIdDiscoveryConfigurationResponse>;
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
+    }): Promise<CreateJWTResponse>;
 };

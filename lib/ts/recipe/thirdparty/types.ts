@@ -180,6 +180,55 @@ export type TypeNormalisedInput = {
     };
 };
 
+export type SignInUpResponse =
+    | {
+          status: "OK";
+          createdNewRecipeUser: boolean;
+          recipeUserId: RecipeUserId;
+          user: User;
+          oAuthTokens: { [key: string]: any };
+          rawUserInfoFromProvider: {
+              fromIdTokenPayload?: { [key: string]: any };
+              fromUserInfoAPI?: { [key: string]: any };
+          };
+      }
+    | {
+          status: "SIGN_IN_UP_NOT_ALLOWED";
+          reason: string;
+      }
+    | {
+          status: "LINKING_TO_SESSION_USER_FAILED";
+          reason:
+              | "EMAIL_VERIFICATION_REQUIRED"
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+      };
+
+export type ManuallyCreateOrUpdateUserResponse =
+    | {
+          status: "OK";
+          createdNewRecipeUser: boolean;
+          user: User;
+          recipeUserId: RecipeUserId;
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
+      }
+    | {
+          status: "SIGN_IN_UP_NOT_ALLOWED";
+          reason: string;
+      }
+    | {
+          status: "LINKING_TO_SESSION_USER_FAILED";
+          reason:
+              | "EMAIL_VERIFICATION_REQUIRED"
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+              | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+      };
+
 export type RecipeInterface = {
     getProvider(input: {
         thirdPartyId: string;
@@ -202,31 +251,7 @@ export type RecipeInterface = {
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewRecipeUser: boolean;
-              recipeUserId: RecipeUserId;
-              user: User;
-              oAuthTokens: { [key: string]: any };
-              rawUserInfoFromProvider: {
-                  fromIdTokenPayload?: { [key: string]: any };
-                  fromUserInfoAPI?: { [key: string]: any };
-              };
-          }
-        | {
-              status: "SIGN_IN_UP_NOT_ALLOWED";
-              reason: string;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }): Promise<SignInUpResponse>;
 
     manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
@@ -237,30 +262,7 @@ export type RecipeInterface = {
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewRecipeUser: boolean;
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-        | {
-              status: "SIGN_IN_UP_NOT_ALLOWED";
-              reason: string;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }): Promise<ManuallyCreateOrUpdateUserResponse>;
 };
 
 export type APIOptions = {

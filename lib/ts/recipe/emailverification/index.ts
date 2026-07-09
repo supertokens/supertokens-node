@@ -282,6 +282,13 @@ export let unverifyEmail = Wrapper.unverifyEmail;
 
 export type { RecipeInterface, APIOptions, APIInterface, UserEmailInfo };
 
+export type {
+    CreateEmailVerificationTokenResponse,
+    VerifyEmailUsingTokenResponse,
+    RevokeEmailVerificationTokensResponse,
+    UnverifyEmailResponse,
+} from "./types";
+
 export let sendEmail = Wrapper.sendEmail;
 
 export { EmailVerificationClaim } from "./emailVerificationClaim";

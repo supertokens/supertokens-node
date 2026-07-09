@@ -172,6 +172,150 @@ export type ResidentKey = "required" | "preferred" | "discouraged";
 export type UserVerification = "required" | "preferred" | "discouraged";
 export type Attestation = "none" | "indirect" | "direct" | "enterprise";
 
+export type RegisterOptionsResponse =
+    | {
+          status: "OK";
+          webauthnGeneratedOptionsId: string;
+          createdAt: number;
+          expiresAt: number;
+          // for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
+          rp: {
+              id: string;
+              name: string;
+          };
+          user: {
+              id: string;
+              name: string; // user email
+              displayName: string; //user email
+          };
+          challenge: string;
+          timeout: number;
+          excludeCredentials: {
+              id: string;
+              type: "public-key";
+              transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
+          }[];
+          attestation: Attestation;
+          pubKeyCredParams: {
+              // we will default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+              alg: number;
+              type: "public-key";
+          }[];
+          authenticatorSelection: {
+              requireResidentKey: boolean;
+              residentKey: ResidentKey;
+              userVerification: UserVerification;
+          };
+      }
+    | RegisterOptionsErrorResponse;
+
+export type SignInOptionsResponse =
+    | {
+          status: "OK";
+          webauthnGeneratedOptionsId: string;
+          createdAt: number;
+          expiresAt: number;
+          challenge: string;
+          timeout: number;
+          userVerification: UserVerification;
+      }
+    | SignInOptionsErrorResponse;
+
+export type SignUpResponse =
+    | {
+          status: "OK";
+          user: User;
+          recipeUserId: RecipeUserId;
+      }
+    | SignUpErrorResponse;
+
+export type SignInResponse = { status: "OK"; user: User; recipeUserId: RecipeUserId } | SignInErrorResponse;
+
+export type VerifyCredentialsResponse =
+    | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+    | VerifyCredentialsErrorResponse;
+
+export type CreateNewRecipeUserResponse =
+    | {
+          status: "OK";
+          user: User;
+          recipeUserId: RecipeUserId;
+      }
+    | CreateNewRecipeUserErrorResponse;
+
+export type GenerateRecoverAccountTokenResponse =
+    | { status: "OK"; token: string }
+    | GenerateRecoverAccountTokenErrorResponse;
+
+export type ConsumeRecoverAccountTokenResponse =
+    | {
+          status: "OK";
+          email: string;
+          userId: string;
+      }
+    | ConsumeRecoverAccountTokenErrorResponse;
+
+export type RegisterCredentialResponse =
+    | {
+          status: "OK";
+      }
+    | RegisterCredentialErrorResponse;
+
+export type GetUserFromRecoverAccountTokenResponse =
+    | { status: "OK"; user: User; recipeUserId?: RecipeUserId }
+    | GetUserFromRecoverAccountTokenErrorResponse;
+
+export type RemoveCredentialResponse =
+    | {
+          status: "OK";
+      }
+    | RemoveCredentialErrorResponse;
+
+export type GetCredentialResponse =
+    | {
+          status: "OK";
+          webauthnCredentialId: string;
+          relyingPartyId: string;
+          recipeUserId: RecipeUserId;
+          createdAt: number;
+      }
+    | GetCredentialErrorResponse;
+
+export type ListCredentialsResponse = {
+    status: "OK";
+    credentials: {
+        webauthnCredentialId: string;
+        relyingPartyId: string;
+        recipeUserId: string;
+        createdAt: number;
+    }[];
+};
+
+export type RemoveGeneratedOptionsResponse = { status: "OK" } | RemoveGeneratedOptionsErrorResponse;
+
+export type GetGeneratedOptionsResponse =
+    | {
+          status: "OK";
+          webauthnGeneratedOptionsId: string;
+          relyingPartyId: string;
+          relyingPartyName: string;
+          userVerification: UserVerification;
+          userPresence: boolean;
+          origin: string;
+          email?: string;
+          timeout: number;
+          challenge: string;
+          createdAt: number;
+          expiresAt: number;
+      }
+    | GetGeneratedOptionsErrorResponse;
+
+export type UpdateUserEmailResponse =
+    | {
+          status: "OK";
+      }
+    | UpdateUserEmailErrorResponse;
+
 export type RecipeInterface = {
     registerOptions(
         input: {
@@ -195,43 +339,7 @@ export type RecipeInterface = {
                   email: string;
               }
         )
-    ): Promise<
-        | {
-              status: "OK";
-              webauthnGeneratedOptionsId: string;
-              createdAt: number;
-              expiresAt: number;
-              // for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
-              rp: {
-                  id: string;
-                  name: string;
-              };
-              user: {
-                  id: string;
-                  name: string; // user email
-                  displayName: string; //user email
-              };
-              challenge: string;
-              timeout: number;
-              excludeCredentials: {
-                  id: string;
-                  type: "public-key";
-                  transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
-              }[];
-              attestation: Attestation;
-              pubKeyCredParams: {
-                  // we will default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
-                  alg: number;
-                  type: "public-key";
-              }[];
-              authenticatorSelection: {
-                  requireResidentKey: boolean;
-                  residentKey: ResidentKey;
-                  userVerification: UserVerification;
-              };
-          }
-        | RegisterOptionsErrorResponse
-    >;
+    ): Promise<RegisterOptionsResponse>;
 
     signInOptions(input: {
         relyingPartyId: string;
@@ -242,18 +350,7 @@ export type RecipeInterface = {
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              webauthnGeneratedOptionsId: string;
-              createdAt: number;
-              expiresAt: number;
-              challenge: string;
-              timeout: number;
-              userVerification: UserVerification;
-          }
-        | SignInOptionsErrorResponse
-    >;
+    }): Promise<SignInOptionsResponse>;
 
     signUp(input: {
         webauthnGeneratedOptionsId: string;
@@ -262,14 +359,7 @@ export type RecipeInterface = {
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | SignUpErrorResponse
-    >;
+    }): Promise<SignUpResponse>;
 
     signIn(input: {
         webauthnGeneratedOptionsId: string;
@@ -278,14 +368,14 @@ export type RecipeInterface = {
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | SignInErrorResponse>;
+    }): Promise<SignInResponse>;
 
     verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | VerifyCredentialsErrorResponse>;
+    }): Promise<VerifyCredentialsResponse>;
 
     /**
      * This function is meant only for creating the recipe in the core and nothing else.
@@ -298,14 +388,7 @@ export type RecipeInterface = {
         credential: RegistrationPayload;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | CreateNewRecipeUserErrorResponse
-    >;
+    }): Promise<CreateNewRecipeUserResponse>;
 
     /**
      * We pass in the email as well to this function cause the input userId
@@ -317,104 +400,59 @@ export type RecipeInterface = {
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; token: string } | GenerateRecoverAccountTokenErrorResponse>;
+    }): Promise<GenerateRecoverAccountTokenResponse>;
 
-    consumeRecoverAccountToken(input: { token: string; tenantId: string; userContext: UserContext }): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | ConsumeRecoverAccountTokenErrorResponse
-    >;
+    consumeRecoverAccountToken(input: {
+        token: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<ConsumeRecoverAccountTokenResponse>;
 
     registerCredential(input: {
         webauthnGeneratedOptionsId: string;
         credential: RegistrationPayload;
         userContext: UserContext;
         recipeUserId: string;
-    }): Promise<
-        | {
-              status: "OK";
-          }
-        | RegisterCredentialErrorResponse
-    >;
+    }): Promise<RegisterCredentialResponse>;
 
     getUserFromRecoverAccountToken(input: {
         token: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        { status: "OK"; user: User; recipeUserId?: RecipeUserId } | GetUserFromRecoverAccountTokenErrorResponse
-    >;
+    }): Promise<GetUserFromRecoverAccountTokenResponse>;
 
-    removeCredential(input: { webauthnCredentialId: string; recipeUserId: string; userContext: UserContext }): Promise<
-        | {
-              status: "OK";
-          }
-        | RemoveCredentialErrorResponse
-    >;
+    removeCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: string;
+        userContext: UserContext;
+    }): Promise<RemoveCredentialResponse>;
 
-    getCredential(input: { webauthnCredentialId: string; recipeUserId: string; userContext: UserContext }): Promise<
-        | {
-              status: "OK";
-              webauthnCredentialId: string;
-              relyingPartyId: string;
-              recipeUserId: RecipeUserId;
-              createdAt: number;
-          }
-        | GetCredentialErrorResponse
-    >;
+    getCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: string;
+        userContext: UserContext;
+    }): Promise<GetCredentialResponse>;
 
-    listCredentials(input: { recipeUserId: string; userContext: UserContext }): Promise<{
-        status: "OK";
-        credentials: {
-            webauthnCredentialId: string;
-            relyingPartyId: string;
-            recipeUserId: string;
-            createdAt: number;
-        }[];
-    }>;
+    listCredentials(input: { recipeUserId: string; userContext: UserContext }): Promise<ListCredentialsResponse>;
 
     removeGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK" } | RemoveGeneratedOptionsErrorResponse>;
+    }): Promise<RemoveGeneratedOptionsResponse>;
 
     getGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              webauthnGeneratedOptionsId: string;
-              relyingPartyId: string;
-              relyingPartyName: string;
-              userVerification: UserVerification;
-              userPresence: boolean;
-              origin: string;
-              email?: string;
-              timeout: number;
-              challenge: string;
-              createdAt: number;
-              expiresAt: number;
-          }
-        | GetGeneratedOptionsErrorResponse
-    >;
+    }): Promise<GetGeneratedOptionsResponse>;
 
     updateUserEmail(input: {
         recipeUserId: string;
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-          }
-        | UpdateUserEmailErrorResponse
-    >;
+    }): Promise<UpdateUserEmailResponse>;
 };
 
 export type APIOptions = {

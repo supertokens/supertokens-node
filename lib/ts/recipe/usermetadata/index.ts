@@ -50,3 +50,4 @@ export const updateUserMetadata = Wrapper.updateUserMetadata;
 export const clearUserMetadata = Wrapper.clearUserMetadata;
 
 export type { RecipeInterface, JSONObject };
+export type { GetUserMetadataResponse, UpdateUserMetadataResponse, ClearUserMetadataResponse } from "./types";

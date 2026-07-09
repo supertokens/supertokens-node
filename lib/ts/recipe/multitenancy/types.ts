@@ -52,6 +52,53 @@ export type TenantConfig = {
     coreConfig: { [key: string]: any };
 };
 
+export type CreateOrUpdateTenantResponse = {
+    status: "OK";
+    createdNew: boolean;
+};
+
+export type DeleteTenantResponse = {
+    status: "OK";
+    didExist: boolean;
+};
+
+export type ListAllTenantsResponse = {
+    status: "OK";
+    tenants: (TenantConfig & { tenantId: string })[];
+};
+
+export type CreateOrUpdateThirdPartyConfigResponse = {
+    status: "OK";
+    createdNew: boolean;
+};
+
+export type DeleteThirdPartyConfigResponse = {
+    status: "OK";
+    didConfigExist: boolean;
+};
+
+export type AssociateUserToTenantResponse =
+    | {
+          status: "OK";
+          wasAlreadyAssociated: boolean;
+      }
+    | {
+          status:
+              | "UNKNOWN_USER_ID_ERROR"
+              | "EMAIL_ALREADY_EXISTS_ERROR"
+              | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+              | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+          reason: string;
+      };
+
+export type DisassociateUserFromTenantResponse = {
+    status: "OK";
+    wasAssociated: boolean;
+};
+
 export type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
 
@@ -64,24 +111,15 @@ export type RecipeInterface = {
             coreConfig?: { [key: string]: any };
         };
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        createdNew: boolean;
-    }>;
-    deleteTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        didExist: boolean;
-    }>;
+    }) => Promise<CreateOrUpdateTenantResponse>;
+    deleteTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<DeleteTenantResponse>;
     getTenant: (input: { tenantId: string; userContext: UserContext }) => Promise<
         | ({
               status: "OK";
           } & TenantConfig)
         | undefined
     >;
-    listAllTenants: (input: { userContext: UserContext }) => Promise<{
-        status: "OK";
-        tenants: (TenantConfig & { tenantId: string })[];
-    }>;
+    listAllTenants: (input: { userContext: UserContext }) => Promise<ListAllTenantsResponse>;
 
     // Third party provider management
     createOrUpdateThirdPartyConfig: (input: {
@@ -89,45 +127,24 @@ export type RecipeInterface = {
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        createdNew: boolean;
-    }>;
-    deleteThirdPartyConfig: (input: { tenantId: string; thirdPartyId: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        didConfigExist: boolean;
-    }>;
+    }) => Promise<CreateOrUpdateThirdPartyConfigResponse>;
+    deleteThirdPartyConfig: (input: {
+        tenantId: string;
+        thirdPartyId: string;
+        userContext: UserContext;
+    }) => Promise<DeleteThirdPartyConfigResponse>;
 
     // User tenant association
     associateUserToTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasAlreadyAssociated: boolean;
-          }
-        | {
-              status:
-                  | "UNKNOWN_USER_ID_ERROR"
-                  | "EMAIL_ALREADY_EXISTS_ERROR"
-                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
-                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "ASSOCIATION_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-    >;
+    }) => Promise<AssociateUserToTenantResponse>;
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        wasAssociated: boolean;
-    }>;
+    }) => Promise<DisassociateUserFromTenantResponse>;
 };
 
 export type APIOptions = {

@@ -42,77 +42,121 @@ export type TypeNormalisedInput = {
 
 export type APIInterface = {};
 
+export type AddRoleToUserResponse =
+    | {
+          status: "OK";
+          didUserAlreadyHaveRole: boolean;
+      }
+    | {
+          status: "UNKNOWN_ROLE_ERROR";
+      };
+
+export type RemoveUserRoleResponse =
+    | {
+          status: "OK";
+          didUserHaveRole: boolean;
+      }
+    | {
+          status: "UNKNOWN_ROLE_ERROR";
+      };
+
+export type GetRolesForUserResponse = {
+    status: "OK";
+    roles: string[];
+};
+
+export type GetUsersThatHaveRoleResponse =
+    | {
+          status: "OK";
+          users: string[];
+      }
+    | {
+          status: "UNKNOWN_ROLE_ERROR";
+      };
+
+export type CreateNewRoleOrAddPermissionsResponse = {
+    status: "OK";
+    createdNewRole: boolean;
+};
+
+export type GetPermissionsForRoleResponse =
+    | {
+          status: "OK";
+          permissions: string[];
+      }
+    | {
+          status: "UNKNOWN_ROLE_ERROR";
+      };
+
+export type RemovePermissionsFromRoleResponse = {
+    status: "OK" | "UNKNOWN_ROLE_ERROR";
+};
+
+export type GetRolesThatHavePermissionResponse = {
+    status: "OK";
+    roles: string[];
+};
+
+export type DeleteRoleResponse = {
+    status: "OK";
+    didRoleExist: boolean;
+};
+
+export type GetAllRolesResponse = {
+    status: "OK";
+    roles: string[];
+};
+
 export type RecipeInterface = {
-    addRoleToUser: (input: { userId: string; role: string; tenantId: string; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              didUserAlreadyHaveRole: boolean;
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+    addRoleToUser: (input: {
+        userId: string;
+        role: string;
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<AddRoleToUserResponse>;
 
-    removeUserRole: (input: { userId: string; role: string; tenantId: string; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              didUserHaveRole: boolean;
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+    removeUserRole: (input: {
+        userId: string;
+        role: string;
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<RemoveUserRoleResponse>;
 
-    getRolesForUser: (input: { userId: string; tenantId: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        roles: string[];
-    }>;
+    getRolesForUser: (input: {
+        userId: string;
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<GetRolesForUserResponse>;
 
-    getUsersThatHaveRole: (input: { role: string; tenantId: string; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              users: string[];
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+    getUsersThatHaveRole: (input: {
+        role: string;
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<GetUsersThatHaveRoleResponse>;
 
     createNewRoleOrAddPermissions: (input: {
         role: string;
         permissions: string[];
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        createdNewRole: boolean;
-    }>;
+    }) => Promise<CreateNewRoleOrAddPermissionsResponse>;
 
-    getPermissionsForRole: (input: { role: string; userContext: UserContext }) => Promise<
-        | {
-              status: "OK";
-              permissions: string[];
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+    getPermissionsForRole: (input: {
+        role: string;
+        userContext: UserContext;
+    }) => Promise<GetPermissionsForRoleResponse>;
 
-    removePermissionsFromRole: (input: { role: string; permissions: string[]; userContext: UserContext }) => Promise<{
-        status: "OK" | "UNKNOWN_ROLE_ERROR";
-    }>;
+    removePermissionsFromRole: (input: {
+        role: string;
+        permissions: string[];
+        userContext: UserContext;
+    }) => Promise<RemovePermissionsFromRoleResponse>;
 
-    getRolesThatHavePermission: (input: { permission: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        roles: string[];
-    }>;
+    getRolesThatHavePermission: (input: {
+        permission: string;
+        userContext: UserContext;
+    }) => Promise<GetRolesThatHavePermissionResponse>;
 
-    deleteRole: (input: { role: string; userContext: UserContext }) => Promise<{
-        status: "OK";
-        didRoleExist: boolean;
-    }>;
+    deleteRole: (input: { role: string; userContext: UserContext }) => Promise<DeleteRoleResponse>;
 
-    getAllRoles: (input: { userContext: UserContext }) => Promise<{
-        status: "OK";
-        roles: string[];
-    }>;
+    getAllRoles: (input: { userContext: UserContext }) => Promise<GetAllRolesResponse>;
 };

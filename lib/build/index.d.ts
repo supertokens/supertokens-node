@@ -6,7 +6,12 @@ import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
 import { SessionContainerInterface } from "./recipe/session/types";
-export type { TypeInput as SuperTokensConfig, SuperTokensPublicConfig, SuperTokensPlugin, SuperTokensPublicPlugin, } from "./types";
+export type {
+    TypeInput as SuperTokensConfig,
+    SuperTokensPublicConfig,
+    SuperTokensPlugin,
+    SuperTokensPublicPlugin,
+} from "./types";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
@@ -14,7 +19,11 @@ export default class SuperTokensWrapper {
     static RecipeUserId: typeof RecipeUserId;
     static User: typeof User;
     static getAllCORSHeaders(): string[];
-    static getUserCount(includeRecipeIds?: string[], tenantId?: string, userContext?: Record<string, any>): Promise<number>;
+    static getUserCount(
+        includeRecipeIds?: string[],
+        tenantId?: string,
+        userContext?: Record<string, any>
+    ): Promise<number>;
     static getUsersOldestFirst(input: {
         tenantId: string;
         limit?: number;
@@ -47,25 +56,31 @@ export default class SuperTokensWrapper {
         externalUserIdInfo?: string;
         force?: boolean;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
-    } | {
-        status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
-        doesSuperTokensUserIdExist: boolean;
-        doesExternalUserIdExist: boolean;
-    }>;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+          }
+        | {
+              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+              doesSuperTokensUserIdExist: boolean;
+              doesExternalUserIdExist: boolean;
+          }
+    >;
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK";
-        superTokensUserId: string;
-        externalUserId: string;
-        externalUserIdInfo: string | undefined;
-    } | {
-        status: "UNKNOWN_MAPPING_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              superTokensUserId: string;
+              externalUserId: string;
+              externalUserIdInfo: string | undefined;
+          }
+        | {
+              status: "UNKNOWN_MAPPING_ERROR";
+          }
+    >;
     static deleteUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
@@ -84,14 +99,27 @@ export default class SuperTokensWrapper {
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
     static getUser(userId: string, userContext?: Record<string, any>): Promise<UserType | undefined>;
-    static listUsersByAccountInfo(tenantId: string, accountInfo: AccountInfoInput, doUnionOfAccountInfo?: boolean, userContext?: Record<string, any>): Promise<UserType[]>;
-    static deleteUser(userId: string, removeAllLinkedAccounts?: boolean, userContext?: Record<string, any>): Promise<{
-        status: "OK";
-    }>;
+    static listUsersByAccountInfo(
+        tenantId: string,
+        accountInfo: AccountInfoInput,
+        doUnionOfAccountInfo?: boolean,
+        userContext?: Record<string, any>
+    ): Promise<UserType[]>;
+    static deleteUser(
+        userId: string,
+        removeAllLinkedAccounts?: boolean,
+        userContext?: Record<string, any>
+    ): Promise<import("./recipe/accountlinking/types").DeleteUserResponse>;
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId;
-    static getRequestFromUserContext(userContext: UserContext | undefined): import("./framework").BaseRequest | undefined;
+    static getRequestFromUserContext(
+        userContext: UserContext | undefined
+    ): import("./framework").BaseRequest | undefined;
     static isRecipeInitialized(recipeId: string): boolean;
-    static getAvailableFirstFactors(tenantId: string, session?: SessionContainerInterface, userContext?: Record<string, any>): Promise<any>;
+    static getAvailableFirstFactors(
+        tenantId: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<any>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
