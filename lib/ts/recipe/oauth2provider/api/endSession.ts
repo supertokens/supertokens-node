@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response, sendNon200Response } from "../../../utils";
+import { send200Response, sendNon200Response, sendRedirectResponse } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import SuperTokensError from "../../../error";
@@ -96,7 +96,7 @@ async function endSessionCommon(
     });
 
     if ("redirectTo" in response) {
-        options.res.original.redirect(response.redirectTo);
+        sendRedirectResponse(options.res, response.redirectTo);
     } else if ("error" in response) {
         sendNon200Response(options.res, response.statusCode ?? 400, {
             error: response.error,

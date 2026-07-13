@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response, sendNon200Response } from "../../../utils";
+import { send200Response, sendNon200Response, sendRedirectResponse } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import setCookieParser from "set-cookie-parser";
@@ -78,7 +78,7 @@ export default async function authGET(
                 );
             }
         }
-        options.res.original.redirect(response.redirectTo);
+        sendRedirectResponse(options.res, response.redirectTo);
     } else if ("statusCode" in response) {
         sendNon200Response(options.res, response.statusCode ?? 400, {
             error: response.error,
