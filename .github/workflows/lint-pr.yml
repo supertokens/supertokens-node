@@ -1,0 +1,10 @@
+name: "Lint PR"
+on:
+    pull_request:
+        types: [opened, reopened, edited, synchronize, labeled, unlabeled]
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+jobs:
+    lint:
+        uses: supertokens/actions/.github/workflows/lint-pr.yml@main
