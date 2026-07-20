@@ -1,5 +1,24 @@
 name: "Release Pipeline"
 
+# Thin caller of the shared reusable release-tag workflow in supertokens/actions.
+# The shared five-job release skeleton (setup, register-version, mark-as-success,
+# release, merge — including the post-release dev sync) lives once in the
+# reusable workflow; only node's ecosystem follow-ups (docs publish + npm
+# publish) remain here and consume the reusable workflow's outputs via `needs`.
+#
+# Two behaviour changes vs. the previous per-repo copy, both inherited from the
+# shared workflow (see supertokens/actions .github/workflows/release-tag.yml):
+#   - register-version is restored — the PUT that creates the API version row
+#     and records the FDI/CDI compatibility arrays. node previously lacked this
+#     job and silently depended on a legacy CircleCI dev-tag script.
+#   - dev is synced with the release branch after a latest-version release, so
+#     the next dev-sync computes the correct next version (this step was missing
+#     from node's copy and is what let dev drift).
+#
+# These release paths only run when a dev-sync release PR (release/vX.Y.Z) is
+# merged into a version branch, or on manual dispatch — CI on a normal PR cannot
+# exercise them.
+
 on:
     pull_request:
         types: [closed]
@@ -27,268 +46,25 @@ on:
 
 permissions:
     contents: write
+    pull-requests: read
 
 jobs:
-    setup:
-        if: >-
-            github.event_name == 'workflow_dispatch' ||
-            (github.event.pull_request.merged == true &&
-             startsWith(github.event.pull_request.head.ref, 'release/v'))
-        runs-on: ubuntu-latest
-        outputs:
-            branch: ${{ steps.params.outputs.branch }}
-            packageVersion: ${{ steps.versions.outputs.packageVersion }}
-            packageVersionXy: ${{ steps.versions.outputs.packageVersionXy }}
-            packageLockVersion: ${{ steps.versions.outputs.packageLockVersion }}
-            packageLockVersionXy: ${{ steps.versions.outputs.packageLockVersionXy }}
-            newestVersion: ${{ steps.versions.outputs.newestVersion }}
-            targetBranch: ${{ steps.versions.outputs.targetBranch }}
-            devTag: ${{ steps.versions.outputs.devTag }}
-            releaseTag: ${{ steps.versions.outputs.releaseTag }}
-            versionFolder: ${{ steps.versions.outputs.versionFolder }}
-            artifactName: ${{ steps.versions.outputs.artifactName }}
-
-        steps:
-            - name: Determine release branch
-              id: params
-              run: |
-                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-                    echo "branch=${{ inputs.branch }}" >> $GITHUB_OUTPUT
-                  else
-                    echo "branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
-                  fi
-
-            - uses: actions/create-github-app-token@v2
-              id: app-token
-              with:
-                  app-id: ${{ vars.RELEASE_APP_ID }}
-                  private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-                  owner: supertokens
-                  repositories: ${{ github.event.repository.name }}
-
-            - uses: actions/checkout@v4
-              with:
-                  ref: ${{ steps.params.outputs.branch }}
-                  # Need a complete fetch to make the master merge check work
-                  fetch-depth: 0
-                  fetch-tags: true
-                  token: ${{ steps.app-token.outputs.token }}
-
-            - name: Populate variables
-              id: versions
-              run: |
-                  . ./hooks/populate-hook-constants.sh
-
-                  echo "packageVersion=$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "packageVersionXy=$packageVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "packageLockVersion=$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "packageLockVersionXy=$packageLockVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-
-                  echo "devTag=dev-v$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "releaseTag=v$packageLockVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-
-                  echo "versionFolder=$packageVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-                  echo "artifactName=node-docs-$packageVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-
-            - name: Setup git
-              run: |
-                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
-                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git fetch origin master
-            - name: Check if branch needs master merge
-              run: |
-                  if [[ $(git log origin/master ^HEAD) != "" ]]; then
-                    echo "You need to merge master into this branch."
-                    exit 1
-                  fi
-            - name: Check tag and branch correctness
-              run: |
-                  if [[ "${{ steps.versions.outputs.packageVersion }}" != "${{ steps.versions.outputs.packageLockVersion }}" ]];
-                  then
-                    echo "Package version and package lock version mismatch"
-                    exit 1
-                  fi
-
-                  if [[ "${{ steps.versions.outputs.packageVersion }}" != ${{ steps.params.outputs.branch }}* ]]
-                  then
-                    echo "Adding tag to wrong branch"
-                    exit 1
-                  fi
-
-                  if git rev-parse ${{ steps.versions.outputs.releaseTag }} >/dev/null 2>&1
-                  then
-                      echo "The released version of this tag already exists."
-                      exit 1
-                  fi
-
-    mark-as-success:
-        runs-on: ubuntu-latest
-
-        needs:
-            - setup
-
-        steps:
-            - name: Check tests passed
-              uses: supertokens/actions/check-tests-passed@main
-              with:
-                  ref: ${{ needs.setup.outputs.branch }}
-                  ref-type: branch
-                  repository: ${{ github.repository }}
-                  run_id: ${{ github.run_id }}
-                  setup-python: true
-                  skip-test-checks: ${{ inputs.skip-test-checks }}
-
-            - if: inputs.skip-test-checks != true
-              name: Mark as success
-              run: |
-                  curl --fail-with-body -X PATCH \
-                      https://api.supertokens.io/0/driver \
-                      -H 'Content-Type: application/json' \
-                      -H 'api-version: 0' \
-                      -d "{
-                        \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
-                        \"version\":\"${{ needs.setup.outputs.packageVersion }}\",
-                        \"name\": \"node\",
-                        \"testPassed\": true
-                      }"
-
-    release:
-        runs-on: ubuntu-latest
-
-        # This job marks the version as a release version and creates tags.
-        # Binding this to the publish env to require approvals before run.
-        # Further jobs are follow-ups to the release and are not required to be approved once release is approved.
-        environment: publish
-
-        needs:
-            - setup
-            - mark-as-success
-
-        steps:
-            - uses: actions/create-github-app-token@v2
-              id: app-token
-              with:
-                  app-id: ${{ vars.RELEASE_APP_ID }}
-                  private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-                  owner: supertokens
-                  repositories: ${{ github.event.repository.name }}
-
-            - uses: actions/checkout@v4
-              with:
-                  ref: ${{ needs.setup.outputs.branch }}
-                  fetch-tags: true
-                  token: ${{ steps.app-token.outputs.token }}
-
-            - name: Setup git
-              run: |
-                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
-                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-            - name: Check tests passed
-              if: inputs.skip-test-checks != true
-              run: |
-                  testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
-
-                  if [[ $(echo $testsPassed | jq .testPassed) != "true" ]]
-                  then
-                      echo "All tests have not passed. Exiting."
-                      exit 1
-                  fi
-
-            - if: inputs.skip-other-version-checks != true
-              name: Check if core and frontend released
-              run: |
-                  canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
-
-                  if [[ $(echo $canReleaseSafelyResponse | jq .canRelease) != "true" ]]
-                  then
-                      echo "Cannot release. Have you released corresponding core and frontend?"
-                      exit 1
-                  fi
-
-            - name: Mark for release
-              run: |
-                  curl --fail-with-body -X PATCH \
-                      https://api.supertokens.io/0/driver \
-                      -H 'Content-Type: application/json' \
-                      -H 'api-version: 0' \
-                      -d "{
-                          \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
-                          \"name\":\"node\",
-                          \"version\":\"${{ needs.setup.outputs.packageVersion }}\",
-                          \"release\": true
-                      }"
-
-            - name: Create release tag
-              run: |
-                  git tag ${{ needs.setup.outputs.releaseTag }}
-                  git push --tags
-
-    merge:
-        runs-on: ubuntu-latest
-        needs:
-            - setup
-            - release
-
-        outputs:
-            isLatest: ${{ steps.merge-check.outputs.isLatest }}
-
-        steps:
-            - uses: actions/create-github-app-token@v2
-              id: app-token
-              with:
-                  app-id: ${{ vars.RELEASE_APP_ID }}
-                  private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-                  owner: supertokens
-                  repositories: ${{ github.event.repository.name }}
-
-            - uses: actions/checkout@v4
-              with:
-                  ref: ${{ needs.setup.outputs.branch }}
-                  # Need a complete fetch to make the master merge work
-                  fetch-depth: 0
-                  fetch-tags: true
-                  token: ${{ steps.app-token.outputs.token }}
-
-            - name: Setup git
-              run: |
-                  # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
-                  # See users API: https://api.github.com/users/github-actions%5Bbot%5D
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-            - name: Check API and merge to master
-              id: merge-check
-              run: |
-                  response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.packageVersion }}&name=node" -H 'api-version: 0'`
-                  isLatest=$(echo $response | jq .isLatest)
-
-                  echo "isLatest=$isLatest" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
-
-                  if [[ $isLatest == "true" ]]
-                  then
-                      git checkout master
-                      git checkout ${{ needs.setup.outputs.branch }}
-
-                      git merge master
-                      git checkout master
-                      git merge ${{ needs.setup.outputs.branch }}
-                      git push
-                      git checkout ${{ needs.setup.outputs.branch }}
-                  fi
+    release-pipeline:
+        uses: supertokens/actions/.github/workflows/release-tag.yml@main
+        secrets: inherit
+        with:
+            sdk_name: node
+            branch: ${{ inputs.branch || '' }}
+            skip-test-checks: ${{ inputs.skip-test-checks || false }}
+            skip-other-version-checks: ${{ inputs.skip-other-version-checks || false }}
+            # Must cover every .changie.yaml replacement target so the release
+            # changelog commit stages the bumped version files.
+            changelog_add_paths: ".changes/ CHANGELOG.md package.json lib/ts/version.ts lib/build/version.js"
 
     publish-docs:
         runs-on: ubuntu-latest
         needs:
-            - setup
-            - release
-            - merge
+            - release-pipeline
 
         steps:
             - uses: actions/create-github-app-token@v2
@@ -305,7 +81,7 @@ jobs:
 
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.setup.outputs.releaseTag }}
+                  ref: ${{ needs.release-pipeline.outputs.releaseTag }}
                   fetch-tags: true
                   path: supertokens-node
 
@@ -318,7 +94,7 @@ jobs:
             - run: |
                   shopt -s extglob # Enable extended globbing
 
-                  if [[ "${{ needs.merge.outputs.isLatest }}" == "true" ]]
+                  if [[ "${{ needs.release-pipeline.outputs.isLatest }}" == "true" ]]
                   then
                       # Delete everything except the version folders
                       rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/!(*.*.X)
@@ -327,14 +103,14 @@ jobs:
                   fi
 
                   # Delete the current version folder if it exists
-                  rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.setup.outputs.versionFolder }}
+                  rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.release-pipeline.outputs.versionXy }}.X
                   # Copy the current docs
-                  mkdir -p supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.setup.outputs.versionFolder }}
-                  cp -r supertokens-node/docs/* supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.setup.outputs.versionFolder }}
+                  mkdir -p supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.release-pipeline.outputs.versionXy }}.X
+                  cp -r supertokens-node/docs/* supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.release-pipeline.outputs.versionXy }}.X
 
             - uses: actions/upload-artifact@v4
               with:
-                  name: ${{ needs.setup.outputs.artifactName }}
+                  name: node-docs-${{ needs.release-pipeline.outputs.version }}
                   path: supertokens-backend-website/app/docs/sdk/docs/nodejs
 
             - name: Trigger the backend website CI
@@ -348,8 +124,8 @@ jobs:
                           workflow_id: 'release-node-documentation-changes.yml',
                           ref: 'master',
                           inputs: {
-                              "version": `${{ needs.setup.outputs.packageVersion }}`,
-                              "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
+                              "version": `${{ needs.release-pipeline.outputs.version }}`,
+                              "artifact-name": `node-docs-${{ needs.release-pipeline.outputs.version }}`,
                               "version-folder": `app/docs/sdk/docs/nodejs`,
                               "run-id": `${{ github.run_id }}`,
                               "stage":  "production",
@@ -360,14 +136,12 @@ jobs:
         runs-on: ubuntu-latest
         environment: publish
         needs:
-            - setup
-            - release
-            - merge
+            - release-pipeline
 
         steps:
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.setup.outputs.releaseTag }}
+                  ref: ${{ needs.release-pipeline.outputs.releaseTag }}
                   fetch-tags: true
 
             - uses: actions/setup-node@v4
@@ -376,11 +150,11 @@ jobs:
                   registry-url: "https://registry.npmjs.org/"
 
             - run: |
-                  if [[ "${{ needs.merge.outputs.isLatest }}" == "true" ]]
+                  if [[ "${{ needs.release-pipeline.outputs.isLatest }}" == "true" ]]
                   then
                       npm publish --tag latest
                   else
-                      npm publish --tag version-${{ needs.setup.outputs.packageVersion }}
+                      npm publish --tag version-${{ needs.release-pipeline.outputs.version }}
                   fi
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
