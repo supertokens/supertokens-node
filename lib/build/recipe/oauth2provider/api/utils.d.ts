@@ -3,16 +3,7 @@ import type SuperTokens from "../../../supertokens";
 import { UserContext } from "../../../types";
 import { SessionContainerInterface } from "../../session/types";
 import { ErrorOAuth2, RecipeInterface } from "../types";
-export declare function loginGET({
-    stInstance,
-    recipeImplementation,
-    loginChallenge,
-    shouldTryRefresh,
-    session,
-    cookies,
-    isDirectCall,
-    userContext,
-}: {
+export declare function loginGET({ stInstance, recipeImplementation, loginChallenge, shouldTryRefresh, session, cookies, isDirectCall, userContext, }: {
     stInstance: SuperTokens;
     recipeImplementation: RecipeInterface;
     loginChallenge: string;
@@ -21,28 +12,16 @@ export declare function loginGET({
     cookies?: string[];
     userContext: UserContext;
     isDirectCall: boolean;
-}): Promise<
-    | ErrorOAuth2
-    | {
-          status: string;
-          redirectTo: string;
-          cookies: string[] | undefined;
-      }
-    | {
-          redirectTo: string;
-          cookies: string[] | undefined;
-          status?: undefined;
-      }
->;
-export declare function handleLoginInternalRedirects({
-    stInstance,
-    response,
-    recipeImplementation,
-    session,
-    shouldTryRefresh,
-    cookie,
-    userContext,
-}: {
+}): Promise<ErrorOAuth2 | {
+    status: string;
+    redirectTo: string;
+    cookies: string[] | undefined;
+} | {
+    redirectTo: string;
+    cookies: string[] | undefined;
+    status?: undefined;
+}>;
+export declare function handleLoginInternalRedirects({ stInstance, response, recipeImplementation, session, shouldTryRefresh, cookie, userContext, }: {
     stInstance: SuperTokens;
     response: {
         redirectTo: string;
@@ -53,20 +32,11 @@ export declare function handleLoginInternalRedirects({
     shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
-}): Promise<
-    | {
-          redirectTo: string;
-          cookies?: string[];
-      }
-    | ErrorOAuth2
->;
-export declare function handleLogoutInternalRedirects({
-    stInstance,
-    response,
-    recipeImplementation,
-    session,
-    userContext,
-}: {
+}): Promise<{
+    redirectTo: string;
+    cookies?: string[];
+} | ErrorOAuth2>;
+export declare function handleLogoutInternalRedirects({ stInstance, response, recipeImplementation, session, userContext, }: {
     stInstance: SuperTokens;
     response: {
         redirectTo: string;
@@ -74,9 +44,6 @@ export declare function handleLogoutInternalRedirects({
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     userContext: UserContext;
-}): Promise<
-    | {
-          redirectTo: string;
-      }
-    | ErrorOAuth2
->;
+}): Promise<{
+    redirectTo: string;
+} | ErrorOAuth2>;

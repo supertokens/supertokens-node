@@ -8,23 +8,23 @@ export default class SuperTokensError extends Error {
     payload: any;
     fromRecipe: string | undefined;
     private errMagic;
-    constructor(
-        options:
-            | {
-                  message: string;
-                  payload?: any;
-                  type: string;
-              }
-            | {
-                  message: string;
-                  type: "BAD_INPUT_ERROR";
-                  payload: undefined;
-              }
-    );
+    constructor(options: {
+        message: string;
+        payload?: any;
+        type: string;
+    } | {
+        message: string;
+        type: "BAD_INPUT_ERROR";
+        payload: undefined;
+    });
     static isErrorFromSuperTokens(obj: any): obj is SuperTokensError | SuperTokensPluginError;
 }
 export declare class SuperTokensPluginError extends SuperTokensError {
     code: number;
-    constructor(options: { message: string; payload?: any; code?: number });
+    constructor(options: {
+        message: string;
+        payload?: any;
+        code?: number;
+    });
 }
 export declare const transformErrorToSuperTokensError: (err: any) => SuperTokensError;

@@ -8,8 +8,5 @@ export type Response = {
     status: "OK";
     tenants: TenantWithLoginMethods[];
 };
-export default function listAllTenantsWithLoginMethods({
-    stInstance,
-    userContext,
-}: Parameters<APIFunction>[0]): Promise<Response>;
+export default function listAllTenantsWithLoginMethods({ stInstance, userContext, }: Parameters<APIFunction>[0]): Promise<Response>;
 export {};

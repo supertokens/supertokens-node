@@ -3,20 +3,12 @@ import Recipe from "./recipe";
 import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static createJWT(
-        payload: any,
-        validitySeconds?: number,
-        useStaticSigningKey?: boolean,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
+    static createJWT(payload: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        jwt: string;
+    } | {
+        status: "UNSUPPORTED_ALGORITHM_ERROR";
+    }>;
     static getJWKS(userContext?: Record<string, any>): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number;

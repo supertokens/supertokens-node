@@ -1,2 +1,0 @@
-kind: Fixed
-body: Handle null form field values in signup instead of throwing (fixes #1026)

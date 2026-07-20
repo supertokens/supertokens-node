@@ -6,9 +6,7 @@ export default class BackwardCompatibilityService implements EmailDeliveryInterf
     private isInServerlessEnv;
     private appInfo;
     constructor(appInfo: NormalisedAppinfo, isInServerlessEnv: boolean);
-    sendEmail: (
-        input: TypeWebauthnEmailDeliveryInput & {
-            userContext: UserContext;
-        }
-    ) => Promise<void>;
+    sendEmail: (input: TypeWebauthnEmailDeliveryInput & {
+        userContext: UserContext;
+    }) => Promise<void>;
 }

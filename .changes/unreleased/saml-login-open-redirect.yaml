@@ -1,2 +1,0 @@
-kind: Security
-body: Fix open redirect vulnerability in SAML login when client_id is invalid (RFC 6749 §4.1.2.1)

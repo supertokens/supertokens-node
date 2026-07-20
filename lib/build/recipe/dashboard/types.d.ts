@@ -8,10 +8,7 @@ export type TypeInput = {
     apiKey?: string;
     admins?: string[];
     override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions?: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -20,15 +17,14 @@ export type TypeNormalisedInput = {
     admins?: string[];
     authMode: AuthMode;
     override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type RecipeInterface = {
-    getDashboardBundleLocation(input: { userContext: UserContext }): Promise<string>;
+    getDashboardBundleLocation(input: {
+        userContext: UserContext;
+    }): Promise<string>;
     shouldAllowAccess(input: {
         req: BaseRequest;
         config: TypeNormalisedInput;
@@ -45,7 +41,10 @@ export type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export type APIInterface = {
-    dashboardGET: undefined | ((input: { options: APIOptions; userContext: UserContext }) => Promise<string>);
+    dashboardGET: undefined | ((input: {
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<string>);
 };
 export type APIFunction = (input: {
     apiImplementation: APIInterface;

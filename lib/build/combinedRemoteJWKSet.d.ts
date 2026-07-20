@@ -14,12 +14,6 @@ export declare function resetCombinedJWKS(): void;
     Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
     token verification. Otherwise, the result of session verification would depend on which core is currently available.
 */
-export declare function getCombinedJWKS(
-    querier: Querier,
-    config: {
-        jwksRefreshIntervalSec: number;
-    }
-): (
-    protectedHeader?: import("jose").JWSHeaderParameters,
-    token?: import("jose").FlattenedJWSInput
-) => Promise<import("jose").KeyLike>;
+export declare function getCombinedJWKS(querier: Querier, config: {
+    jwksRefreshIntervalSec: number;
+}): (protectedHeader?: import("jose").JWSHeaderParameters, token?: import("jose").FlattenedJWSInput) => Promise<import("jose").KeyLike>;
