@@ -186,31 +186,47 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            const loginMethod: LoginMethod = response.user.loginMethods.find(
-                (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
+            return this.completeSignIn({
+                verifiedCredentials: response,
+                session,
+                shouldTryLinkingWithSessionUser,
+                tenantId,
+                userContext,
+            });
+        },
+
+        completeSignIn: async function (
+            this: RecipeInterface,
+            { verifiedCredentials, tenantId, session, shouldTryLinkingWithSessionUser, userContext }
+        ) {
+            const { recipeUserId } = verifiedCredentials;
+            let user = verifiedCredentials.user;
+
+            const loginMethod: LoginMethod = user.loginMethods.find(
+                (lm: LoginMethod) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
             )!;
 
             if (!loginMethod.verified) {
                 await stInstance
                     .getRecipeInstanceOrThrow("accountlinking")
                     .verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        user: response.user,
-                        recipeUserId: response.recipeUserId,
+                        user,
+                        recipeUserId,
                         userContext,
                     });
 
                 // We do this so that we get the updated user (in case the above
                 // function updated the verification status) and can return that
-                response.user = (await stInstance
+                user = (await stInstance
                     .getRecipeInstanceOrThrow("accountlinking")
-                    .recipeInterfaceImpl.getUser({ userId: response.recipeUserId!.getAsString(), userContext }))!;
+                    .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext }))!;
             }
 
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 stInstance,
                 tenantId,
-                inputUser: response.user,
-                recipeUserId: response.recipeUserId,
+                inputUser: user,
+                recipeUserId,
                 session,
                 shouldTryLinkingWithSessionUser,
                 userContext,
@@ -218,9 +234,8 @@ export default function getRecipeInterface(
             if (linkResult.status === "LINKING_TO_SESSION_USER_FAILED") {
                 return linkResult;
             }
-            response.user = linkResult.user;
 
-            return response;
+            return { status: "OK", user: linkResult.user, recipeUserId };
         },
 
         verifyCredentials: async function ({ credential, webauthnGeneratedOptionsId, tenantId, userContext }) {

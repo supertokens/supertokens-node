@@ -316,6 +316,15 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                 userContext,
             });
             if (verifyResult.status !== "OK") {
+                logDebugMessage(
+                    `signInPOST: returning INVALID_CREDENTIALS_ERROR because verifyCredentials returned ${
+                        verifyResult.status
+                    }${
+                        (verifyResult as { reason?: string }).reason !== undefined
+                            ? ` (reason: ${(verifyResult as { reason?: string }).reason})`
+                            : ""
+                    }`
+                );
                 return { status: "INVALID_CREDENTIALS_ERROR" };
             }
 
@@ -325,6 +334,9 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                 userContext,
             });
             if (generatedOptions.status !== "OK") {
+                logDebugMessage(
+                    `signInPOST: returning INVALID_CREDENTIALS_ERROR because getGeneratedOptions returned ${generatedOptions.status}`
+                );
                 return {
                     status: "INVALID_CREDENTIALS_ERROR",
                 };
@@ -395,29 +407,20 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                 };
             }
 
-            const signInResponse = await options.recipeImplementation.signIn({
-                webauthnGeneratedOptionsId,
-                credential,
+            // The credential was already verified against the core by the verifyCredentials
+            // call above, so we only run the post-verification steps here. Calling signIn
+            // (which verifies again) would present the same assertion to the core twice and
+            // trip its signature-counter clone detection for counter-incrementing
+            // authenticators (https://github.com/supertokens/supertokens-core/issues/1195).
+            const signInResponse = await options.recipeImplementation.completeSignIn({
+                verifiedCredentials: verifyResult,
                 session,
                 shouldTryLinkingWithSessionUser,
                 tenantId,
                 userContext,
             });
 
-            if (signInResponse.status === "INVALID_CREDENTIALS_ERROR") {
-                return signInResponse;
-            }
-            if (
-                signInResponse.status === "INVALID_OPTIONS_ERROR" ||
-                signInResponse.status === "INVALID_AUTHENTICATOR_ERROR" ||
-                signInResponse.status === "CREDENTIAL_NOT_FOUND_ERROR" ||
-                signInResponse.status === "UNKNOWN_USER_ID_ERROR" ||
-                signInResponse.status === "OPTIONS_NOT_FOUND_ERROR"
-            ) {
-                return {
-                    status: "INVALID_CREDENTIALS_ERROR",
-                };
-            } else if (signInResponse.status !== "OK") {
+            if (signInResponse.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(signInResponse, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
