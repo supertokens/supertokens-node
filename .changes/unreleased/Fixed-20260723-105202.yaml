@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'webauthn: fix sign in failing for counter-incrementing authenticators (e.g. Windows Hello) — the assertion was verified against the core twice.'
+time: 2026-07-23T10:52:02.879012+02:00
