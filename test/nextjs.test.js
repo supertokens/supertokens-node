@@ -18,7 +18,7 @@ const { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/se
 const [major] = process.versions.node.split(".").map(Number);
 
 if (major >= 18) {
-    const { printPath, createCoreApplication, removeCoreApplication, delay } = require("./utils");
+    const { printPath, createCoreApplication, removeCoreApplication, delay, resetAll } = require("./utils");
     let assert = require("assert");
     let { ProcessState } = require("../lib/build/processState");
     let SuperTokens = require("../lib/build/").default;
@@ -28,6 +28,7 @@ if (major >= 18) {
     const EmailPassword = require("../lib/build/recipe/emailpassword");
     const EmailVerification = require("../lib/build/recipe/emailverification");
     const ThirdParty = require("../lib/build/recipe/thirdparty");
+    const OAuth2Provider = require("../lib/build/recipe/oauth2provider");
     const {
         superTokensNextWrapper,
         withSession,
@@ -661,6 +662,63 @@ if (major >= 18) {
                 });
                 assert.deepStrictEqual(wrapperErr, { error: "sign up error" });
             });
+        });
+    });
+
+    describe(`Next.js App Router OAuth2Provider redirects: ${printPath("[test/nextjs.test.js]")}`, function () {
+        beforeEach(function () {
+            resetAll();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:3567",
+                },
+                appInfo: {
+                    apiDomain: "http://localhost:3000",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "http://localhost:3000",
+                },
+                recipeList: [
+                    Session.init(),
+                    OAuth2Provider.init({
+                        override: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    authGET: async () => ({
+                                        redirectTo: "https://example.com/oauth-callback",
+                                    }),
+                                    endSessionGET: async () => ({
+                                        redirectTo: "https://example.com/logout-callback",
+                                    }),
+                                };
+                            },
+                        },
+                    }),
+                ],
+            });
+        });
+
+        it("should return redirect responses with getAppDirRequestHandler", async function () {
+            const handleCall = getAppDirRequestHandler(NextResponse);
+            const testCases = [
+                {
+                    url: "http://localhost:3000/api/auth/oauth/auth?client_id=test-client",
+                    redirectTo: "https://example.com/oauth-callback",
+                },
+                {
+                    url: "http://localhost:3000/api/auth/oauth/end_session?id_token_hint=test-token",
+                    redirectTo: "https://example.com/logout-callback",
+                },
+            ];
+
+            for (const testCase of testCases) {
+                const response = await handleCall(new NextRequest(testCase.url, { method: "GET" }));
+
+                assert.strictEqual(response.status, 302);
+                assert.strictEqual(response.headers.get("location"), testCase.redirectTo);
+            }
         });
     });
 
