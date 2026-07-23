@@ -1,3 +1,0 @@
-kind: Infrastructure
-body: Mint short-lived GitHub App installation tokens in-workflow (actions/create-github-app-token) for the release-tag and check-docs pipelines, replacing the ALL_REPO_PAT org secret
-time: 2026-07-20T15:21:22Z

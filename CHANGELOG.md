@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.0.3] - 2026-07-23
+
+### Fixed
+
+-   webauthn: fix sign in failing for counter-incrementing authenticators (e.g. Windows Hello) — the assertion was verified against the core twice.
+-   Handle OAuth redirects with Next.js App Router
+
+### Infrastructure
+
+-   Adopt shared reusable lint-pr workflow (semantic PR title + changelog fragment check); retire legacy CHANGELOG.md enforcer
+-   Adopt shared reusable dev-sync workflow; replace the local dev-sync with a thin caller of supertokens/actions dev-sync
+-   Mint short-lived GitHub App installation tokens in-workflow (actions/create-github-app-token) for the release-tag and check-docs pipelines, replacing the ALL_REPO_PAT org secret
+-   Adopt the shared reusable release-tag workflow from supertokens/actions (restores version registration with the SuperTokens API and post-release dev sync); keep only the docs/npm publish jobs as thin callers
+
 ## [24.0.2] - 2026-03-20
 
 ### Fixed

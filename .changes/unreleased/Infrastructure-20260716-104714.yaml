@@ -1,3 +1,0 @@
-kind: Infrastructure
-body: Adopt shared reusable dev-sync workflow; replace the local dev-sync with a thin caller of supertokens/actions dev-sync
-time: 2026-07-16T10:47:14Z
