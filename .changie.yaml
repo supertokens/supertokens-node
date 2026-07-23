@@ -5,7 +5,7 @@ changelogPath: CHANGELOG.md
 versionExt: md
 versionFormat: '## [{{.VersionNoPrefix}}] - {{.Time.Format "2006-01-02"}}'
 kindFormat: "### {{.Kind}}"
-changeFormat: "- {{.Body}}"
+changeFormat: "-   {{.Body}}"
 
 kinds:
     - label: Added
@@ -26,9 +26,11 @@ kinds:
       auto: patch
 
 newlines:
-    afterChangelogHeader: 2
-    afterVersion: 1
-    beforeChangelogVersion: 1
+    afterChangelogHeader: 1
+    afterKind: 1
+    beforeKind: 1
+    beforeChangelogVersion: 0
+    endOfVersion: 2
 
 replacements:
     - path: package.json

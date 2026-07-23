@@ -5,32 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-
-## Unreleased
-
-- Handle OAuth with Next.js App Router
-
+## [Unreleased]
 
 ## [24.0.2] - 2026-03-20
 
 ### Fixed
-- Upgrade cross-fetch to v4.1.0 to fix XMLHttpRequest error in Cloudflare Workers edge runtime
-- Handle null form field values in signup instead of throwing (fixes
-- Add explicit GeneralErrorResponse handling to SAML login and callback API handlers
+
+-   Upgrade cross-fetch to v4.1.0 to fix XMLHttpRequest error in Cloudflare Workers edge runtime
+-   Handle null form field values in signup instead of throwing (fixes #1026)
+-   Add explicit GeneralErrorResponse handling to SAML login and callback API handlers
+
 ### Infrastructure
-- Add SAML test-server integration routes for the shared backend-sdk-testing suite
+
+-   Add SAML test-server integration routes for the shared backend-sdk-testing suite
+
 ### Security
-- Bump nodemailer from 6.9 to 8.0.2 to address CVE
-- Fix open redirect vulnerability in SAML login when client_id is invalid (RFC 6749 §4.1.2.1)
+
+-   Bump nodemailer from 6.9 to 8.0.2 to address CVE
+-   Fix open redirect vulnerability in SAML login when client_id is invalid (RFC 6749 §4.1.2.1)
+
 ## [24.0.1] - 2025-03-14
 
 -   Fix SAML exported function return types
 
-
 ## [24.0.0] - 2025-12-02
 
 -   Adds support for SAML
-
 
 ## [23.1.0] - 2025-11-27
 
@@ -38,7 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Updates custom framework to following correct CollectingResponse flow order (to ensure that subsequent calls to the `sendJSONResponse` doesn't overwrite the response).
 -   Updated/expanded plugin support.
 -   Reworked internals to avoid dynamic requires and circular dependencies
-
 
 ## [23.0.1] - 2025-07-31
 
@@ -48,7 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Fix WebAuthn credential listing and removal to work even when the WebAuthn user is not the primary user and when there are multiple WebAuthn users linked
 -   Prevent removal of WebAuthn credentials unless all session claims are satisfied
 -   Change how sessions are fetched before listing, removing and adding WebAuthn credentials
-
 
 ## [23.0.0] - 2025-07-21
 
@@ -69,7 +67,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Upgrade typedoc and the reference docs
 -   Add a method for verifying if a recipe is initialized or not
 
-
 ## [22.1.1] - 2025-06-20
 
 -   Migrates backend-sdk-testing test to use a containerized core
@@ -82,17 +79,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Refactors internal logic of parsing cookies to check accessToken and optimizes it to avoid parsing unrelated cookies.
 -   Fixes an issue with fetch not supporting `cache: no-cache` in Cloudflare Workers.
 
-
 ## [22.1.0] - 2025-04-04
 
 -   Adds support for using `code_challenge_method` from OIDC provider response to determine whether to use PKCE or not.
 -   Fixes issue with ThirdParty provider info on dashboard
 
-
 ## [22.0.1] - 2025-03-26
 
 -   Added Dashboard support for WebAuthn
-
 
 ## [22.0.0] - 2025-03-19
 
@@ -129,7 +123,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Updated FDI support to `4.1`
 
-
 ## [21.1.1] - 2025-03-18
 
 -   Fixes an issue where the response body was not being cloned when using cache
@@ -138,14 +131,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Return type of `authGET` in `APIInterface` in `oauth2provider` recipe
     -   Return type of `loginGET` in `APIInterface` in `oauth2provider` recipe
 
-
 ## [21.1.0] - 2024-11-19
 
 -   Adds `getCookieNameForTokenType` config option to allow customizing the cookie name for a token type.
 -   Adds `getResponseHeaderNameForTokenType` config option to allow customizing the response header name for a token type.
     -   Please note, that using this will require further customizations on the frontend
 -   Fixes an issue where `removeDevice` API allowed removing verified TOTP devices without the user completing MFA.
-
 
 ## [21.0.0] - 2024-10-07
 
@@ -306,65 +297,53 @@ import { getAppDirRequestHandler } from "supertokens-node/nextjs";
 const handleCall = getAppDirRequestHandler();
 ```
 
-
 ## [20.1.5] - 2024-10-09
 
 -   Fixes an issue where users were not able to reset their password if a user with the same email address was created before account linking was enabled.
 -   Fixes and re-works some security checks connected to password reset.
-
 
 ## [20.1.4] - 2024-10-07
 
 -   Fixes an issue where revoking sessions for a specific tenant didn't work well
 -   Fixes an issue where the automatic session revocation after linking didn't work across all tenants
 
-
 ## [20.1.3] - 2024-09-30
 
 -   Replaces `psl` with `tldts` to avoid `punycode` deprecation warning.
-
 
 ## [20.1.2] - 2024-09-14
 
 -   Fixes formFields to accept non string types as well.
 
-
 ## [20.1.1] - 2024-09-10
 
 -   Fixes an issue with Okta / Active Directory providers where we check for additional config if `oidcDiscoveryEndpoint` is not defined. It would not be necessary in the cases where other endpoints are already provided.
-
 
 ## [20.1.0] - 2024-09-09
 
 -   Add edge compatibility for custom frameworks and Next.JS
 
-
 ## [20.0.5] - 2024-09-02
 
 -   Optional form fields are now truly optional, can be omitted from the payload.
 
-
 ## [20.0.4] - 2024-08-30
 
 -   Improves thirdParty debug logging to help with debugging issues with JSON parsing.
-
 
 ## [20.0.3] - 2024-08-22
 
 -   Fixes issue with dashboard APIs `createOrUpdateThirdPartyConfig` and `deleteThirdPartyConfig` which did not take `includeInNonPublicTenantsByDefault` into account for non-public tenants.
 -   Updates test server to support dashboard tests.
 
-
 ## [20.0.2] - 2024-08-08
 
 -   Fixes an issue where `shouldDoAutomaticAccountLinking` was called without a primary user when linking in some cases.
-
 
 ## [20.0.1] - 2024-08-05
 
 -   Fixes an issue with `removeFromPayloadByMerge_internal` for `MultiFactorAuthClaim` where it was not retaining other claims while removing the claim from the payload.
 -   Updates testing with backend-sdk-testing repo to run against all supported FDI versions.
-
 
 ## [20.0.0] - 2024-07-24
 
@@ -433,11 +412,9 @@ ThirdParty.init({
 });
 ```
 
-
 ## [19.0.1] - 2024-07-18
 
 -   Fixes issue in fetching `thirdPartyConfig` for dashboard when OIDC discovery endpoint is added in core.
-
 
 ## [19.0.0] - 2024-07-10
 
@@ -663,18 +640,15 @@ for (const tenant of tenantsRes.tenants) {
 }
 ```
 
-
 ## [18.0.2] - 2024-07-09
 
 -   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
-
 
 ## [18.0.1] - 2024-06-19
 
 ### Fixes
 
 -   Fix a bug that was preventing errors from being caught in the fetch function, thus bypassing our error handling.
-
 
 ## [18.0.0] - 2024-05-23
 
@@ -707,13 +681,11 @@ for (const tenant of tenantsRes.tenants) {
 -   Fixes override recursion build-up in built-in providers due to the modification of the `input.override` object in the ThirdParty providers list.
 -   Fixes issue with reference to `config` object in `TypeProvider` in the provider override. The issue was the `originalImplementation.config` object did not have the updated `config` values that was being used in the provider implementation.
 
-
 ## [17.1.2] - 2024-05-21
 
 ### Fixes
 
 -   Add workaround for unsupported 'cache' field in Cloudflare Workers. We retry fetch requests without the 'cache' field if they fail due to it not being implemented.
-
 
 ## [17.1.1] - 2024-05-16
 
@@ -721,7 +693,6 @@ for (const tenant of tenantsRes.tenants) {
 
 -   Fixed an issue when using Apple as a third party provider with our NextJs integration.
 -   Added a compatibility layer into `BaseRequest` to handle the form data parser returning `FormData` instead of the raw parsed object. This is to address/fix the above issues, possibly present in other frameworks.
-
 
 ## [17.1.0] - 2024-04-25
 
@@ -755,21 +726,17 @@ With this update, verifySession will return a 401 error if it detects multiple a
 5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
 6. The frontend tries to refresh the session with multiple access tokens: - If `olderCookieDomain` is not set, the refresh fails with a 500 error. - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set. - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response. - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
-
 ## [17.0.7] - 2024-05-03
 
 -   Adds `no-cache` header when querying core, so that frameworks like NextJS don't cache GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
-
 
 ## [17.0.6] - 2024-05-02
 
 -   Fixes how FDI header is parsed from frontend requests to account for more than one version being passed.
 
-
 ## [17.0.5] - 2024-04-25
 
 -   Support for websiteDomain / apiDomain ending with `.local`: https://github.com/supertokens/supertokens-node/issues/823
-
 
 ## [17.0.4] - 2024-04-09
 
@@ -777,7 +744,6 @@ With this update, verifySession will return a 401 error if it detects multiple a
 
 -   Improved error message to help debugging if MFA was enabled without account linking.
 -   Now the `resyncSessionAndFetchMFAInfoPUT` will throw if the user is in a stuck state, because they are required to complete factors, but they are not allowed to because of some configuration issue.
-
 
 ## [17.0.3] - 2024-04-08
 
@@ -788,11 +754,9 @@ With this update, verifySession will return a 401 error if it detects multiple a
     -   Fixed an interaction with the `firstFactors` config of the `MultiFactorAuth` recipe in `createCodePOST`
     -   Fixed an issue in `resendCodePOST` where the email/text message included a magic link when it shouldn't have in some MFA cases
 
-
 ## [17.0.2] - 2024-03-20
 
 -   Remove tenants listing dashboard API and update `getTenantLoginMethodsInfo` dashboard API to remove querying core in loop and return only firstFactors.
-
 
 ## [17.0.1] - 2024-03-08
 
@@ -800,7 +764,6 @@ With this update, verifySession will return a 401 error if it detects multiple a
 
 -   We now allow sign in/up even if the session user is conflicting with the current sign in/up (because of the email verification status)
     -   This makes use-cases where an secondary factor (i.e.: otp-email) is also used as a means of verification.
-
 
 ## [17.0.0] - 2024-03-08
 
@@ -1202,26 +1165,21 @@ Passwordless.init({
 }),
 ```
 
-
 ## [16.7.4] - 2024-03-01
 
 -   Adds a user friendly error screen that provides helpful information regarding Content Security Policy (CSP) issues..
-
 
 ## [16.7.3] - 2024-02-26
 
 -   Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
 
-
 ## [16.7.2] - 2024-02-19
 
 -   `createNewSession` now defaults to the value of the `st-auth-mode` header (if available) if the configured `getTokenTransferMethod` returns `any`.
 
-
 ## [16.7.1] - 2024-01-09
 
 -   Fixes type output of `resetPasswordUsingToken` in emailpassword and thirdpartyemailpassword recipe to not include statuses that happen based on email change.
-
 
 ## [16.7.0] - 2023-12-22
 
@@ -1229,48 +1187,39 @@ Passwordless.init({
 -   Previously, the custom framework's `errorHandler` callback function was invoked only upon encountering an error. This behavior has been rectified, and now the callback is invoked in both error and success cases.
 -   Added user creation apis on dashboard recipe to create Emailpassword and Passwordless recipe users.
 
-
 ## [16.6.8] - 2023-12-18
 
 -   Fix App dir support by removing the import of the "http" module
 
-
 ## [16.6.7] - 2023-12-18
 
 -   Adds facebook user data by checking the scopes provided in the config
-
 
 ## [16.6.6] - 2023-12-17
 
 -   Adds `userContext` input to the `validate` function in form fields. You can use this to fetch the request object from the `userContext`, read the request body, and then read the other form fields from there. If doing so, keep in mind that for the email and password validators, the request object may not always be available in the `validate` function, and even if it's available, it may not have the request body of the sign up API since the `validate` functions are also called from other operations (like in password reset API). For custom form fields that you have added to the sign up API, the request object will always be there in the `userContext`.
 -   Fixes support for the custom framework on node 16 by optionally using an implementation of the Headers class (from `node-fetch`)
 
-
 ## [16.6.5] - 2023-12-12
 
 -   CI/CD changes
 -   Fixes connectionURI domain normalisation.
 
-
 ## [16.6.4] - 2023-12-05
 
 -   Fixes typing of `verifySession` adding generic to extend the fastify base request.
-
 
 ## [16.6.3] - 2023-12-05
 
 -   Fixes issue with LinkedIn OAuth ([#751](https://github.com/supertokens/supertokens-node/issues/751))
 
-
 ## [16.6.2] - 2023-12-02
 
 -   Fixes implementation of `getBackwardsCompatibleUserInfo` to not throw an error in case of session and user id mismatch.
 
-
 ## [16.6.1] - 2023-11-29
 
 -   Removed dependency on the `crypto` library to enable Apple OAuth usage in Cloudflare Workers.
-
 
 ## [16.6.0] - 2023-11-23
 
@@ -1278,16 +1227,13 @@ Passwordless.init({
 
 -   Added User roles and permissions feature to dashboard recipe.
 
-
 ## [16.5.2] - 2023-11-21
 
 -   Fixes issue with `passwordReset` in emailpassword recipe for custom frameworks ([#746](https://github.com/supertokens/supertokens-node/issues/746))
 
-
 ## [16.5.1] - 2023-11-15
 
 -   Fixes issue with `createResetPasswordLink` and `sendResetPasswordEmail` in thirdpartyemailpassword recipe.
-
 
 ## [16.5.0] - 2023-11-10
 
@@ -1295,11 +1241,9 @@ Passwordless.init({
     -   This can be used to capture/modify all the HTTP requests sent to the core.
     -   Closes the issue - https://github.com/supertokens/supertokens-core/issues/865
 
-
 ## [16.4.0] - 2023-10-26
 
 -   Added `debug` property to `TypeInput`. When set to `true`, it will enable debug logs.
-
 
 ## [16.3.4] - 2023-10-22
 
@@ -1307,11 +1251,9 @@ Passwordless.init({
 
 -   Fixes an issue where sometimes the `Access-Control-Expose-Headers` header value would contain duplicates
 
-
 ## [16.3.3] - 2023-10-19
 
 -   Tests `null` values in `ProviderConfig` saved in core
-
 
 ## [16.3.2] - 2023-10-16
 
@@ -1320,13 +1262,11 @@ Passwordless.init({
 -   `getUsersNewestFirst` and `getUsersOldestFirst` will now properly filter users by tenantId.
 -   Fixes issue with missed email verification claim update that caused the frontend pre built UI to call the email verify API multiple times.
 
-
 ## [16.3.1] - 2023-10-12
 
 ### Fixes
 
 -   Handle AWS Public URLs (ending with `.amazonaws.com`) separately while extracting TLDs for SameSite attribute.
-
 
 ## [16.3.0] - 2023-10-10
 
@@ -1347,11 +1287,9 @@ Passwordless.init({
 -   Using built-in fetch whenever available instead of cross-fetch
 -   Improved edge-function support
 
-
 ## [16.2.1] - 2023-10-06
 
 -   Slight refactors logic to code for social providers to make it consistent across all providers
-
 
 ## [16.2.0] - 2023-09-29
 
@@ -1359,11 +1297,9 @@ Passwordless.init({
 
 -   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider. If you are using Github as a provider, there is a default implmentation provided for this function.
 
-
 ## [16.1.0] - 2023-09-26
 
 -   Added `twitter` as a built-in thirdparty provider
-
 
 ## [16.0.0] - 2023-09-25
 
@@ -1606,13 +1542,11 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
 });
 ```
 
-
 ## [15.2.1] - 2023-09-22
 
 ### Fixes
 
 -   Fixes an issue where the response for the JWKs API would contain additional properties
-
 
 ## [15.2.0] - 2023-09-11
 
@@ -1624,13 +1558,11 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
 
 -   Dashboard APIs now return a status code `403` for all non-GET requests if the currently logged in Dashboard User is not listed in the `admins` array
 
-
 ## [15.1.1] - 2023-08-14
 
 ### Fixes
 
 -   Improve edge function compatibility by removing our `raw-body` dependency.
-
 
 ## [15.1.0] - 2023-08-14
 
@@ -1642,26 +1574,21 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
     -   It defaults to `60` or the value set in the cache-control header returned by the core
     -   This is optional (so you are not required to update your overrides). Returning undefined means that the header is not set.
 
-
 ## [15.0.4] - 2023-08-11
 
 -   Fixes apple redirect
-
 
 ## [15.0.3] - 2023-08-10
 
 -   Adds logic to retry network calls if the core returns status 429
 
-
 ## [15.0.2] - 2023-07-31
 
 -   Fixes an issue where the user management dashboard would incorrectly show an email as unverified even if it was verified
 
-
 ## [15.0.1] - 2023-07-19
 
 -   Passes missing `tenantId` to claim build function
-
 
 ## [15.0.0] - 2023-07-19
 
@@ -2142,7 +2069,6 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
     -   supertokens-web-js@0.7.0
     -   supertokens-website@17.0.2
 
-
 ## [14.1.3] - 2023-07-03
 
 ### Changes
@@ -2152,7 +2078,6 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
 ### Fixes
 
 -   Now properly ignoring missing anti-csrf tokens in optional session validation
-
 
 ## [14.1.2] - 2023-06-07
 
@@ -2166,20 +2091,17 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
 -   Now assuming latest token version if the claim is missing from the header
 -   Make `verifySession` send the appropriate response instead of throwing (and sending 500) if session validation fails in koa, hapi and loopback (already happening in other frameworks).
 
-
 ## [14.1.1] - 2023-05-24
 
 ### Added
 
 -   Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
 
-
 ## [14.1.0] - 2023-05-23
 
 ### Changes
 
 -   Added a new `getRequestFromUserContext` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
-
 
 ## [14.0.2] - 2023-05-11
 
@@ -2188,11 +2110,9 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
 -   Made the access token string optional in the overrideable `getSession` function
 -   Moved checking if the access token is defined into the overrideable `getSession` function
 
-
 ## [14.0.1] - 2023-05-11
 
 -   Fixes an issue where API key based login with dashboard would return invalid API key even if the entered API key was valid
-
 
 ## [14.0.0] - 2023-05-04
 
@@ -2476,38 +2396,31 @@ Session.init({
 });
 ```
 
-
 ## [13.6.0] - 2023-04-26
 
 -   Added missing arguments from `getUsersNewestFirst` and `getUsersOldestFirst`
-
 
 ## [13.5.0] - 2023-04-22
 
 -   Adds new config to change the access token's path
 
-
 ## [13.4.2] - 2023-04-11
 
 -   Modified email templates to make them render fine in gmail.
-
 
 ## [13.4.1] - 2023-04-11
 
 -   Modified email templates to make them render fine in outlook.
 
-
 ## [13.4.0] - 2023-03-31
 
 -   Adds APIs to enable search functionality to the dashboard recipe
-
 
 ## [13.3.0] - 2023-03-30
 
 ### Added
 
 -   Adds a telemetry API to the dashboard recipe
-
 
 ## [13.2.0] - 2023-03-29
 
@@ -2519,7 +2432,6 @@ Session.init({
 
 -   Login with bitbucket and gitlab (single tenant only)
 
-
 ## [13.1.5] - 2023-03-17
 
 ### Fixes
@@ -2527,13 +2439,11 @@ Session.init({
 -   Fixed an issue where BaseRequest implmentations for frameworks such as AWS Lambda would not consider case sensitivity when fetching request headers
 -   Fixes an issue where dashboard recipe APIs would return 404 for Hapi
 
-
 ## [13.1.4] - 2023-03-16
 
 ### Fixes
 
 -   Fixes an issue where importing recipes without importing the package index file would cause crashes
-
 
 ## [13.1.3] - 2023-03-08
 
@@ -2541,34 +2451,28 @@ Session.init({
 
 -   The dashboard recipe is no longer intialised automatically
 
-
 ## [13.1.2] - 2023-02-27
 
 ### Fixes
 
 -   Fixed request parsing issue during third-party (Apple) sign in in NextJS
 
-
 ## [13.1.1] - 2023-02-24
 
 -   Refactor dashboard recipe to use auth mode instead of manually checking for api key
 
-
 ## [13.1.0] - 2023-02-22
 
 -   Adds APIs and logic to the dashboard recipe to enable email password based login
-
 
 ## [13.0.2] - 2023-02-10
 
 -   Package version update for twilio to ^4.7.2 and verify-apple-id-token to ^3.0.1
 -   Package typescript version changed to 4.2
 
-
 ## [13.0.1] - 2023-02-08
 
 -   Email template updates
-
 
 ## [13.0.0] - 2023-02-01
 
@@ -2617,37 +2521,30 @@ app.post("/create", async (req, res) => {
 });
 ```
 
-
 ## [12.1.6] - 2023-01-22
 
 -   Updates jsonwebtoken dependency to version 9.0.0 to fix vulnerability in it's `verify` function.
 
-
 ## [12.1.5] - 2022-12-10
 
 -   Fixes Content-type header in AWS lambda framework
-
 
 ## [12.1.4] - 2022-12-26
 
 -   Updates dashboard version
 -   Updates user GET API for the dashboard recipe
 
-
 ## [12.1.3] - 2022-12-12
 
 -   Updates some dependencies cause of `npm audit`
-
 
 ## [12.1.2] - 2022-12-06
 
 -   Fixes issue where if sendEmail is overridden with a different email, it will reset that email.
 
-
 ## [12.1.1] - 2022-11-25
 
 -   Fixed an issue with importing the wrong recipe in the dashboard APIs
-
 
 ## [12.1.0] - 2022-11-17
 
@@ -2659,7 +2556,6 @@ app.post("/create", async (req, res) => {
 
 -   Updates dashboard version to 0.2
 
-
 ## [12.0.6] - 2022-11-09
 
 ### Fixes
@@ -2667,11 +2563,9 @@ app.post("/create", async (req, res) => {
 -   Adds updating of session claims in email verification token generation API in case the session claims are outdated.
 -   Fixed mergeIntoAccessTokenPayload not updating the JWT payload
 
-
 ## [12.0.5] - 2022-10-17
 
 -   Updated google token endpoint.
-
 
 ## [12.0.4] - 2022-10-14
 
@@ -2680,13 +2574,11 @@ app.post("/create", async (req, res) => {
 -   Removed default defaultMaxAge from session claim base classes
 -   Added a 5 minute defaultMaxAge to UserRoleClaim, PermissionClaim and EmailVerificationClaim
 
-
 ## [12.0.3] - 2022-09-29
 
 ### Refactor:
 
 -   clear cookies logic refactored for unauthorised error response
-
 
 ## [12.0.2] - 2022-09-22
 
@@ -2694,13 +2586,11 @@ app.post("/create", async (req, res) => {
 
 -   Properly rethrowing generic errors in email verification endpoints.
 
-
 ## [12.0.1] - 2022-09-22
 
 ### Changed
 
 -   Email verification endpoints will now clear the session if called by a deleted/unknown user
-
 
 ## [12.0.0] - 2022-09-14
 
@@ -2886,13 +2776,11 @@ The UserRoles recipe now adds role and permission information into the access to
 -   You need to configure the "Access Denied" response.
 -   Please check our updated guide on our website
 
-
 ## [11.3.0] - 2022-08-30
 
 ### Added:
 
 -   `authUsername` option in smtp config for when email is different than the username for auth.
-
 
 ## [11.2.0] - 2022-08-26
 
@@ -2900,20 +2788,17 @@ The UserRoles recipe now adds role and permission information into the access to
 
 -   Adds a Dashboard recipe
 
-
 ## [11.1.2] - 2022-08-25
 
 ### Type fix:
 
 -   Makes `userContext` optional in `sendEmail` and `sendSms` function in all recipe exposed functions.
 
-
 ## [11.1.1] - 2022-08-11
 
 ### Bug fix:
 
 -   Adds missing `force` param from `createUserIdMapping` and `deleteUserIdMapping` functions
-
 
 ## [11.1.0] - 2022-08-11
 
@@ -2922,20 +2807,17 @@ The UserRoles recipe now adds role and permission information into the access to
 -   UserId Mapping functionality and compatibility with CDI 2.15
 -   Adds `createUserIdMapping`, `getUserIdMapping`, `deleteUserIdMapping`, `updateOrDeleteUserIdMappingInfo` functions
 
-
 ## [11.0.3] - 2022-08-05
 
 ### Bug fix:
 
 -   Fixes overrides not applying correctly in methods called on SessionContainer instances
 
-
 ## [11.0.2] - 2022-08-02
 
 ### Bug fix:
 
 -   Solves the issue of request getting stuck in non returning state while parsing form data for nextjs request
-
 
 ## [11.0.1] - 2022-07-18
 
@@ -2946,7 +2828,6 @@ The UserRoles recipe now adds role and permission information into the access to
 ### Adds:
 
 -   Improved type definitions for `SessionWrapper.getSession`.
-
 
 ## [11.0.0] - 2022-07-05
 
@@ -2962,7 +2843,6 @@ The UserRoles recipe now adds role and permission information into the access to
 ### Bug fix:
 
 -   Clears cookies when revokeSession is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
-
 
 ## [10.0.1] - 2022-06-28
 
@@ -2981,7 +2861,6 @@ signIn: async function (input) {
     }
 }
 ```
-
 
 ## [10.0.0] - 2022-06-2
 
@@ -3008,7 +2887,6 @@ signIn: async function (input) {
 ### Fixes
 
 -   Fixes email undefined error when resending the passwordless login email.
-
 
 ## [9.3.0] - 2022-06-17
 
@@ -3103,11 +2981,9 @@ SuperTokens.init({
 })
 ```
 
-
 ## [9.2.3] - 2022-06-03
 
 -   Changes `getUserMetadata` to return `any` type for metadata so that it's easier to use.
-
 
 ## [9.2.2] - 2022-05-24
 
@@ -3115,13 +2991,11 @@ SuperTokens.init({
 
 -   Calling the setImmediate function inside assertThatBodyParserHasBeenUsedForExpressLikeRequest only if the function is getting executed in NextJS env. Fixes #313
 
-
 ## [9.2.1] - 2022-05-19
 
 ### Fixes:
 
 -   Fixes the routes issue for Hapi framework plugin
-
 
 ## [9.2.0] - 2022-04-18
 
@@ -3130,7 +3004,6 @@ SuperTokens.init({
 -   Adds UserMetadata recipe
 -   Fixes debug log statement when custom header is not passed during refresh session
 
-
 ## [9.1.2] - 2022-04-01
 
 ### Added
@@ -3138,24 +3011,20 @@ SuperTokens.init({
 -   Adds debug logging functionality
 -   removed jsonschema dependency
 
-
 ## [9.1.1] - 2022-03-24
 
 ### Fixes:
 
 -   Changes Github and Discord providers to check if email is `undefined` or not before assigning the email object to the profile info.
 
-
 ## [9.1.0] - 2022-03-17
 
 -   Added `ThirdPartyPasswordless` recipe + tests
-
 
 ## [9.0.1] - 2022-03-02
 
 -   Fixes #269. The json body parser will additionally be used to parse the request body if the request body is of type `{}`
 -   `init` function will throw error if there are empty items in recipeList when passing the config
-
 
 ## [9.0.0] - 2022-02-20
 
@@ -3179,13 +3048,11 @@ SuperTokens.init({
 
 -   Uses recipe interface inside session class so that any modification to those get reflected in the session class functions too.
 
-
 ## [8.6.1] - 2022-02-09
 
 ### Refactor
 
 -   Removes unused property from session recipe
-
 
 ## [8.6.0] - 2022-01-31
 
@@ -3205,7 +3072,6 @@ SuperTokens.init({
 -   Allows passing of custom user context everywhere: https://github.com/supertokens/supertokens-node/issues/215
 -   Returns session object from API interface functions which create a new session: https://github.com/supertokens/supertokens-node/issues/215
 
-
 ## [8.5.0] - 2022-01-14
 
 ### Added
@@ -3214,13 +3080,11 @@ SuperTokens.init({
 -   Adds compatibility with FDI 1.12 and CDI 2.11
 -   Adds passwordless tests
 
-
 ## [8.4.0] - 2021-12-20
 
 ### Added
 
 -   Delete user functionality
-
 
 ## [8.3.1] - 2021-12-20
 
@@ -3228,20 +3092,17 @@ SuperTokens.init({
 
 -   Exposes all essential `types` files. Fixes [#230](https://github.com/supertokens/supertokens-node/issues/230)
 
-
 ## [8.3.0] - 2021-12-08
 
 ### Added
 
 -   The ability to enable JWT creation with session management, this allows easier integration with services that require JWT based authentication: https://github.com/supertokens/supertokens-core/issues/250
 
-
 ## [8.2.1] - 2021-12-07
 
 ### Fixes
 
 -   Removes use of apiGatewayPath from apple's redirect URI since that is already there in the apiBasePath
-
 
 ## [8.2.0] - 2021-11-15
 
@@ -3255,18 +3116,15 @@ SuperTokens.init({
 -   Changes `sendJSONResponse to not allow setting of result if it has already been set
 -   AWS lambda middleware will return `404` response if the API route is not served by the middleware and user has not passed a handler.
 
-
 ## [8.1.2] - 2021-11-15
 
 -   Uses supertokens-js-override from npm
-
 
 ## [8.1.1] - 2021-11-08
 
 ### Changes
 
 -   When routing, ignores `rid` value `"anti-csrf"`: https://github.com/supertokens/supertokens-node/issues/202
-
 
 ## [8.1.0] - 2021-10-29
 
@@ -3280,20 +3138,17 @@ SuperTokens.init({
 -   Verifies ID Token sent for sign in with apple as per https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/verifying_a_user
 -   `sendHTMLResponse` and `getFormData` functions for frameworks
 
-
 ## [8.0.4] - 2021-10-28
 
 ### Fixes
 
 -   Uses `accessTokenPayload` instead of `jwtPayload` when creating SessionInformation object
 
-
 ## [8.0.3] - 2021-10-27
 
 ### Changes
 
 -   Removes `SessionRequest` as an exported member of session recipe's index file
-
 
 ## [8.0.2] - 2021-10-27
 
@@ -3302,13 +3157,11 @@ SuperTokens.init({
 -   Uses non arrow functions in api and recipe interface impl to allow for "true" inheritance in override: https://github.com/supertokens/supertokens-node/issues/199
 -   Uses `bind(this)` when calling original implementation
 
-
 ## [8.0.1] - 2021-10-22
 
 ### Changed
 
 -   Trying to handle errors closer to the source in middlewares instead of relying on the global error handler.
-
 
 ## [8.0.0] - 2021-10-20
 
@@ -3318,7 +3171,6 @@ SuperTokens.init({
 -   Removes all deprecated functions
 -   Renames all "JWT" related functions in session recipe to use "AccessToken" instead
 -   Removes support for CDI 2.7 (which used some of the new deprecated APIs in the core)
-
 
 ## [7.3.1] - 2021-10-18
 
@@ -3330,13 +3182,11 @@ SuperTokens.init({
 
 -   URL protocol is being taken into account when determining the value of cookie same site: https://github.com/supertokens/supertokens-golang/issues/36
 
-
 ## [7.3.0] - 2021-10-11
 
 ### Added
 
 -   Adds OAuth development keys for Google and Github for faster recipe implementation.
-
 
 ## [7.2.1] - 2021-10-02
 
@@ -3344,14 +3194,12 @@ SuperTokens.init({
 
 -   Updated dependencies.
 
-
 ## [7.2.0]
 
 ### Added
 
 -   JWT recipe to create signed JWT tokens
 -   New API to fetch keys used for JWT verification using JWKS
-
 
 ## [7.1.0]
 
@@ -3373,7 +3221,6 @@ SuperTokens.init({
 -   `verifySession` middleware ts issue fix for Hapi framework
 -   ts import for `verifySession` fix for koa
 
-
 ## [7.0.1] - 2021-09-10
 
 ### Breaking Change
@@ -3383,7 +3230,6 @@ SuperTokens.init({
 ### Fixes
 
 -   fixes issue #175 regarding making error handlers async, session error callabacks async and making VerifySessionOptions optional for verifySession middleware.
-
 
 ## [7.0.0] - 2021-07-31
 
@@ -3429,13 +3275,11 @@ SuperTokens.init({
 
 -   https://github.com/supertokens/supertokens-node/issues/156
 
-
 ## [6.1.1] - 2021-09-08
 
 ## Fixes
 
 -   updated function `getUserByEmail` in `recipe/thirdpartyemailpassword/recipeImplementation/emailPasswordRecipeImplementation.ts` to use `getUsersByEmail` instead of `getUserByEmail`
-
 
 ## [6.1.0] - 2021-06-24
 
@@ -3455,13 +3299,11 @@ SuperTokens.init({
 -   Adds `updateEmailOrPassword` recipe function to emailpassword and thirdpartyemailpassword recipes: https://github.com/supertokens/supertokens-core/issues/275
 -   Adds emailverification recipe functions to all recipes: https://github.com/supertokens/supertokens-core/issues/270
 
-
 ## [6.0.4] - 2021-07-29
 
 ### Fixes
 
 -   Fixes typescript issue with default imports. (Related to https://github.com/supertokens/supertokens-auth-react/issues/297)
-
 
 ## [6.0.3] - 2021-07-08
 
@@ -3469,20 +3311,17 @@ SuperTokens.init({
 
 -   signInUpPOST default implementation will return accessToken api response data instead of axios response
 
-
 ## [6.0.2] - 2021-06-28
 
 ### Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/141
 
-
 ## [6.0.1] - 2021-06-19
 
 ### Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/136
-
 
 ## [6.0.0] - 2021-06-18
 
@@ -3504,7 +3343,6 @@ SuperTokens.init({
 -   Removes duplicate signout APIs from all auth recipes since it's already exposed from the session recipe.
 -   Marked `setJwtPayload` and `setSessionData` as deprecated.
 
-
 ## [5.1.0] - 2021-06-13
 
 ### Fixes:
@@ -3512,13 +3350,11 @@ SuperTokens.init({
 -   https://github.com/supertokens/supertokens-node/pull/135: In serverless env, waits for email to be sent before returning the response cause sometimes, serverless envs quite the process early on.
 -   https://github.com/supertokens/supertokens-node/issues/127: In serverless env, sends telemetry with a 30% probability.
 
-
 ## [5.0.1] - 2021-05-06
 
 ### Fixes:
 
 -   https://github.com/supertokens/supertokens-node/issues/122: Calling verifySession in another file (via router), before the init function is called throws a not initialized error.
-
 
 ## [5.0.0] - 2021-05-02
 
@@ -3529,13 +3365,11 @@ SuperTokens.init({
 -   changes `enableAntiCsrf` config to `antiCsrf`.
 -   removes deprecated `apiWebProxyPath` config. Use `appInfo -> apiGatewayPath` instead.
 
-
 ## [4.4.1] - 2021-04-29
 
 ### Fixed:
 
 -   Runs JSON body parser only if `req.body` is `undefined` or if it is buffer
-
 
 ## [4.4.0] - 2021-04-28
 
@@ -3543,13 +3377,11 @@ SuperTokens.init({
 
 -   `apiGatewayPath` in `appInfo` during `init`. This deprecates `apiWebProxyPath`.
 
-
 ## [4.3.3] - 2021-04-25
 
 ### Changed:
 
 -   Fixes case when bodyParser is not used in serverless functions - We now attempt to use bodyParser even if `req.body` is not `undefined` - as long as it's not a valid JSON.
-
 
 ## [4.3.2] - 2021-04-24
 
@@ -3557,13 +3389,11 @@ SuperTokens.init({
 
 -   Complies with FDI 1.7.1 for issue https://github.com/supertokens/supertokens-core/issues/233
 
-
 ## [4.3.1] - 2021-04-17
 
 ### Fixed
 
 -   Issue https://github.com/supertokens/supertokens-node/issues/113: If the `idRefreshToken` is present in the request, but the refresh token is missing, we clear the `idRefreshToken` as well.
-
 
 ## [4.3.0] - 2021-04-15
 
@@ -3577,7 +3407,6 @@ SuperTokens.init({
 -   handlePostSignUp parameter in signUpFeature for emailpassword recipe.
 -   deprecation warning for handleCustomFormFieldsPostSignUp parameter.
 -   handlePostSignIn parameter in signInFeature for emailpassword recipe.
-
 
 ## [4.2.0] - 2021-03-09
 
@@ -3595,13 +3424,11 @@ SuperTokens.init({
 -   verifySession now accepts an object as a parameter. Two valid parameters are sessionRequired and antiCsrfCheck. sessionRequired can be by user if they intends to make the session requirement optional for the API.
 -   Allows ";" at the end of connectionURI to core
 
-
 ## [4.1.3] - 2021-03-19
 
 ### Changed
 
 -   Fixes bug in NextJS wrapper which called resolve even though there was an error
-
 
 ## [4.1.2] - 2021-03-05
 
@@ -3609,13 +3436,11 @@ SuperTokens.init({
 
 -   Fix Domain normalisation with "/.netlify/functions/api"
 
-
 ## [4.1.1] - 2021-03-05
 
 ### Changed
 
 -   Fix Path normalisation with "/.netlify/functions/api"
-
 
 ## [4.1.0] - 2021-02-23
 
@@ -3625,13 +3450,11 @@ SuperTokens.init({
 -   sessionFeature config that allows user to set jwtPayload and sessionData during signup or signin
 -   Changed error handling
 
-
 ## [4.0.1] - 2021-03-01
 
 ### Changed
 
 -   Type of authorisationRedirect params to include a function
-
 
 ## [4.0.0] - 2021-02-02
 
@@ -3643,13 +3466,11 @@ SuperTokens.init({
 -   Implements thirdparty recipe
 -   Sends telemetryId for telemetry
 
-
 ## [3.4.2] - 2021-01-09
 
 ## Added
 
 -   Telemetry as per https://github.com/supertokens/supertokens-node/issues/85
-
 
 ## [3.4.1] - 2021-02-06
 
@@ -3657,7 +3478,6 @@ SuperTokens.init({
 
 -   Allow users to pass FaunaDB client directly when using Session.init
 -   Fixes https://github.com/supertokens/supertokens-node/issues/83
-
 
 ## [3.4.0] - 2021-01-28
 
@@ -3669,20 +3489,17 @@ SuperTokens.init({
 -   if the apiDomain and websiteDomain values are different (no common top level domain), then cookieSameSite will be set to none by default, else set it to lax
 -   Fixed https://github.com/supertokens/supertokens-node/issues/63
 
-
 ## [3.3.2] - 2021-01-29
 
 ### Fixed
 
 -   Always sets httpOnly flag to be true for session cookies regardless of if secure flag is on or off.
 
-
 ## [3.3.1] - 2021-01-20
 
 ### Changed
 
 -   Update superTokensNextWrapper to add a return value.
-
 
 ## [3.3.0] - 2021-01-13
 
@@ -3698,13 +3515,11 @@ SuperTokens.init({
 
 -   Bump axios from 0.19 to 0.21 to fix Critical Dependency
 
-
 ## [3.2.2] - 2020-12-18
 
 ### Fixed
 
 -   Removes the need for Proxy in NextJS so that if a session is created manually by the user, it still works
-
 
 ## [3.2.1] - 2020-12-16
 
@@ -3713,13 +3528,11 @@ SuperTokens.init({
 -   Fixes bug for missing return in nextjs helper
 -   Changed name from supertokenMiddleware to superTokensMiddleware
 
-
 ## [3.2.0] - 2020-12-13
 
 ### Changed
 
 -   Add NextJS helper
-
 
 ## [3.1.1] - 2020-12-12
 
@@ -3727,14 +3540,12 @@ SuperTokens.init({
 
 -   If `init` is called multiple times, it does not throw an error
 
-
 ## [3.1.0] - 2020-11-26
 
 ### Added
 
 -   Added changes as per new FDI: https://github.com/supertokens/frontend-driver-interface/issues/3
     -   API to check if an email exists
-
 
 ## [3.0.0] - 2020-11-18
 
@@ -3751,20 +3562,17 @@ SuperTokens.init({
     -   https://github.com/supertokens/supertokens-node/pull/25
     -   https://github.com/supertokens/supertokens-node/pull/45
 
-
 ## [2.5.0] - 2020-09-19
 
 ### Added
 
 -   FaunaDB integration
 
-
 ## [2.4.1] - 2020-10-15
 
 ### Fixed
 
 -   Issue #17 - Do not clear cookies if they do not exist in the first place
-
 
 ## [2.4.0] - 2020-09-10
 
@@ -3773,7 +3581,6 @@ SuperTokens.init({
 -   Support for CDI 2.3 and FDI 1.2
 -   Fixes issue #7
 -   Remove compatibility with CDI 1.0
-
 
 ## [2.3.0] - 2020-08-05
 
@@ -3784,20 +3591,17 @@ SuperTokens.init({
 -   Automatically adds a refresh API if the user calls the `init` function inside `app.use()`
 -   Support for CDI 2.2
 
-
 ## [2.2.2] - 2020-07-30
 
 ### Fixed
 
 -   Fixes #2 - Prevents duplicate `Access-Control-Allow-Credentials` header value
 
-
 ## [2.2.1] - 2020-07-14
 
 ### Fixed
 
 -   Fixed typo in exported typescript type
-
 
 ## [2.2.0] - 2020-06-29
 
@@ -3806,13 +3610,11 @@ SuperTokens.init({
 -   Support for API key
 -   Compatibility with CDI 2.1
 
-
 ## [2.1.0] - 2020-06-18
 
 ### Changes
 
 -   config changes and code refactor
-
 
 ## [2.0.0] - 2020-05-04
 
@@ -3830,10 +3632,8 @@ SuperTokens.init({
 
 -   Changed `revokeSessionUsingSessionHandle` => `revokeSession`
 
-
 ## [1.1.0] - 2020-04-19
 
 ### Added
 
 -   Support for [CDI version 2.0](https://github.com/supertokens/core-driver-interface/blob/master/v2.0.0.txt)
-
