@@ -235,6 +235,31 @@ export type RecipeInterface = {
         user: User;
         recipeUserId: RecipeUserId;
     } | SignInErrorResponse>;
+    /**
+     * Runs the post-verification part of sign in (email verification propagation and
+     * account linking) against an already-verified credential. Called by signInPOST
+     * after its verifyCredentials guard so that the assertion is verified against the
+     * core exactly once per request — verifying the same assertion twice trips the
+     * core's signature-counter clone detection for counter-incrementing authenticators
+     * (https://github.com/supertokens/supertokens-core/issues/1195).
+     */
+    completeSignIn(input: {
+        verifiedCredentials: {
+            user: User;
+            recipeUserId: RecipeUserId;
+        };
+        session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<{
+        status: "OK";
+        user: User;
+        recipeUserId: RecipeUserId;
+    } | {
+        status: "LINKING_TO_SESSION_USER_FAILED";
+        reason: "EMAIL_VERIFICATION_REQUIRED" | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    }>;
     verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;

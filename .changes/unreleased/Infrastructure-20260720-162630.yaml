@@ -1,3 +1,0 @@
-kind: Infrastructure
-body: Adopt the shared reusable release-tag workflow from supertokens/actions (restores version registration with the SuperTokens API and post-release dev sync); keep only the docs/npm publish jobs as thin callers
-time: 2026-07-20T16:26:30Z
