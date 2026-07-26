@@ -36,7 +36,10 @@ export default class Session implements SessionContainerInterface {
         protected userDataInAccessToken: any,
         protected reqResInfo: ReqResInfo | undefined,
         protected accessTokenUpdated: boolean,
-        protected tenantId: string
+        protected tenantId: string,
+        // CDI >= 5.5: set when a checkDatabase verify reported the stored payload is newer than the
+        // token's. Defaulted so the many other `new Session(...)` call sites need no change.
+        protected payloadUpdateAvailable: boolean = false
     ) {}
 
     getRecipeUserId(_userContext?: Record<string, any>): RecipeUserId {
@@ -141,6 +144,7 @@ export default class Session implements SessionContainerInterface {
             refreshToken: this.refreshToken?.token,
             frontToken: this.frontToken,
             antiCsrfToken: this.antiCsrfToken,
+            payloadUpdateAvailable: this.payloadUpdateAvailable,
         };
     }
 

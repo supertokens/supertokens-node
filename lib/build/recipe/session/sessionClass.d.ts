@@ -15,7 +15,22 @@ export default class Session implements SessionContainerInterface {
     protected reqResInfo: ReqResInfo | undefined;
     protected accessTokenUpdated: boolean;
     protected tenantId: string;
-    constructor(helpers: Helpers, accessToken: string, frontToken: string, refreshToken: TokenInfo | undefined, antiCsrfToken: string | undefined, sessionHandle: string, userId: string, recipeUserId: RecipeUserId, userDataInAccessToken: any, reqResInfo: ReqResInfo | undefined, accessTokenUpdated: boolean, tenantId: string);
+    protected payloadUpdateAvailable: boolean;
+    constructor(
+        helpers: Helpers,
+        accessToken: string,
+        frontToken: string,
+        refreshToken: TokenInfo | undefined,
+        antiCsrfToken: string | undefined,
+        sessionHandle: string,
+        userId: string,
+        recipeUserId: RecipeUserId,
+        userDataInAccessToken: any,
+        reqResInfo: ReqResInfo | undefined,
+        accessTokenUpdated: boolean,
+        tenantId: string,
+        payloadUpdateAvailable?: boolean
+    );
     getRecipeUserId(_userContext?: Record<string, any>): RecipeUserId;
     revokeSession(userContext?: Record<string, any>): Promise<void>;
     getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any>;
@@ -31,6 +46,7 @@ export default class Session implements SessionContainerInterface {
         refreshToken: string | undefined;
         frontToken: string;
         antiCsrfToken: string | undefined;
+        payloadUpdateAvailable: boolean;
     };
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: Record<string, any>): Promise<void>;
     getTimeCreated(userContext?: Record<string, any>): Promise<number>;

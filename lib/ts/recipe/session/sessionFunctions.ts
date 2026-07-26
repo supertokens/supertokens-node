@@ -35,13 +35,24 @@ export async function createNewSession(
     disableAntiCsrf: boolean,
     accessTokenPayload: any,
     sessionDataInDatabase: any,
-    userContext: UserContext
+    userContext: UserContext,
+    // Optional per-mint access token validity override (ms), CDI >= 5.5 only (PLAN-002 decision 11).
+    // Shorten-only; core validates 0 < value <= configured access_token_validity and 400s otherwise.
+    // Ignored by CDI <= 5.4 cores (unknown body field), so it is safe to always include when set.
+    accessTokenValidity?: number
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionDataInDatabase =
         sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
 
-    const requestBody = {
+    const requestBody: {
+        userId: string;
+        userDataInJWT: any;
+        userDataInDatabase: any;
+        useDynamicSigningKey: boolean;
+        enableAntiCsrf: boolean;
+        accessTokenValidity?: number;
+    } = {
         userId: recipeUserId.getAsString(),
         userDataInJWT: { ...accessTokenPayload },
         userDataInDatabase: sessionDataInDatabase,
@@ -49,6 +60,9 @@ export async function createNewSession(
         // We dont need to check if anti csrf is a function here because checking for "VIA_TOKEN" is enough
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN",
     };
+    if (accessTokenValidity !== undefined) {
+        requestBody.accessTokenValidity = accessTokenValidity;
+    }
     let response = await helpers.querier.sendPostRequest(
         {
             path: "/<tenantId>/recipe/session",
@@ -107,6 +121,11 @@ export async function getSession(
         expiry: number;
         createdTime: number;
     };
+    // CDI >= 5.5: set to true on a checkDatabase verify when the stored session payload differs from
+    // the token's (core's read-only `payloadUpdateAvailable` flag). Verify never mints a replacement
+    // token on 5.5, so SDKs surface this instead and may choose to background-refresh. Always false/
+    // absent on CDI <= 5.4 responses (where a replacement access token is returned instead).
+    payloadUpdateAvailable?: boolean;
 }> {
     let accessTokenInfo;
 
@@ -248,7 +267,18 @@ export async function getSession(
     let response = await helpers.querier.sendPostRequest("/recipe/session/verify", requestBody, userContext);
 
     if (response.status === "OK") {
-        return {
+        const result: {
+            session: {
+                handle: string;
+                userId: string;
+                recipeUserId: RecipeUserId;
+                expiryTime: number;
+                tenantId: string;
+                userDataInJWT: any;
+            };
+            accessToken?: { token: string; expiry: number; createdTime: number };
+            payloadUpdateAvailable?: boolean;
+        } = {
             accessToken: response.accessToken,
             session: {
                 handle: response.session.handle,
@@ -262,6 +292,14 @@ export async function getSession(
                 userDataInJWT: response.session.userDataInJWT,
             },
         };
+        // CDI >= 5.5 stateless verify: core sends `payloadUpdateAvailable: true` (checkDatabase only)
+        // in place of the legacy verify-time replacement token when the stored payload is stale. Only
+        // attach the key when core actually sent it, so CDI <= 5.4 responses stay byte-identical.
+        // Cast because the generated schema types lag the advertised CDI version (no 5.5 spec yet).
+        if ((response as any).payloadUpdateAvailable === true) {
+            result.payloadUpdateAvailable = true;
+        }
+        return result;
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");
         throw new STError({
@@ -326,14 +364,27 @@ export async function refreshSession(
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
     useDynamicAccessTokenSigningKey: boolean,
-    userContext: UserContext
+    userContext: UserContext,
+    // Optional per-mint access token validity override (ms), CDI >= 5.5 only (PLAN-002 decision 11).
+    // Shorten-only; on an out-of-range rejection we retry the refresh WITHOUT it (see below) so that a
+    // bad/inconsistent override can never log a user out on the refresh path.
+    accessTokenValidity?: number
 ): Promise<CreateOrRefreshAPIResponse> {
-    let requestBody = {
+    let requestBody: {
+        refreshToken: string;
+        antiCsrfToken: string | undefined;
+        enableAntiCsrf: boolean;
+        useDynamicSigningKey: boolean;
+        accessTokenValidity?: number;
+    } = {
         refreshToken,
         antiCsrfToken,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN",
         useDynamicSigningKey: useDynamicAccessTokenSigningKey,
     };
+    if (accessTokenValidity !== undefined) {
+        requestBody.accessTokenValidity = accessTokenValidity;
+    }
 
     if (
         typeof helpers.config.antiCsrfFunctionOrString === "string" &&
@@ -345,7 +396,33 @@ export async function refreshSession(
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
     }
 
-    let response = await helpers.querier.sendPostRequest("/recipe/session/refresh", requestBody, userContext);
+    let response;
+    try {
+        response = await helpers.querier.sendPostRequest("/recipe/session/refresh", requestBody, userContext);
+    } catch (err) {
+        // PLAN-002 decision 11: an out-of-range per-mint accessTokenValidity makes core 400 the refresh.
+        // Refresh must never fail because of it (value consistency across refreshes is the caller's
+        // contract, not enforced here) — so we log loudly and retry the refresh without the override.
+        if (
+            accessTokenValidity !== undefined &&
+            err?.message !== undefined &&
+            typeof err.message === "string" &&
+            err.message.includes("accessTokenValidity")
+        ) {
+            logDebugMessage(
+                "refreshSession: WARNING core rejected the per-mint accessTokenValidity override " +
+                    `(${accessTokenValidity}ms); retrying the refresh without it. Core said: ${err.message}`
+            );
+            const { accessTokenValidity: _ignored, ...requestBodyWithoutValidity } = requestBody;
+            response = await helpers.querier.sendPostRequest(
+                "/recipe/session/refresh",
+                requestBodyWithoutValidity,
+                userContext
+            );
+        } else {
+            throw err;
+        }
+    }
 
     if (response.status === "OK") {
         return {
@@ -382,6 +459,10 @@ export async function refreshSession(
                 recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 userId: response.session.userId,
                 sessionHandle: response.session.handle,
+                // CDI >= 5.5 refresh-time reuse detection carries the subtype (RECENT_PREV /
+                // ORPHANED_BRANCH / STALE_LINEAGE); undefined on CDI <= 5.4 theft responses. Cast
+                // because the generated schema types lag the advertised CDI version (no 5.5 spec yet).
+                recentTokenReuseSubtype: (response as any).recentTokenReuseSubtype,
             },
             type: STError.TOKEN_THEFT_DETECTED,
         });

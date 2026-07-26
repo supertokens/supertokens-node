@@ -1,0 +1,3 @@
+kind: Added
+body: Adopt CDI 5.5 session semantics (advertise CDI 5.5). Adds an optional per-mint `accessTokenValidity` override to `createNewSession`/`refreshSession` (shorten-only; a core rejection on refresh is retried without the override so a refresh is never lost), surfaces the `checkDatabase` verify `payloadUpdateAvailable` flag through `getAllSessionTokensDangerously()`, and passes the refresh-time token-reuse subtype to the `onTokenTheftDetected` error handler. CDI <= 5.4 behavior is unchanged.
+time: 2026-07-26T19:39:32Z
