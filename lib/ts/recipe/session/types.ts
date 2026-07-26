@@ -145,7 +145,10 @@ export interface TokenTheftErrorHandlerMiddleware {
         recipeUserId: RecipeUserId,
         request: BaseRequest,
         response: BaseResponse,
-        userContext: UserContext
+        userContext: UserContext,
+        // CDI >= 5.5 refresh-time reuse subtype (RECENT_PREV / ORPHANED_BRANCH / STALE_LINEAGE);
+        // undefined on CDI <= 5.4. Trailing/optional so existing handlers keep compiling unchanged.
+        recentTokenReuseSubtype?: string
     ): Promise<void>;
 }
 
@@ -185,6 +188,10 @@ export type RecipeInterface = {
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
         tenantId: string;
+        // Optional per-mint access token validity override (ms), CDI >= 5.5 (PLAN-002 decision 11).
+        // Shorten-only; core 400s if it exceeds the configured access_token_validity. Ignored by
+        // CDI <= 5.4 cores. Dynamic (role/device-based) validity policy lives in overrides of this fn.
+        accessTokenValidity?: number;
         userContext: UserContext;
     }): Promise<SessionContainerInterface>;
 
@@ -207,6 +214,10 @@ export type RecipeInterface = {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
+        // Optional per-mint access token validity override (ms), CDI >= 5.5 (PLAN-002 decision 11).
+        // Shorten-only; if core rejects it as out of range the refresh is retried without the override
+        // (never fails the refresh). Ignored by CDI <= 5.4 cores.
+        accessTokenValidity?: number;
         userContext: UserContext;
     }): Promise<SessionContainerInterface>;
 
@@ -338,6 +349,10 @@ export interface SessionContainerInterface {
         antiCsrfToken: string | undefined;
         frontToken: string;
         accessAndFrontTokenUpdated: boolean;
+        // CDI >= 5.5: true when a checkDatabase verify reported the stored session payload is newer than
+        // the token's (`payloadUpdateAvailable`). Consumers may trigger a refresh to adopt it. Always
+        // false on CDI <= 5.4 (where verify returns a replacement token instead).
+        payloadUpdateAvailable: boolean;
     };
 
     getAccessToken(userContext?: Record<string, any>): string;

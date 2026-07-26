@@ -43,6 +43,7 @@ export default function getRecipeInterface(
             sessionDataInDatabase = {},
             disableAntiCsrf,
             tenantId,
+            accessTokenValidity,
             userContext,
         }: {
             userId: string;
@@ -51,6 +52,7 @@ export default function getRecipeInterface(
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
             tenantId: string;
+            accessTokenValidity?: number;
             userContext: UserContext;
         }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
@@ -62,7 +64,8 @@ export default function getRecipeInterface(
                 disableAntiCsrf === true,
                 accessTokenPayload,
                 sessionDataInDatabase,
-                userContext
+                userContext,
+                accessTokenValidity
             );
             logDebugMessage("createNewSession: Finished");
 
@@ -187,7 +190,8 @@ export default function getRecipeInterface(
                 payload,
                 undefined,
                 response.accessToken !== undefined,
-                response.session.tenantId
+                response.session.tenantId,
+                response.payloadUpdateAvailable === true
             );
 
             return session;
@@ -266,11 +270,13 @@ export default function getRecipeInterface(
                 refreshToken,
                 antiCsrfToken,
                 disableAntiCsrf,
+                accessTokenValidity,
                 userContext,
             }: {
                 refreshToken: string;
                 antiCsrfToken?: string;
                 disableAntiCsrf: boolean;
+                accessTokenValidity?: number;
                 userContext: UserContext;
             }
         ): Promise<SessionContainerInterface> {
@@ -291,7 +297,8 @@ export default function getRecipeInterface(
                 antiCsrfToken,
                 disableAntiCsrf,
                 config.useDynamicAccessTokenSigningKey,
-                userContext
+                userContext,
+                accessTokenValidity
             );
 
             logDebugMessage("refreshSession: Success!");

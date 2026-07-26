@@ -44,6 +44,9 @@ export default class SessionError extends STError {
                       userId: string;
                       recipeUserId: RecipeUserId;
                       sessionHandle: string;
+                      // CDI >= 5.5 refresh-time reuse subtype (RECENT_PREV / ORPHANED_BRANCH /
+                      // STALE_LINEAGE); undefined on CDI <= 5.4 theft responses.
+                      recentTokenReuseSubtype?: string;
                   };
               }
             | {

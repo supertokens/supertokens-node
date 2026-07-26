@@ -230,7 +230,10 @@ export default class SessionRecipe extends RecipeModule {
                     err.payload.recipeUserId,
                     request,
                     response,
-                    userContext
+                    userContext,
+                    // CDI >= 5.5 reuse subtype (RECENT_PREV / ORPHANED_BRANCH / STALE_LINEAGE); undefined
+                    // on CDI <= 5.4. Passed as a trailing optional arg so existing handlers are unaffected.
+                    err.payload.recentTokenReuseSubtype
                 );
             } else if (err.type === STError.INVALID_CLAIMS) {
                 return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response, userContext);
