@@ -1,0 +1,3 @@
+kind: Security
+body: Bump nodemailer from 8.0.2 to 9.0.1 to address GHSA-p6gq-j5cr-w38f
+time: 2026-09-10T12:00:00.000000000+01:00

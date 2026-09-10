@@ -133,7 +133,7 @@
         "debug": "^4.3.3",
         "jose": "^4.13.1",
         "libphonenumber-js": "^1.9.44",
-        "nodemailer": "^8.0.2",
+        "nodemailer": "^9.0.1",
         "pako": "^2.1.0",
         "pkce-challenge": "^3.0.0",
         "process": "^0.11.10",
