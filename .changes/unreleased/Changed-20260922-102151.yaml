@@ -1,0 +1,3 @@
+kind: Changed
+body: Reuse remote JWKS resolvers for third-party ID-token verification across sign-in requests, scoped to the SuperTokens instance, so fresh signing keys and in-flight refreshes are shared per endpoint instead of being refetched for every request.
+time: 2026-09-22T10:21:51Z

@@ -44,6 +44,7 @@ import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 import { SessionContainerInterface } from "./recipe/session/types";
 import { RecipeIdToRecipeTypeMap } from "./recipeIdToRecipeType";
+import ThirdPartyJWKSResolvers from "./recipe/thirdparty/jwks";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -64,8 +65,14 @@ export default class SuperTokens {
 
     telemetryEnabled: boolean;
 
+    // Owns the remote JWKS resolvers used by third-party ID-token verification. It is scoped to
+    // this SuperTokens instance so resolvers (and their cached keys / in-flight refreshes) are
+    // reused across sign-in requests and released when the instance is reset.
+    thirdPartyJWKSResolvers: ThirdPartyJWKSResolvers;
+
     constructor(config: TypeInput) {
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
+        this.thirdPartyJWKSResolvers = new ThirdPartyJWKSResolvers();
 
         const {
             config: _config,
