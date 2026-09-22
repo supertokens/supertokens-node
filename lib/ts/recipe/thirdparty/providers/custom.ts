@@ -9,7 +9,6 @@ import {
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "../../../thirdpartyUtils";
 import { getUserContext } from "../../../utils";
 import pkceChallenge from "pkce-challenge";
-import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
 import { logDebugMessage } from "../../../logger";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import SuperTokens from "../../../supertokens";
@@ -169,8 +168,6 @@ export default function NewProvider(input: ProviderInput, type: "oauth2" | "saml
             return `${thirdPartyUserId}.${input.config.thirdPartyId}@stfakeemail.supertokens.com`;
         };
     }
-
-    let jwks: JWTVerifyGetKey | undefined;
 
     const supertokens = SuperTokens.getInstanceOrThrowError();
     const appinfo = supertokens.appInfo;
@@ -333,9 +330,10 @@ export default function NewProvider(input: ProviderInput, type: "oauth2" | "saml
                 };
 
                 if (idToken && impl.config.jwksURI !== undefined) {
-                    if (jwks === undefined) {
-                        jwks = createRemoteJWKSet(new URL(impl.config.jwksURI));
-                    }
+                    // Acquire the resolver from the SDK-instance-owned registry so that separate
+                    // sign-in requests (each of which builds a fresh provider) reuse the same cached
+                    // keys and share in-flight refreshes for this endpoint.
+                    const jwks = supertokens.thirdPartyJWKSResolvers.getResolver(impl.config.jwksURI);
                     rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpointAndGetPayload(
                         idToken,
                         jwks,
