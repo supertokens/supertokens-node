@@ -1,8 +1,6 @@
 // @ts-nocheck
 import { JWTVerifyGetKey } from "jose";
-export declare const JWKS_CACHE_MAX_AGE_MS: number;
-export declare const JWKS_COOLDOWN_MS: number;
-export declare const JWKS_FETCH_TIMEOUT_MS: number;
+export { JWKS_CACHE_MAX_AGE_MS, JWKS_COOLDOWN_MS, JWKS_REFRESH_DEADLINE_MS } from "./jwksFetch";
 export declare const MAX_JWKS_REGISTRY_ENTRIES = 100;
 export type JWKSResolverFactory = (url: URL) => JWTVerifyGetKey;
 /**

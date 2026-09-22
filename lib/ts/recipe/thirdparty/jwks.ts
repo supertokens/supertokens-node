@@ -12,19 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
+import { JWTVerifyGetKey } from "jose";
 import { logDebugMessage } from "../../logger";
+import { createRetryingRemoteJWKSet } from "./jwksFetch";
 
-// These values were previously left implicit by relying on JOSE's defaults for
-// `createRemoteJWKSet`. They are the freshness policy for third-party remote JWKS
-// verification: fresh keys are shared across requests for up to `JWKS_CACHE_MAX_AGE_MS`,
-// a failed key lookup will not trigger another fetch for `JWKS_COOLDOWN_MS`, and any single
-// fetch is aborted after `JWKS_FETCH_TIMEOUT_MS`. We now set them explicitly so this policy
-// is owned by the SDK and does not silently change if JOSE's defaults change (and so unit 2
-// can build a status-aware refresh on the same numbers).
-export const JWKS_CACHE_MAX_AGE_MS = 60 * 10 * 1000; // 10 minutes (JOSE default)
-export const JWKS_COOLDOWN_MS = 30 * 1000; // 30 seconds (JOSE default)
-export const JWKS_FETCH_TIMEOUT_MS = 5 * 1000; // 5 seconds (JOSE default)
+// The freshness policy (cache age, cooldown, fetch/refresh budget) now lives in `jwksFetch`,
+// which owns the transport. Re-exported here so the registry's freshness contract stays
+// discoverable from a single module.
+export { JWKS_CACHE_MAX_AGE_MS, JWKS_COOLDOWN_MS, JWKS_REFRESH_DEADLINE_MS } from "./jwksFetch";
 
 // The registry keeps at most this many resolvers alive. Each entry is a small closure over
 // a cached key set, so this is a bound on how many distinct JWKS endpoints we hold state for.
@@ -34,16 +29,11 @@ export const MAX_JWKS_REGISTRY_ENTRIES = 100;
 
 export type JWKSResolverFactory = (url: URL) => JWTVerifyGetKey;
 
-// Unit 1 uses JOSE's public `createRemoteJWKSet`, which itself caches keys, coalesces
-// concurrent refreshes and applies the timeout/cooldown/cache-age policy above. Keeping this
-// as an injectable factory (separate from ownership/eviction) lets unit 2 swap in a
-// status-aware transport without touching the registry or its callers.
-const defaultResolverFactory: JWKSResolverFactory = (url: URL) =>
-    createRemoteJWKSet(url, {
-        cacheMaxAge: JWKS_CACHE_MAX_AGE_MS,
-        cooldownDuration: JWKS_COOLDOWN_MS,
-        timeoutDuration: JWKS_FETCH_TIMEOUT_MS,
-    });
+// Unit 2 replaces JOSE's `createRemoteJWKSet` with an SDK-owned resolver that adds bounded,
+// status-aware retries around the JWKS HTTP GET while preserving JOSE's key caching, refresh
+// coalescing and cooldown/cache-age policy. Keeping this as an injectable factory (separate
+// from ownership/eviction) means the registry and its callers are unaffected by the swap.
+const defaultResolverFactory: JWKSResolverFactory = (url: URL) => createRetryingRemoteJWKSet(url);
 
 // The identity of a JWKS endpoint is its full canonical URL, query parameters included, with the
 // fragment removed (fragments are never sent over HTTP). We deliberately do not key by provider

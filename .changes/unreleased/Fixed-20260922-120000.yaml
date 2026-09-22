@@ -1,0 +1,3 @@
+kind: Fixed
+body: Retry transient failures when fetching a third-party provider's remote JWKS (signing keys) so that short-lived signing-key endpoint outages no longer reject otherwise valid third-party sign-ins. Retries are bounded (three attempts within a five-second deadline, with jittered backoff that respects Retry-After) and status-aware, so invalid tokens and non-transient failures still fail immediately without repeating the OAuth code exchange, user creation, or session creation.
+time: 2026-09-22T12:00:00Z
