@@ -121,12 +121,13 @@ export class AWSRequest extends BaseRequest {
             if (stage !== undefined && path.startsWith(`/${stage}`)) {
                 path = path.slice(stage.length + 1);
             }
-            if (queryParams !== undefined && queryParams !== null) {
-                let urlString = "https://exmaple.com" + path;
-                let url = new URL(urlString);
-                Object.keys(queryParams).forEach((el) => url.searchParams.append(el, queryParams[el]));
-                path = url.pathname + url.search;
-            }
+        }
+        // Both REST API (v1) and HTTP API (v2) events carry the query string separately from the path
+        if (queryParams !== undefined && queryParams !== null) {
+            let urlString = "https://exmaple.com" + path;
+            let url = new URL(urlString);
+            Object.keys(queryParams).forEach((el) => url.searchParams.append(el, queryParams[el]));
+            path = url.pathname + url.search;
         }
         return path;
     };
