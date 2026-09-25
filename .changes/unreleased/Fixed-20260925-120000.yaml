@@ -1,0 +1,2 @@
+kind: Fixed
+body: The AWS Lambda framework now keeps the query string for API Gateway REST API (payload v1) events in `getOriginalURL`, as it already did for HTTP API (v2) events, so dashboard user search filters and the OAuth2 provider `/oauth/auth` and `/oauth/end_session` GET parameters are no longer dropped.
