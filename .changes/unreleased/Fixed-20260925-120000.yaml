@@ -1,0 +1,2 @@
+kind: Fixed
+body: Custom third-party providers no longer overwrite the `email_verified` value from the user info API with `false` when the id token does not carry that field (for example when the provider returns no id token), and treat `null` user info fields (such as `"email": null` or a `null` parent object in a nested `userInfoMap` path) as missing instead of passing `null` on to the core or throwing a `TypeError`.

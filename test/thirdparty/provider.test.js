@@ -1250,4 +1250,101 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         server.close();
     });
+
+    describe("custom provider user info mapping", function () {
+        async function initWithCustomProvider(extraConfig = {}) {
+            const connectionURI = await createCoreApplication();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    ThirdPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "custom-userinfo",
+                                        clients: [{ clientId: "test", clientSecret: "test-secret" }],
+                                        authorizationEndpoint: "https://custom-userinfo.example.com/authorize",
+                                        tokenEndpoint: "https://custom-userinfo.example.com/token",
+                                        userInfoEndpoint: "https://custom-userinfo.example.com/userinfo",
+                                        ...extraConfig,
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                ],
+            });
+            return await ThirdParty.getProvider("public", "custom-userinfo");
+        }
+
+        afterEach(function () {
+            nock.cleanAll();
+        });
+
+        it("keeps email_verified from the user info API when there is no id token", async function () {
+            const provider = await initWithCustomProvider();
+            nock("https://custom-userinfo.example.com")
+                .get("/userinfo")
+                .reply(200, { sub: "user-1", email: "user@example.com", email_verified: true });
+
+            const userInfo = await provider.getUserInfo({ oAuthTokens: { access_token: "abcd" }, userContext: {} });
+
+            assert.strictEqual(userInfo.thirdPartyUserId, "user-1");
+            assert.deepStrictEqual(userInfo.email, { id: "user@example.com", isVerified: true });
+        });
+
+        it("treats a null email from the user info API as no email", async function () {
+            const provider = await initWithCustomProvider();
+            nock("https://custom-userinfo.example.com")
+                .get("/userinfo")
+                .reply(200, { sub: "user-1", email: null, email_verified: false });
+
+            const userInfo = await provider.getUserInfo({ oAuthTokens: { access_token: "abcd" }, userContext: {} });
+
+            assert.strictEqual(userInfo.thirdPartyUserId, "user-1");
+            assert.strictEqual(userInfo.email, undefined);
+        });
+
+        it("does not throw when a nested user info field is null", async function () {
+            const provider = await initWithCustomProvider({
+                userInfoMap: {
+                    fromUserInfoAPI: { userId: "id", email: "profile.email", emailVerified: "profile.email_verified" },
+                },
+            });
+            nock("https://custom-userinfo.example.com").get("/userinfo").reply(200, { id: "user-1", profile: null });
+
+            const userInfo = await provider.getUserInfo({ oAuthTokens: { access_token: "abcd" }, userContext: {} });
+
+            assert.strictEqual(userInfo.thirdPartyUserId, "user-1");
+            assert.strictEqual(userInfo.email, undefined);
+        });
+
+        it("signs up with a generated email when the provider returns a null email and email is optional", async function () {
+            await initWithCustomProvider({ requireEmail: false });
+            nock("https://custom-userinfo.example.com")
+                .get("/userinfo")
+                .reply(200, { sub: "user-1", email: null, email_verified: false });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const response = await request(app)
+                .post("/auth/signinup")
+                .send({ thirdPartyId: "custom-userinfo", oAuthTokens: { access_token: "abcd" } });
+
+            assert.strictEqual(response.status, 200);
+            assert.strictEqual(response.body.status, "OK");
+            assert.deepStrictEqual(response.body.user.emails, ["user-1.custom-userinfo@stfakeemail.supertokens.com"]);
+        });
+    });
 });
