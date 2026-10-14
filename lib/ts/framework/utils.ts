@@ -24,6 +24,16 @@ import { getBuffer, getFromObjectCaseInsensitive, isBuffer } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
 
+// The maximum size of a request body (after decompression) we read in the helpers below
+const MAX_REQUEST_BODY_SIZE = 1024 * 1024;
+
+function getRequestBodyTooLargeError() {
+    return new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message: `API input error: The request body is larger than the maximum allowed size of ${MAX_REQUEST_BODY_SIZE} bytes`,
+    });
+}
+
 async function inflate(stream: IncomingMessage): Promise<string> {
     if (!stream) {
         throw new TypeError("argument stream is required");
@@ -33,11 +43,39 @@ async function inflate(stream: IncomingMessage): Promise<string> {
 
     let decompressedData: Uint8Array | string;
 
+    // If the body is too large, we stop processing it, but we keep reading (and discarding) the rest of the stream,
+    // because stopping the iteration early would destroy the request (and the connection we respond on).
+    let bodyTooLarge = false;
+
     if (encoding === "gzip" || encoding === "deflate") {
         const inflator = new pako.Inflate();
+        let inflatedSize = 0;
+        const originalOnData = inflator.onData.bind(inflator);
+        inflator.onData = (chunk) => {
+            inflatedSize += chunk.byteLength;
+            if (inflatedSize > MAX_REQUEST_BODY_SIZE) {
+                // This stops the inflation of the current chunk
+                throw getRequestBodyTooLargeError();
+            }
+            originalOnData(chunk);
+        };
 
         for await (const chunk of stream) {
-            inflator.push(chunk, false);
+            if (bodyTooLarge) {
+                continue;
+            }
+            try {
+                inflator.push(chunk, false);
+            } catch (err) {
+                if (!STError.isErrorFromSuperTokens(err)) {
+                    throw err;
+                }
+                bodyTooLarge = true;
+            }
+        }
+
+        if (bodyTooLarge) {
+            throw getRequestBodyTooLargeError();
         }
 
         if (inflator.err) {
@@ -51,7 +89,18 @@ async function inflate(stream: IncomingMessage): Promise<string> {
         // Handle identity or unsupported encoding
         decompressedData = getBuffer().concat([]);
         for await (const chunk of stream) {
+            if (bodyTooLarge) {
+                continue;
+            }
+            if (decompressedData.length + chunk.length > MAX_REQUEST_BODY_SIZE) {
+                bodyTooLarge = true;
+                continue;
+            }
             decompressedData = getBuffer().concat([decompressedData, chunk]);
+        }
+
+        if (bodyTooLarge) {
+            throw getRequestBodyTooLargeError();
         }
     }
 
@@ -213,6 +262,11 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
                 // parsing it again to make sure that the request is parsed atleast once by a json parser
                 request.body = await parseJSONBodyFromRequest(request);
             } catch (err) {
+                // If the request body is too large, we throw that error as is
+                if (STError.isErrorFromSuperTokens(err)) {
+                    throw err;
+                }
+
                 // If the error message matches the brotli decompression
                 // related error, then throw that error.
                 if ((err as any).message === BROTLI_DECOMPRESSION_ERROR_MESSAGE) {
@@ -253,7 +307,11 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(r
         try {
             // parsing it again to make sure that the request is parsed atleast once by a form data parser
             request.body = await parseURLEncodedFormData(request);
-        } catch {
+        } catch (err) {
+            // If the request body is too large, we throw that error as is
+            if (STError.isErrorFromSuperTokens(err)) {
+                throw err;
+            }
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
                 message: "API input error: Please make sure to pass valid url encoded form in the request body",
