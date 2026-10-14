@@ -157,8 +157,11 @@ export default async function usersGet({
 }
 
 export function getSearchParamsFromURL(path: string): { [key: string]: string } {
-    const URLObject = new URL("https://exmaple.com" + path);
-    const params = new URLSearchParams(URLObject.search);
+    // We only need the query string, so we read it directly instead of parsing the path as part of a URL
+    const fragmentStart = path.indexOf("#");
+    const pathWithoutFragment = fragmentStart === -1 ? path : path.slice(0, fragmentStart);
+    const queryStart = pathWithoutFragment.indexOf("?");
+    const params = new URLSearchParams(queryStart === -1 ? "" : pathWithoutFragment.slice(queryStart + 1));
     const searchQuery: { [key: string]: string } = {};
     for (const [key, value] of params) {
         if (!["limit", "timeJoinedOrder", "paginationToken"].includes(key)) {
