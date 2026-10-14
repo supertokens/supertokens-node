@@ -89,7 +89,12 @@ export async function getInfoFromAccessToken(
         let tenantId = DEFAULT_TENANT_ID;
 
         if (jwtInfo.version >= 4) {
-            tenantId = sanitizeStringInput(payload.tId)!;
+            // validateAccessTokenStructure checks that tId is a string for these versions
+            const tenantIdFromPayload = sanitizeStringInput(payload.tId);
+            if (tenantIdFromPayload === undefined) {
+                throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+            }
+            tenantId = tenantIdFromPayload;
         }
 
         if (antiCsrfToken === undefined && doAntiCsrfCheck) {
@@ -128,34 +133,7 @@ export function validateAccessTokenStructure(payload: any, version: number) {
         throw Error("Wrong token type");
     }
 
-    if (version >= 5) {
-        if (
-            typeof payload.sub !== "string" ||
-            typeof payload.exp !== "number" ||
-            typeof payload.iat !== "number" ||
-            typeof payload.sessionHandle !== "string" ||
-            typeof payload.refreshTokenHash1 !== "string" ||
-            typeof payload.rsub !== "string"
-        ) {
-            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
-            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            // it would come here if we change the structure of the JWT.
-            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
-        }
-    } else if (version >= 4) {
-        if (
-            typeof payload.sub !== "string" ||
-            typeof payload.exp !== "number" ||
-            typeof payload.iat !== "number" ||
-            typeof payload.sessionHandle !== "string" ||
-            typeof payload.refreshTokenHash1 !== "string"
-        ) {
-            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
-            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            // it would come here if we change the structure of the JWT.
-            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
-        }
-    } else if (version >= 3) {
+    if (version >= 3) {
         if (
             typeof payload.sub !== "string" ||
             typeof payload.exp !== "number" ||
@@ -169,10 +147,18 @@ export function validateAccessTokenStructure(payload: any, version: number) {
             throw Error("Access token does not contain all the information. Maybe the structure has changed?");
         }
 
-        if (version >= 4) {
-            if (typeof payload.tId !== "string") {
-                throw Error("Access token does not contain all the information. Maybe the structure has changed?");
-            }
+        if (version >= 4 && typeof payload.tId !== "string") {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+
+        if (version >= 5 && typeof payload.rsub !== "string") {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 5");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
         }
     } else if (
         typeof payload.sessionHandle !== "string" ||
