@@ -28,6 +28,7 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
 
     return {
         signInAndUpFeature,
+        isValidFrontendRedirectURI: config?.isValidFrontendRedirectURI,
         override,
     };
 }
