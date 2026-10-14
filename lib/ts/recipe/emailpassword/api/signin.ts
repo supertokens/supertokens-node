@@ -37,17 +37,6 @@ export default async function signInAPI(
     }
 
     const body = await options.req.getJSONBody();
-    // step 1
-    let formFields: {
-        id: string;
-        value: unknown;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.signInFeature.formFields,
-        body.formFields,
-        tenantId,
-        userContext
-    );
-
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
     const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
@@ -58,9 +47,21 @@ export default async function signInAPI(
         userContext
     );
 
+    // We resolve the tenant before running the (tenant specific) form field validators
     if (session !== undefined) {
         tenantId = session.getTenantId();
     }
+
+    // step 1
+    let formFields: {
+        id: string;
+        value: unknown;
+    }[] = await validateFormFieldsOrThrowError(
+        options.config.signInFeature.formFields,
+        body.formFields,
+        tenantId,
+        userContext
+    );
 
     let result = await apiImplementation.signInPOST({
         formFields,
