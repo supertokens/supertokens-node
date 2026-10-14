@@ -642,6 +642,22 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                     };
                 }
 
+                // Registration options generated from a recover account token use the email of the primary user's root
+                // login method (the one whose recipe user id is the primary user id), because the token's email can't be
+                // looked up without consuming the token. So recovery through another email of the user can't succeed,
+                // and we don't send a token for it.
+                const rootLoginMethod = primaryUserAssociatedWithEmail.loginMethods.find(
+                    (lm) => lm.recipeUserId.getAsString() === primaryUserAssociatedWithEmail.id
+                );
+                if (rootLoginMethod === undefined || !rootLoginMethod.hasSameEmailAs(email)) {
+                    logDebugMessage(
+                        `Recover account email not sent, since ${email} is not the email of the primary user's root login method`
+                    );
+                    return {
+                        status: "OK",
+                    };
+                }
+
                 const isSignUpAllowed = await stInstance.getRecipeInstanceOrThrow("accountlinking").isSignUpAllowed({
                     newUser: {
                         recipeId: "webauthn",
@@ -774,6 +790,31 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                 | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
                 | GeneralErrorResponse
             > {
+                // If the email of this recipe user was not verified before this recovery, its existing credentials
+                // and sessions were not created by someone proven to own the email. We revoke the sessions before
+                // registering the new credential (the credential APIs check the session in the database, so they can't
+                // add credentials after this), and remove every other credential once the new one is registered.
+                const userBeforeRecovery = await stInstance
+                    .getRecipeInstanceOrThrow("accountlinking")
+                    .recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
+                const loginMethodBeforeRecovery = userBeforeRecovery?.loginMethods.find(
+                    (lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
+                );
+                const wasEmailVerifiedBeforeRecovery =
+                    loginMethodBeforeRecovery !== undefined &&
+                    loginMethodBeforeRecovery.verified &&
+                    loginMethodBeforeRecovery.hasSameEmailAs(emailForWhomTokenWasGenerated);
+
+                if (!wasEmailVerifiedBeforeRecovery) {
+                    await stInstance.getRecipeInstanceOrThrow("session").recipeInterfaceImpl.revokeAllSessionsForUser({
+                        userId: recipeUserId.getAsString(),
+                        revokeSessionsForLinkedAccounts: false,
+                        tenantId,
+                        revokeAcrossAllTenants: true,
+                        userContext,
+                    });
+                }
+
                 const updateResponse = await options.recipeImplementation.registerCredential({
                     recipeUserId: recipeUserId.getAsString(),
                     webauthnGeneratedOptionsId,
@@ -808,6 +849,22 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                     // 2. User A: tries signing up but sees the email already exists message
                     // 3. User A: recovers the account, but somehow this fails
                     // If we verified (and linked) the existing user with the original credential, User M would get access to the current user and any linked users.
+                    if (!wasEmailVerifiedBeforeRecovery) {
+                        const credentialsAfterRegistration = await options.recipeImplementation.listCredentials({
+                            recipeUserId: recipeUserId.getAsString(),
+                            userContext,
+                        });
+                        for (const existingCredential of credentialsAfterRegistration.credentials) {
+                            if (existingCredential.webauthnCredentialId === credential.id) {
+                                continue;
+                            }
+                            await options.recipeImplementation.removeCredential({
+                                webauthnCredentialId: existingCredential.webauthnCredentialId,
+                                recipeUserId: recipeUserId.getAsString(),
+                                userContext,
+                            });
+                        }
+                    }
                     await markEmailAsVerified(recipeUserId, emailForWhomTokenWasGenerated);
                     // We refresh the user information here, because the verification status may be updated, which is used during linking.
                     const updatedUserAfterEmailVerification = await stInstance
@@ -852,6 +909,17 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                 }
             }
 
+            // We load the generated options before consuming the token, since this doesn't consume anything
+            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
+                webauthnGeneratedOptionsId,
+                tenantId,
+                userContext,
+            });
+
+            if (generatedOptions.status !== "OK") {
+                return generatedOptions;
+            }
+
             const tokenConsumptionResponse = await options.recipeImplementation.consumeRecoverAccountToken({
                 token,
                 tenantId,
@@ -864,6 +932,20 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
 
             const userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
             const emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
+
+            // The credential must be registered using options generated for the email the token was sent to.
+            // This uses the same normalisation as LoginMethod.hasSameEmailAs
+            if (
+                generatedOptions.email === undefined ||
+                generatedOptions.email.toLowerCase().trim() !== emailForWhomTokenWasGenerated.toLowerCase().trim()
+            ) {
+                logDebugMessage(
+                    "recoverAccountPOST: returning INVALID_OPTIONS_ERROR because the options were generated for a different email than the token"
+                );
+                return {
+                    status: "INVALID_OPTIONS_ERROR",
+                };
+            }
 
             const existingUser = await stInstance
                 .getRecipeInstanceOrThrow("accountlinking")
@@ -924,6 +1006,28 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                     // when it comes here, only a new recipe user id will be created and not linked
                     // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
                     // really cause any security issue.
+
+                    const isSignUpAllowed = await stInstance
+                        .getRecipeInstanceOrThrow("accountlinking")
+                        .isSignUpAllowed({
+                            newUser: {
+                                recipeId: "webauthn",
+                                email: emailForWhomTokenWasGenerated,
+                            },
+                            isVerified: true, // cause we mark the email as verified after creating the user
+                            session: undefined,
+                            tenantId,
+                            userContext,
+                        });
+
+                    if (!isSignUpAllowed) {
+                        logDebugMessage(
+                            "recoverAccountPOST: returning RECOVER_ACCOUNT_TOKEN_INVALID_ERROR because isSignUpAllowed returned false"
+                        );
+                        return {
+                            status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
+                        };
+                    }
 
                     const createUserResponse = await options.recipeImplementation.createNewRecipeUser({
                         tenantId,
