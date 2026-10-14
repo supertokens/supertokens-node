@@ -32,7 +32,8 @@ export default async function listCredentialsAPI(
     const session = await stInstance.getRecipeInstanceOrThrow("session").getSession({
         req: options.req,
         res: options.res,
-        options: { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        // We check the session in the database, so that revoked sessions (e.g.: after account recovery) can't read the credentials
+        options: { overrideGlobalClaimValidators: () => [], sessionRequired: true, checkDatabase: true },
         userContext,
     });
 

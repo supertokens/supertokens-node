@@ -1108,6 +1108,9 @@ export const AuthUtils = {
                     // in the (old) 3.0 FDI, this flag didn't exist and we linking was based on the session presence and shouldDoAutomaticAccountLinking
                     sessionRequired: shouldTryLinkingWithSessionUser === true,
                     overrideGlobalClaimValidators: () => [],
+                    // The session can be used to link a new login method to the session user, so we make sure it
+                    // hasn't been revoked (e.g.: during account recovery)
+                    checkDatabase: true,
                 },
                 userContext,
             });
