@@ -95,6 +95,7 @@ describe(`appleRedirectHandlerPOST: ${printPath("[test/thirdparty/appleRedirect.
             ["a relative URL", "/auth/callback/apple"],
             ["a protocol-relative URL", "//evil.test/cb"],
             ["a javascript: URL", "javascript:alert(1)"],
+            ["a custom-scheme URL", "myapp://callback"],
         ];
 
         for (const [description, frontendRedirectURI] of rejectedTargets) {
@@ -215,5 +216,146 @@ describe(`appleRedirectHandlerPOST: ${printPath("[test/thirdparty/appleRedirect.
             const rejected = await postCallback(app, { state, code: "testing" });
             assertRejected(rejected);
         });
+    });
+
+    describe("isValidFrontendRedirectURI", function () {
+        it("allows a cross-origin target if it returns true", async function () {
+            let calledWith;
+            const app = await setup({
+                thirdPartyConfig: {
+                    isValidFrontendRedirectURI: async (input) => {
+                        calledWith = input;
+                        return true;
+                    },
+                },
+            });
+            const frontendRedirectURI = "https://other.example.org/auth/callback/apple";
+            const state = encodeState({ frontendRedirectURI });
+            const res = await postCallback(app, { state, code: "testing", id_token: "idtoken" });
+
+            assert.strictEqual(res.status, 303);
+            const location = new URL(res.headers.location);
+            assert.strictEqual(location.origin, "https://other.example.org");
+            assert.strictEqual(location.searchParams.get("code"), "testing");
+            assert.strictEqual(location.searchParams.get("id_token"), "idtoken");
+            assert.strictEqual(calledWith.frontendRedirectURI, frontendRedirectURI);
+            assert.notStrictEqual(calledWith.request, undefined);
+            assert.notStrictEqual(calledWith.userContext, undefined);
+        });
+
+        for (const [frontendRedirectURI, expected] of [
+            ["https://app.example.com", "https://app.example.com/"],
+            [" https://other.example.org/cb", "https://other.example.org/cb"],
+            ["https://app.example.com\\@evil.test/cb", "https://app.example.com/@evil.test/cb"],
+            ["HTTPS://App.Example.com/a/../cb", "https://app.example.com/cb"],
+        ]) {
+            it(`passes ${JSON.stringify(
+                frontendRedirectURI
+            )} in the normalised form it redirects to`, async function () {
+                let calledWith;
+                const app = await setup({
+                    thirdPartyConfig: {
+                        isValidFrontendRedirectURI: (input) => {
+                            calledWith = input.frontendRedirectURI;
+                            return true;
+                        },
+                    },
+                });
+                const state = encodeState({ frontendRedirectURI });
+                const res = await postCallback(app, { state, code: "testing" });
+
+                assert.strictEqual(res.status, 303);
+                assert.strictEqual(calledWith, expected);
+                const location = new URL(res.headers.location);
+                location.search = "";
+                assert.strictEqual(location.toString(), expected);
+            });
+        }
+
+        it("blocks a same-origin target if it returns false", async function () {
+            const app = await setup({
+                thirdPartyConfig: {
+                    isValidFrontendRedirectURI: () => false,
+                },
+            });
+            const state = encodeState({ frontendRedirectURI: "https://app.example.com/auth/callback/apple" });
+            const res = await postCallback(app, { state, code: "testing" });
+            assertRejected(res);
+        });
+
+        it("does not redirect if it throws", async function () {
+            const app = await setup({
+                thirdPartyConfig: {
+                    isValidFrontendRedirectURI: () => {
+                        throw new Error("validation failed");
+                    },
+                },
+            });
+            const state = encodeState({ frontendRedirectURI: "https://app.example.com/auth/callback/apple" });
+            const res = await postCallback(app, { state, code: "testing" });
+            assert.strictEqual(res.status, 500);
+            assert.strictEqual(res.headers.location, undefined);
+        });
+
+        for (const frontendRedirectURI of [
+            "myapp://callback",
+            "myapp:callback",
+            "com.example.app:/oauth2redirect",
+            "intent://callback#Intent;package=com.example.app;scheme=signinwithapple;end",
+        ]) {
+            it(`allows the custom-scheme target ${frontendRedirectURI} if it returns true`, async function () {
+                let calledWith;
+                const app = await setup({
+                    thirdPartyConfig: {
+                        isValidFrontendRedirectURI: (input) => {
+                            calledWith = input.frontendRedirectURI;
+                            return true;
+                        },
+                    },
+                });
+                const state = encodeState({ frontendRedirectURI });
+                const res = await postCallback(app, { state, code: "testing" });
+
+                assert.strictEqual(res.status, 303);
+                assert.strictEqual(calledWith, frontendRedirectURI);
+                const location = new URL(res.headers.location);
+                const expected = new URL(frontendRedirectURI);
+                assert.strictEqual(location.protocol, expected.protocol);
+                assert.strictEqual(location.host, expected.host);
+                assert.strictEqual(location.pathname, expected.pathname);
+                assert.strictEqual(location.hash, expected.hash);
+                assert.strictEqual(location.searchParams.get("code"), "testing");
+                assert.strictEqual(location.searchParams.get("state"), state);
+            });
+        }
+
+        for (const frontendRedirectURI of [
+            "javascript:alert(1)",
+            "JavaScript:alert(1)",
+            "data:text/html,<script>alert(1)</script>",
+            "vbscript:msgbox(1)",
+            "file:///etc/passwd",
+            "blob:https://app.example.com/1f0e5f3c",
+            "about:blank",
+            "filesystem:https://app.example.com/temporary/x",
+            "/auth/callback/apple",
+            "//evil.test/cb",
+        ]) {
+            it(`rejects ${frontendRedirectURI} even if it would return true`, async function () {
+                let called = false;
+                const app = await setup({
+                    thirdPartyConfig: {
+                        isValidFrontendRedirectURI: () => {
+                            called = true;
+                            return true;
+                        },
+                    },
+                });
+                const state = encodeState({ frontendRedirectURI });
+                const res = await postCallback(app, { state, code: "testing" });
+                assertRejected(res);
+                assert.strictEqual(called, false);
+            });
+        }
     });
 });

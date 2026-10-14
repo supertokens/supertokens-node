@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+-   thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `websiteDomain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that use mobile deep links, should set the new `isValidFrontendRedirectURI` thirdparty config option.
+
 ## [23.1.0] - 2025-11-27
 
 -   Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired

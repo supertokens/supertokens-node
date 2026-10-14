@@ -136,6 +136,38 @@ export type TypeNormalisedInputSignInAndUp = {
 
 export type TypeInput = {
     signInAndUpFeature?: TypeInputSignInAndUp;
+    /**
+     * Decides whether the Apple form_post callback may redirect the user to `frontendRedirectURI` (taken from the
+     * `state` sent to Apple). If set, this replaces the default check, which only allows absolute http(s) URLs whose
+     * protocol, host and port match the configured `origin` / `websiteDomain`.
+     *
+     * Set this if your `origin` depends on the request (the callback arrives as a POST from Apple, so request based
+     * origin resolution may not identify your frontend), if one backend serves several frontends, or to allow mobile
+     * redirect targets (universal / app links or custom-scheme deep links such as `myapp://callback`).
+     *
+     * Returning `true` allows the redirect, returning `false` rejects the request with a 400 and no redirect.
+     * Errors thrown from this function are propagated and no redirect is done.
+     *
+     * The `frontendRedirectURI` must be an absolute URL. `javascript:`, `data:`, `vbscript:`, `file:`, `blob:`,
+     * `about:` and `filesystem:` URLs are always rejected, without calling this function.
+     *
+     * `frontendRedirectURI` is passed in the normalised form we redirect to (e.g.: `https://app.example.com` becomes
+     * `https://app.example.com/`), without the fields Apple posted, which are added to its query afterwards.
+     * The whole `state` is chosen by whoever starts the sign in, so treat `frontendRedirectURI` as untrusted:
+     * compare it against an exact list of allowed URLs, or parse it and compare the protocol, host, port and path.
+     * Do not use prefix or substring checks: for example, `https://app.example.com.evil.test/` and
+     * `https://app.example.com@evil.test/` both start with `https://app.example.com`, and in
+     * `intent://callback#Intent;package=...;end` the receiving app is chosen by the fragment.
+     *
+     * The redirect carries the authorization code and the `id_token` from Apple. Custom URL schemes are not owned by
+     * a single app: any app installed on the device can register the same scheme and receive them. Prefer verified
+     * https universal / app links for mobile redirects where possible.
+     */
+    isValidFrontendRedirectURI?: (input: {
+        frontendRedirectURI: string;
+        request: BaseRequest;
+        userContext: UserContext;
+    }) => Promise<boolean> | boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -147,6 +179,11 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
+    isValidFrontendRedirectURI?: (input: {
+        frontendRedirectURI: string;
+        request: BaseRequest;
+        userContext: UserContext;
+    }) => Promise<boolean> | boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
