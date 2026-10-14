@@ -19,7 +19,7 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { normaliseHttpMethod } from "../../utils";
 import { dashboardVersion } from "../../version";
-import { DASHBOARD_ANALYTICS_API, SIGN_OUT_API } from "./constants";
+import { DASHBOARD_ANALYTICS_API, SIGN_OUT_API, UNLINK_USER } from "./constants";
 import { RecipeInterface } from "./types";
 import { validateApiKey } from "./utils";
 
@@ -45,11 +45,12 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     return false;
                 }
 
-                // For all non GET requests we also want to check if the user is allowed to perform this operation
-                if (normaliseHttpMethod(input.req.getMethod()) !== "get") {
-                    // We check the path the request is routed on (i.e. without the query string)
-                    const requestPath = new NormalisedURLPath(input.req.getOriginalURL()).getAsStringDangerous();
+                // We check the path the request is routed on (i.e. without the query string)
+                const requestPath = new NormalisedURLPath(input.req.getOriginalURL()).getAsStringDangerous();
 
+                // For all non GET requests we also want to check if the user is allowed to perform this operation
+                // The unlink API is a GET request, but it modifies the user, so we check it as well
+                if (normaliseHttpMethod(input.req.getMethod()) !== "get" || requestPath.endsWith(UNLINK_USER)) {
                     // We dont want to block the analytics API
                     if (requestPath.endsWith(DASHBOARD_ANALYTICS_API)) {
                         return true;
