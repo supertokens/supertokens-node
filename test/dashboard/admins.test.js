@@ -1,8 +1,14 @@
 const { ProcessState } = require("../../lib/build/processState");
-const { printPath, createCoreApplication } = require("../utils");
+const {
+    printPath,
+    createCoreApplication,
+    createCoreApplicationWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let STExpress = require("../../");
 let Dashboard = require("../../recipe/dashboard");
 let EmailPassword = require("../../recipe/emailpassword");
+let ThirdParty = require("../../recipe/thirdparty");
+let AccountLinking = require("../../recipe/accountlinking");
 const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 const request = require("supertest");
@@ -13,8 +19,10 @@ const adminEmail = "admin@example.com";
 const nonAdminEmail = "viewer@example.com";
 const dashboardPassword = "password123";
 
-async function setup(dashboardConfig) {
-    const connectionURI = await createCoreApplication();
+async function setup(dashboardConfig, { withLinkedUser = false } = {}) {
+    const connectionURI = withLinkedUser
+        ? await createCoreApplicationWithMultitenancyAndAccountLinking()
+        : await createCoreApplication();
     STExpress.init({
         supertokens: {
             connectionURI,
@@ -24,7 +32,21 @@ async function setup(dashboardConfig) {
             appName: "SuperTokens",
             websiteDomain: "supertokens.io",
         },
-        recipeList: [Dashboard.init(dashboardConfig), EmailPassword.init(), Session.init()],
+        recipeList: [
+            Dashboard.init(dashboardConfig),
+            EmailPassword.init(),
+            Session.init(),
+            ...(withLinkedUser
+                ? [
+                      ThirdParty.init({
+                          signInAndUpFeature: {
+                              providers: [{ config: { thirdPartyId: "google", clients: [{ clientId: "" }] } }],
+                          },
+                      }),
+                      AccountLinking.init(),
+                  ]
+                : []),
+        ],
     });
 
     for (const email of [adminEmail, nonAdminEmail]) {
@@ -43,7 +65,41 @@ async function setup(dashboardConfig) {
     const signUpResponse = await EmailPassword.signUp("public", "user@example.com", "password1");
     assert.strictEqual(signUpResponse.status, "OK");
 
-    return { app, recipeUserId: signUpResponse.user.loginMethods[0].recipeUserId.getAsString() };
+    const recipeUserId = signUpResponse.user.loginMethods[0].recipeUserId;
+
+    if (!withLinkedUser) {
+        return { app, recipeUserId: recipeUserId.getAsString() };
+    }
+
+    const primaryResp = await AccountLinking.createPrimaryUser(recipeUserId);
+    assert.strictEqual(primaryResp.status, "OK");
+    const tpResp = await ThirdParty.manuallyCreateOrUpdateUser(
+        "public",
+        "google",
+        "tp-user",
+        "user@example.com",
+        false
+    );
+    assert.strictEqual(tpResp.status, "OK");
+    const linkResp = await AccountLinking.linkAccounts(tpResp.recipeUserId, primaryResp.user.id);
+    assert.strictEqual(linkResp.status, "OK");
+
+    return {
+        app,
+        recipeUserId: recipeUserId.getAsString(),
+        primaryUserId: primaryResp.user.id,
+        linkedRecipeUserId: tpResp.recipeUserId.getAsString(),
+    };
+}
+
+function getUnlink(app, sessionId, recipeUserId) {
+    return request(app)
+        .get("/auth/dashboard/api/user/unlink?recipeUserId=" + recipeUserId)
+        .set("Authorization", `Bearer ${sessionId}`);
+}
+
+async function getLoginMethodCount(userId) {
+    return (await STExpress.getUser(userId)).loginMethods.length;
 }
 
 async function signInToDashboard(app, email) {
@@ -140,6 +196,63 @@ describe(`User Dashboard admins: ${printPath("[test/dashboard/admins.test.js]")}
             const sessionId = await signInToDashboard(app, adminEmail);
 
             const res = await putPassword(app, sessionId, recipeUserId);
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.body.status, "OK");
+        });
+    });
+
+    describe("account unlink", () => {
+        it("a non-admin user cannot unlink accounts", async () => {
+            const { app, primaryUserId, linkedRecipeUserId } = await setup(
+                { admins: [adminEmail] },
+                { withLinkedUser: true }
+            );
+            const sessionId = await signInToDashboard(app, nonAdminEmail);
+
+            const res = await getUnlink(app, sessionId, linkedRecipeUserId);
+            assert.strictEqual(res.status, 403);
+            assert.strictEqual(await getLoginMethodCount(primaryUserId), 2);
+        });
+
+        it("a read-only dashboard user (admins: []) cannot unlink accounts", async () => {
+            const { app, primaryUserId, linkedRecipeUserId } = await setup({ admins: [] }, { withLinkedUser: true });
+            const sessionId = await signInToDashboard(app, adminEmail);
+
+            const res = await getUnlink(app, sessionId, linkedRecipeUserId);
+            assert.strictEqual(res.status, 403);
+            assert.strictEqual(await getLoginMethodCount(primaryUserId), 2);
+        });
+
+        it("an admin can unlink accounts", async () => {
+            const { app, primaryUserId, linkedRecipeUserId } = await setup(
+                { admins: [adminEmail] },
+                { withLinkedUser: true }
+            );
+            const sessionId = await signInToDashboard(app, adminEmail);
+
+            const res = await getUnlink(app, sessionId, linkedRecipeUserId);
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(await getLoginMethodCount(primaryUserId), 1);
+        });
+
+        it("any dashboard user can unlink accounts if admins is not set", async () => {
+            const { app, primaryUserId, linkedRecipeUserId } = await setup({}, { withLinkedUser: true });
+            const sessionId = await signInToDashboard(app, nonAdminEmail);
+
+            const res = await getUnlink(app, sessionId, linkedRecipeUserId);
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(await getLoginMethodCount(primaryUserId), 1);
+        });
+
+        it("a non-admin user can still read user data", async () => {
+            const { app, recipeUserId } = await setup({ admins: [adminEmail] });
+            const sessionId = await signInToDashboard(app, nonAdminEmail);
+
+            const res = await request(app)
+                .get("/auth/dashboard/api/user?userId=" + recipeUserId + "&recipeId=emailpassword")
+                .set("Authorization", `Bearer ${sessionId}`);
             assert.strictEqual(res.status, 200);
             assert.strictEqual(res.body.status, "OK");
         });
