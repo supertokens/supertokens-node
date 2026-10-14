@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `websiteDomain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that use mobile deep links, should set the new `isValidFrontendRedirectURI` thirdparty config option.
 -   dashboard: the sign-out and analytics exemptions from the `admins` write restriction now match on the request path only, ignoring the query string.
 -   accountlinking: when `shouldRequireVerification` is `true`, automatic account linking now also requires the matching email to be verified in the primary user (as it already did for phone numbers). Apps using `shouldRequireVerification: true` now get no link in this case, which was always the documented intent.
+-   awsLambda: the API Gateway (payload v2) stage is now only stripped from the request path when it is a whole path segment, and the path is no longer parsed as part of a URL string when adding query params.
 
 ## [24.0.3] - 2026-07-23
 

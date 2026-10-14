@@ -1,0 +1,2 @@
+kind: Security
+body: "awsLambda: the API Gateway (payload v2) stage is now only stripped from the request path when it is a whole path segment, and the path is no longer parsed as part of a URL string when adding query params."
