@@ -2,6 +2,8 @@ import { APIInterface } from "../";
 import { AuthUtils } from "../../../authUtils";
 import { logDebugMessage } from "../../../logger";
 import { decodeBase64 } from "../../../utils";
+import STError from "../../../error";
+import { getNormalisedOriginTuple } from "../utils";
 import type SuperTokens from "../../../supertokens";
 
 export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
@@ -216,11 +218,34 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
             };
         },
 
-        appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options }): Promise<void> {
-            const stateInBase64 = formPostInfoFromProvider.state;
-            const state = decodeBase64(stateInBase64);
-            const stateObj = JSON.parse(state);
-            const redirectURI = stateObj.frontendRedirectURI;
+        appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options, userContext }): Promise<void> {
+            const redirectURI = getFrontendRedirectURIFromState(formPostInfoFromProvider.state);
+
+            const redirectOrigin = getNormalisedOriginTuple(redirectURI);
+            if (redirectOrigin === undefined) {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "frontendRedirectURI in state must be an absolute http or https URL",
+                });
+            }
+
+            const configuredOrigin = getNormalisedOriginTuple(
+                options.appInfo.getOrigin({ request: options.req, userContext }).getAsStringDangerous()
+            );
+            if (
+                configuredOrigin === undefined ||
+                redirectOrigin.protocol !== configuredOrigin.protocol ||
+                redirectOrigin.hostname !== configuredOrigin.hostname ||
+                redirectOrigin.port !== configuredOrigin.port
+            ) {
+                logDebugMessage(
+                    "appleRedirectHandlerPOST: rejecting redirect because frontendRedirectURI does not match the configured origin"
+                );
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "frontendRedirectURI in state does not match the configured origin",
+                });
+            }
 
             const urlObj = new URL(redirectURI);
             for (const [key, value] of Object.entries(formPostInfoFromProvider)) {
@@ -232,4 +257,47 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
             options.res.sendHTMLResponse("");
         },
     };
+}
+
+function getFrontendRedirectURIFromState(stateInBase64: unknown): string {
+    if (typeof stateInBase64 !== "string" || stateInBase64.length === 0) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the state in the request body",
+        });
+    }
+
+    if (!/^[A-Za-z0-9+/_-]+={0,2}$/.test(stateInBase64)) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must be base64 encoded",
+        });
+    }
+
+    let stateObj: unknown;
+    try {
+        stateObj = JSON.parse(decodeBase64(stateInBase64));
+    } catch {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must be a base64 encoded JSON object",
+        });
+    }
+
+    if (typeof stateObj !== "object" || stateObj === null || Array.isArray(stateObj)) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must be a base64 encoded JSON object",
+        });
+    }
+
+    const frontendRedirectURI = (stateObj as { frontendRedirectURI?: unknown }).frontendRedirectURI;
+    if (typeof frontendRedirectURI !== "string") {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must contain frontendRedirectURI as a string",
+        });
+    }
+
+    return frontendRedirectURI;
 }

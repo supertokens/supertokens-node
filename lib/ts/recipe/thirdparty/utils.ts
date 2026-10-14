@@ -59,3 +59,28 @@ function validateAndNormaliseSignInAndUpConfig(
 export function isFakeEmail(email: string): boolean {
     return email.endsWith("@stfakeemail.supertokens.com") || email.endsWith(".fakeemail.com"); // .fakeemail.com for older users
 }
+
+/**
+ * Returns the (protocol, lowercased hostname, port) tuple of an absolute http(s) URL, filling in the
+ * default port if it is not explicit. Returns undefined if the input is not such a URL.
+ */
+export function getNormalisedOriginTuple(
+    url: string
+): { protocol: string; hostname: string; port: string } | undefined {
+    let urlObj: URL;
+    try {
+        urlObj = new URL(url);
+    } catch {
+        return undefined;
+    }
+
+    if ((urlObj.protocol !== "http:" && urlObj.protocol !== "https:") || urlObj.hostname === "") {
+        return undefined;
+    }
+
+    return {
+        protocol: urlObj.protocol,
+        hostname: urlObj.hostname.toLowerCase(),
+        port: urlObj.port !== "" ? urlObj.port : urlObj.protocol === "https:" ? "443" : "80",
+    };
+}
