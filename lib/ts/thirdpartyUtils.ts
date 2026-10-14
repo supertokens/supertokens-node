@@ -85,6 +85,45 @@ export async function doPostRequest(
     };
 }
 
+// Sends a POST request with a JSON body (doPostRequest sends a form encoded body)
+export async function doPostJSONRequest(
+    url: string,
+    body: { [key: string]: any },
+    headers?: { [key: string]: string }
+): Promise<{
+    jsonResponse: Record<string, any> | undefined;
+    status: number;
+    stringResponse: string;
+}> {
+    headers = {
+        Accept: "application/json",
+        ...headers,
+        "Content-Type": "application/json",
+    };
+
+    logDebugMessage(`POST request to ${url}, with a JSON body and headers ${JSON.stringify(Object.keys(headers))}`);
+
+    let response = await doFetch(url, {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers,
+    });
+
+    const stringResponse = await response.text();
+    let jsonResponse: Record<string, any> | undefined = undefined;
+
+    if (response.status < 400) {
+        jsonResponse = JSON.parse(stringResponse);
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
+    return {
+        stringResponse,
+        status: response.status,
+        jsonResponse,
+    };
+}
+
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
     jwks: jose.JWTVerifyGetKey,
