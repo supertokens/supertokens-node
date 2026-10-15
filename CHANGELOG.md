@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+-   thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `websiteDomain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to https universal/app links on another origin, can allow those targets with the new `isValidFrontendRedirectURI` thirdparty config option. Custom-scheme deep links (e.g. `myapp://`) are not accepted as redirect targets by the default handler; apps that need them should override `appleRedirectHandlerPOST`.
+
 ## [22.1.1] - 2025-06-20
 
 -   Migrates backend-sdk-testing test to use a containerized core
