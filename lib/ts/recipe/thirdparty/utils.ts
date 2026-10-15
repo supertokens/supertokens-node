@@ -58,7 +58,11 @@ function validateAndNormaliseSignInAndUpConfig(
 }
 
 export function isFakeEmail(email: string): boolean {
-    return email.endsWith("@stfakeemail.supertokens.com") || email.endsWith(".fakeemail.com"); // .fakeemail.com for older users
+    // emails are matched case-insensitively (after trimming), so we normalise the same way here
+    const normalisedEmail = email.trim().toLowerCase();
+    return (
+        normalisedEmail.endsWith("@stfakeemail.supertokens.com") || normalisedEmail.endsWith(".fakeemail.com") // .fakeemail.com for older users
+    );
 }
 
 /**
