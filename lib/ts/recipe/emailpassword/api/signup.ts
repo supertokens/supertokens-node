@@ -38,6 +38,19 @@ export default async function signUpAPI(
 
     const requestBody = await options.req.getJSONBody();
 
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        options.req,
+        options.res,
+        shouldTryLinkingWithSessionUser,
+        userContext
+    );
+    // We resolve the tenant before running the (tenant specific) form field validators
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     // step 1
     let formFields: {
         id: string;
@@ -48,18 +61,6 @@ export default async function signUpAPI(
         tenantId,
         userContext
     );
-
-    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
-
-    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
-        options.req,
-        options.res,
-        shouldTryLinkingWithSessionUser,
-        userContext
-    );
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
-    }
 
     let result = await apiImplementation.signUpPOST({
         formFields,
