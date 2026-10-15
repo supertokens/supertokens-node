@@ -835,13 +835,9 @@ export default class Recipe extends RecipeModule {
                         return { status: "NO_LINK" };
                     }
 
-                    const accountInfoVerifiedInPrimUser = primaryUserThatCanBeLinkedToTheInputUser.loginMethods.some(
-                        (lm) =>
-                            (inputUser.loginMethods[0].email !== undefined &&
-                                lm.hasSameEmailAs(inputUser.loginMethods[0].email)) ||
-                            (inputUser.loginMethods[0].phoneNumber !== undefined &&
-                                lm.hasSamePhoneNumberAs(inputUser.loginMethods[0].phoneNumber) &&
-                                lm.verified)
+                    const accountInfoVerifiedInPrimUser = hasVerifiedLoginMethodWithSameAccountInfo(
+                        primaryUserThatCanBeLinkedToTheInputUser,
+                        inputUser.loginMethods[0]
                     );
                     if (
                         shouldDoAccountLinking.shouldRequireVerification &&
@@ -959,9 +955,16 @@ export default class Recipe extends RecipeModule {
                         return { status: "NO_LINK" };
                     }
 
-                    if (shouldDoAccountLinking.shouldRequireVerification && !inputUser.loginMethods[0].verified) {
+                    if (
+                        shouldDoAccountLinking.shouldRequireVerification &&
+                        (!inputUser.loginMethods[0].verified ||
+                            !hasVerifiedLoginMethodWithSameAccountInfo(
+                                createPrimaryUserResult.user,
+                                inputUser.loginMethods[0]
+                            ))
+                    ) {
                         logDebugMessage(
-                            "tryLinkingByAccountInfoOrCreatePrimaryUser: not linking because shouldRequireVerification is true but the login method is not verified"
+                            "tryLinkingByAccountInfoOrCreatePrimaryUser: not linking because shouldRequireVerification is true but the login method is not verified in the new or the primary user"
                         );
                         return { status: "NO_LINK" };
                     }
@@ -1042,4 +1045,14 @@ export default class Recipe extends RecipeModule {
         }
         throw new Error("This should never happen: ran out of retries for tryLinkingByAccountInfoOrCreatePrimaryUser");
     }
+}
+
+// Checks if the user has a verified login method with the same email or phone number as the input login method
+function hasVerifiedLoginMethodWithSameAccountInfo(user: User, loginMethod: LoginMethod): boolean {
+    return user.loginMethods.some(
+        (lm) =>
+            lm.verified &&
+            ((loginMethod.email !== undefined && lm.hasSameEmailAs(loginMethod.email)) ||
+                (loginMethod.phoneNumber !== undefined && lm.hasSamePhoneNumberAs(loginMethod.phoneNumber)))
+    );
 }
