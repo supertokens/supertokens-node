@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   totp: when the user has a verified TOTP device, removing a device without completing multi-factor auth is now only allowed for an unverified device, and only if no verified device has the same name (compared case-insensitively).
 -   dashboard: when `admins` is set, unlinking accounts through the dashboard now requires an admin, like the other dashboard APIs that change data.
 -   thirdparty: with a specific `hd` (not `*`) in the Google Workspaces provider config, sign ins without an id token (e.g. with only an access token) now require the `hd` returned by Google's user info API to match it, and fail otherwise. Sign ins with an id token are checked as before.
+-   session: `validateClaimsForSessionHandle` now fetches claim values for the session's tenant, and leaves protected access token payload claims (such as `sub` and `tId`) out of the payload update it saves. In multi-tenant apps, claims it refetches (e.g. user roles, permissions or the MFA claim) for sessions of tenants other than the public one now get the values for the session's tenant, both in the returned validation result and in the updated access token payload. Sessions of the public tenant are handled as before.
 
 ## [23.1.0] - 2025-11-27
 
