@@ -116,10 +116,28 @@ export class AWSRequest extends BaseRequest {
         let path = (this.event as APIGatewayProxyEvent).path;
         let queryParams = (this.event as APIGatewayProxyEvent).queryStringParameters as { [key: string]: string };
         if (path === undefined) {
-            path = (this.event as APIGatewayProxyEventV2).requestContext.http.path;
-            let stage = (this.event as APIGatewayProxyEventV2).requestContext.stage;
+            const requestContext = (this.event as APIGatewayProxyEventV2).requestContext;
+            path = requestContext.http.path;
+            const stage = requestContext.stage;
+            // API Gateway only puts the stage in the path of requests sent to the API's own execute-api host on a
+            // named stage. Behind a custom domain (where the API mapping selects the stage) or on the $default stage,
+            // the stage is not part of the path, so a path that starts with the stage name was sent like that by the
+            // client and we leave it as is.
+            // Real API Gateway events always have domainName and apiId. If an event doesn't have them (e.g.: a hand-built
+            // event in tests or one from a local emulator), we strip the stage whenever it is the first path segment.
+            const domainName: unknown = requestContext.domainName;
+            const apiId: unknown = requestContext.apiId;
+            const stageCanBeInPath =
+                typeof domainName !== "string" ||
+                typeof apiId !== "string" ||
+                domainName.startsWith(`${apiId}.execute-api.`);
             // We only strip the stage if it is a whole path segment
-            if (stage !== undefined && (path === `/${stage}` || path.startsWith(`/${stage}/`))) {
+            if (
+                stage !== undefined &&
+                stage !== "$default" &&
+                stageCanBeInPath &&
+                (path === `/${stage}` || path.startsWith(`/${stage}/`))
+            ) {
                 path = path.slice(stage.length + 1) || "/";
             }
             if (queryParams !== undefined && queryParams !== null) {

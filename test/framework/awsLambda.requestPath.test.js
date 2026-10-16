@@ -17,24 +17,29 @@ const assert = require("assert");
 const { AWSRequest } = require("../../lib/build/framework/awsLambda/framework");
 const NormalisedURLPath = require("../../lib/build/normalisedURLPath").default;
 
-function v2Event(path, queryStringParameters) {
+const apiId = "abc123";
+const executeApiHost = { domainName: `${apiId}.execute-api.us-east-1.amazonaws.com`, apiId };
+const customDomain = { domainName: "api.example.com", apiId };
+
+function v2Event(path, queryStringParameters, { stage = "prod", host = executeApiHost } = {}) {
     return {
         version: "2.0",
         headers: {},
         requestContext: {
+            ...host,
             http: { path, method: "GET" },
-            stage: "prod",
+            stage,
         },
         queryStringParameters,
     };
 }
 
-function v1Event(path, queryStringParameters) {
+function v1Event(path, queryStringParameters, host = executeApiHost) {
     return {
         path,
         httpMethod: "GET",
         headers: {},
-        requestContext: { path: "/prod" + path, stage: "prod" },
+        requestContext: { ...host, path: "/prod" + path, stage: "prod" },
         queryStringParameters,
     };
 }
@@ -49,86 +54,163 @@ function getRoutedPath(event) {
 
 const query = { a: "1" };
 
+function assertUnchanged(makeEvent, path) {
+    assert.strictEqual(getOriginalURL(makeEvent(path)), path);
+    assert.strictEqual(getRoutedPath(makeEvent(path)), new NormalisedURLPath(path).getAsStringDangerous());
+    assert.strictEqual(getOriginalURL(makeEvent(path, query)), path + "?a=1");
+    assert.strictEqual(getRoutedPath(makeEvent(path, query)), new NormalisedURLPath(path).getAsStringDangerous());
+}
+
 describe(`AWSRequest.getOriginalURL: ${printPath("[test/framework/awsLambda.requestPath.test.js]")}`, function () {
-    describe("payload v2 with a stage", function () {
-        for (const path of ["/prodXYZ/auth/signin", "/prod-anything/auth/signin", "/prod@evil.test/auth/signin"]) {
-            it(`only strips the stage as a whole path segment for ${path} with query params`, function () {
-                const event = v2Event(path, query);
-                assert.notStrictEqual(getRoutedPath(event), "/auth/signin");
-                assert.strictEqual(getRoutedPath(event), new NormalisedURLPath(path).getAsStringDangerous());
-                assert(getOriginalURL(event).endsWith("?a=1"));
+    // Real API Gateway events always have domainName and apiId. Without them (e.g.: hand-built or emulated events),
+    // the stage is stripped whenever it is the first path segment, the same way as on the execute-api host.
+    for (const { title, host } of [
+        { title: "on the execute-api host", host: executeApiHost },
+        { title: "without domainName and apiId", host: {} },
+        { title: "without apiId", host: { domainName: customDomain.domainName } },
+        { title: "without domainName", host: { apiId } },
+    ]) {
+        describe(`payload v2 with the prod stage ${title}`, function () {
+            const v2 = (path, queryStringParameters) => v2Event(path, queryStringParameters, { host });
+
+            for (const path of ["/prodXYZ/auth/signin", "/prod-anything/auth/signin", "/prod@evil.test/auth/signin"]) {
+                it(`only strips the stage as a whole path segment for ${path} with query params`, function () {
+                    const event = v2(path, query);
+                    assert.notStrictEqual(getRoutedPath(event), "/auth/signin");
+                    assert.strictEqual(getRoutedPath(event), new NormalisedURLPath(path).getAsStringDangerous());
+                    assert(getOriginalURL(event).endsWith("?a=1"));
+                });
+            }
+
+            it("keeps the full path for /prodXYZ/auth/signin with query params", function () {
+                assert.strictEqual(getOriginalURL(v2("/prodXYZ/auth/signin", query)), "/prodXYZ/auth/signin?a=1");
             });
-        }
 
-        it("keeps the full path for /prodXYZ/auth/signin with query params", function () {
-            assert.strictEqual(getOriginalURL(v2Event("/prodXYZ/auth/signin", query)), "/prodXYZ/auth/signin?a=1");
-        });
-
-        it("only strips the stage as a whole path segment for /prod@evil.test/auth/signin without query params", function () {
-            assert.notStrictEqual(getRoutedPath(v2Event("/prod@evil.test/auth/signin")), "/auth/signin");
-        });
-
-        it("only strips the stage as a whole path segment for /prodXYZ/auth/signin without query params", function () {
-            assert.strictEqual(getRoutedPath(v2Event("/prodXYZ/auth/signin")), "/prodXYZ/auth/signin");
-        });
-
-        it("strips the stage from /prod/auth/signin", function () {
-            assert.strictEqual(getOriginalURL(v2Event("/prod/auth/signin")), "/auth/signin");
-            assert.strictEqual(getRoutedPath(v2Event("/prod/auth/signin")), "/auth/signin");
-            assert.strictEqual(getOriginalURL(v2Event("/prod/auth/signin", query)), "/auth/signin?a=1");
-            assert.strictEqual(getRoutedPath(v2Event("/prod/auth/signin", query)), "/auth/signin");
-        });
-
-        it("resolves /prod to the root path", function () {
-            const rootPath = new NormalisedURLPath("/").getAsStringDangerous();
-            assert.strictEqual(getRoutedPath(v2Event("/prod")), rootPath);
-            assert.strictEqual(getRoutedPath(v2Event("/prod", query)), rootPath);
-            assert.strictEqual(getRoutedPath(v2Event("/prod/")), rootPath);
-        });
-
-        it("encodes query params", function () {
-            assert.strictEqual(
-                getOriginalURL(v2Event("/prod/auth/signin", { email: "a@b.com", q: "x y&z" })),
-                "/auth/signin?email=a%40b.com&q=x+y%26z"
-            );
-        });
-
-        for (const path of ["/other/auth/signin", "/pro/auth/signin"]) {
-            it(`does not change ${path}`, function () {
-                assert.strictEqual(getOriginalURL(v2Event(path)), path);
-                assert.strictEqual(getRoutedPath(v2Event(path)), path);
-                assert.strictEqual(getOriginalURL(v2Event(path, query)), path + "?a=1");
-                assert.strictEqual(getRoutedPath(v2Event(path, query)), path);
+            it("only strips the stage as a whole path segment for /prod@evil.test/auth/signin without query params", function () {
+                assert.notStrictEqual(getRoutedPath(v2("/prod@evil.test/auth/signin")), "/auth/signin");
+                assert.strictEqual(getOriginalURL(v2("/prod@evil.test/auth/signin")), "/prod@evil.test/auth/signin");
             });
-        }
 
-        it("does not treat a leading // after the stage as a host", function () {
-            assert.strictEqual(getRoutedPath(v2Event("/prod//evil.test/auth/signin")), "//evil.test/auth/signin");
-            assert.strictEqual(
-                getRoutedPath(v2Event("/prod//evil.test/auth/signin", query)),
-                "//evil.test/auth/signin"
-            );
+            it("only strips the stage as a whole path segment for /prodXYZ/auth/signin without query params", function () {
+                assert.strictEqual(getOriginalURL(v2("/prodXYZ/auth/signin")), "/prodXYZ/auth/signin");
+                assert.strictEqual(getRoutedPath(v2("/prodXYZ/auth/signin")), "/prodXYZ/auth/signin");
+            });
+
+            it("strips the stage from /prod/auth/signin", function () {
+                assert.strictEqual(getOriginalURL(v2("/prod/auth/signin")), "/auth/signin");
+                assert.strictEqual(getRoutedPath(v2("/prod/auth/signin")), "/auth/signin");
+                assert.strictEqual(getOriginalURL(v2("/prod/auth/signin", query)), "/auth/signin?a=1");
+                assert.strictEqual(getRoutedPath(v2("/prod/auth/signin", query)), "/auth/signin");
+            });
+
+            it("resolves /prod to the root path", function () {
+                const rootPath = new NormalisedURLPath("/").getAsStringDangerous();
+                assert.strictEqual(getOriginalURL(v2("/prod")), "/");
+                assert.strictEqual(getOriginalURL(v2("/prod", query)), "/?a=1");
+                assert.strictEqual(getRoutedPath(v2("/prod")), rootPath);
+                assert.strictEqual(getRoutedPath(v2("/prod", query)), rootPath);
+                assert.strictEqual(getRoutedPath(v2("/prod/")), rootPath);
+            });
+
+            it("encodes query params", function () {
+                assert.strictEqual(
+                    getOriginalURL(v2("/prod/auth/signin", { email: "a@b.com", q: "x y&z" })),
+                    "/auth/signin?email=a%40b.com&q=x+y%26z"
+                );
+            });
+
+            for (const path of ["/auth/signin", "/other/auth/signin", "/pro/auth/signin"]) {
+                it(`does not change ${path}`, function () {
+                    assertUnchanged(v2, path);
+                });
+            }
+
+            it("does not treat a leading // after the stage as a host", function () {
+                assert.strictEqual(getOriginalURL(v2("/prod//evil.test/auth/signin")), "//evil.test/auth/signin");
+                assert.strictEqual(getRoutedPath(v2("/prod//evil.test/auth/signin")), "//evil.test/auth/signin");
+                assert.strictEqual(
+                    getOriginalURL(v2("/prod//evil.test/auth/signin", query)),
+                    "//evil.test/auth/signin?a=1"
+                );
+                assert.strictEqual(getRoutedPath(v2("/prod//evil.test/auth/signin", query)), "//evil.test/auth/signin");
+            });
+
+            for (const path of [
+                "/prod/auth/signin?x=1",
+                "/prod/auth/signin#x",
+                "/prod/auth/sign in",
+                "/prod/auth/../signin",
+            ]) {
+                it(`routes ${path} the same with and without query params`, function () {
+                    assert.strictEqual(getRoutedPath(v2(path, query)), getRoutedPath(v2(path)));
+                    assert.strictEqual(getOriginalURL(v2(path, query)), getOriginalURL(v2(path)) + "?a=1");
+                });
+            }
         });
+    }
+
+    for (const { title, host } of [
+        { title: "on the execute-api host", host: executeApiHost },
+        { title: "behind a custom domain", host: customDomain },
+        { title: "without domainName and apiId", host: {} },
+    ]) {
+        describe(`payload v2 with the $default stage ${title}`, function () {
+            const v2 = (path, queryStringParameters) =>
+                v2Event(path, queryStringParameters, { stage: "$default", host });
+
+            for (const path of ["/auth/signin", "/$default/auth/signin", "/$defaultX/auth/signin", "/$default"]) {
+                it(`does not change ${path}`, function () {
+                    assertUnchanged(v2, path);
+                });
+            }
+        });
+    }
+
+    describe("payload v2 with the prod stage behind a custom domain", function () {
+        const v2 = (path, queryStringParameters) => v2Event(path, queryStringParameters, { host: customDomain });
 
         for (const path of [
-            "/prod/auth/signin?x=1",
-            "/prod/auth/signin#x",
-            "/prod/auth/sign in",
-            "/prod/auth/../signin",
+            "/auth/signin",
+            "/prod/auth/signin",
+            "/prodXYZ/auth/signin",
+            "/prod",
+            "/prod//evil.test/auth/signin",
         ]) {
-            it(`routes ${path} the same with and without query params`, function () {
-                assert.strictEqual(getRoutedPath(v2Event(path, query)), getRoutedPath(v2Event(path)));
-                assert.strictEqual(getOriginalURL(v2Event(path, query)), getOriginalURL(v2Event(path)) + "?a=1");
+            it(`does not change ${path}`, function () {
+                assertUnchanged(v2, path);
             });
         }
     });
 
+    describe("payload v2 with the prod stage on the execute-api host of another API", function () {
+        for (const domainName of [
+            "other.execute-api.us-east-1.amazonaws.com",
+            `x${apiId}.execute-api.us-east-1.amazonaws.com`,
+            `${apiId}.example.com`,
+        ]) {
+            const v2 = (path, queryStringParameters) =>
+                v2Event(path, queryStringParameters, { host: { domainName, apiId } });
+
+            for (const path of ["/prod/auth/signin", "/prod"]) {
+                it(`does not change ${path} on ${domainName}`, function () {
+                    assertUnchanged(v2, path);
+                });
+            }
+        }
+    });
+
     describe("payload v1", function () {
-        for (const path of ["/prodXYZ/auth/signin", "/auth/signin", "/prod/auth/signin"]) {
-            it(`returns the path as is for ${path}`, function () {
-                assert.strictEqual(getOriginalURL(v1Event(path)), path);
-                assert.strictEqual(getOriginalURL(v1Event(path, query)), path);
-            });
+        for (const { title, host } of [
+            { title: "on the execute-api host", host: executeApiHost },
+            { title: "behind a custom domain", host: customDomain },
+            { title: "without domainName and apiId", host: {} },
+        ]) {
+            for (const path of ["/prodXYZ/auth/signin", "/auth/signin", "/prod/auth/signin"]) {
+                it(`returns the path as is for ${path} ${title}`, function () {
+                    assert.strictEqual(getOriginalURL(v1Event(path, undefined, host)), path);
+                    assert.strictEqual(getOriginalURL(v1Event(path, query, host)), path);
+                });
+            }
         }
     });
 });
