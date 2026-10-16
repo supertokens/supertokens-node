@@ -1,0 +1,2 @@
+kind: Changed
+body: "totp: when the user has a verified TOTP device, removing a device without completing multi-factor auth is now only allowed for an unverified device, and only if no verified device has the same name (compared case-insensitively)."
