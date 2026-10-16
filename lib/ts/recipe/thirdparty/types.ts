@@ -175,13 +175,17 @@ export type TypeInput = {
      * The `frontendRedirectURI` must be an absolute URL. `javascript:`, `data:`, `vbscript:`, `file:`, `blob:`,
      * `about:` and `filesystem:` URLs are always rejected, without calling this function.
      *
-     * `frontendRedirectURI` is passed in the normalised form we redirect to (e.g.: `https://app.example.com` becomes
-     * `https://app.example.com/`), without the fields Apple posted, which are added to its query afterwards.
-     * The whole `state` is chosen by whoever starts the sign in, so treat `frontendRedirectURI` as untrusted:
-     * compare it against an exact list of allowed URLs, or parse it and compare the protocol, host, port and path.
-     * Do not use prefix or substring checks: for example, `https://app.example.com.evil.test/` and
-     * `https://app.example.com@evil.test/` both start with `https://app.example.com`, and in
-     * `intent://callback#Intent;package=...;end` the receiving app is chosen by the fragment.
+     * `frontendRedirectURI` is passed in the form we redirect to: the WHATWG URL serialisation of the value in `state`
+     * (`new URL(value).toString()`), without the fields Apple posted, which are added to its query afterwards. So dot
+     * segments in the path are resolved (also percent-encoded ones, such as `%2e%2e`) and the scheme is lowercased, and
+     * for http(s) URLs the host is lowercased and punycode (IDNA) encoded, the default port is dropped and an empty
+     * path becomes `/` (e.g.: `HTTPS://App.Example.com:443/a/%2e%2e/cb` becomes `https://app.example.com/cb`).
+     * The whole `state` is chosen by whoever starts the sign in, so treat `frontendRedirectURI` as untrusted: parse it
+     * (e.g.: with `new URL(frontendRedirectURI)`) and compare its protocol, host, port and path with the values you
+     * allow, instead of comparing it as a string. Do not use prefix or substring checks: for example,
+     * `https://app.example.com.evil.test/` and `https://app.example.com@evil.test/` both start with
+     * `https://app.example.com`, and in `intent://callback#Intent;package=...;end` the receiving app is chosen by the
+     * fragment.
      *
      * The redirect carries the authorization code and the `id_token` from Apple. Custom URL schemes are not owned by
      * a single app: any app installed on the device can register the same scheme and receive them. Prefer verified
