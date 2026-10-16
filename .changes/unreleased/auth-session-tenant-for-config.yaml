@@ -1,0 +1,2 @@
+kind: Changed
+body: "auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to."
