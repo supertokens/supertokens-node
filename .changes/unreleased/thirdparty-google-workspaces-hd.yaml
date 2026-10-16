@@ -1,0 +1,2 @@
+kind: Changed
+body: "thirdparty: with a specific `hd` (not `*`) in the Google Workspaces provider config, sign ins without an id token (e.g. with only an access token) now require the `hd` returned by Google's user info API to match it, and fail otherwise. Sign ins with an id token are checked as before."
