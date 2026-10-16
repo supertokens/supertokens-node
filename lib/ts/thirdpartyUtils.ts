@@ -116,7 +116,8 @@ export async function doPostJSONRequest(
         jsonResponse = JSON.parse(stringResponse);
     }
 
-    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
+    // We don't log the response body, since it can contain tokens (e.g.: GitHub's token check API returns the token)
+    logDebugMessage(`Received response with status ${response.status}`);
     return {
         stringResponse,
         status: response.status,
