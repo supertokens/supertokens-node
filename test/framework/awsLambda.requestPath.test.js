@@ -199,6 +199,49 @@ describe(`AWSRequest.getOriginalURL: ${printPath("[test/framework/awsLambda.requ
         }
     });
 
+    describe("payload v2 with the prod stage on the execute-api host in a different case", function () {
+        for (const host of [
+            { domainName: executeApiHost.domainName.toUpperCase(), apiId },
+            { domainName: `${apiId}.Execute-Api.us-east-1.amazonaws.com`, apiId },
+            { domainName: executeApiHost.domainName, apiId: apiId.toUpperCase() },
+        ]) {
+            const v2 = (path, queryStringParameters) => v2Event(path, queryStringParameters, { host });
+
+            it(`strips the stage from /prod/auth/signin on ${host.domainName} with apiId ${host.apiId}`, function () {
+                assert.strictEqual(getOriginalURL(v2("/prod/auth/signin")), "/auth/signin");
+                assert.strictEqual(getRoutedPath(v2("/prod/auth/signin")), "/auth/signin");
+                assert.strictEqual(getOriginalURL(v2("/prod/auth/signin", query)), "/auth/signin?a=1");
+                assert.strictEqual(getRoutedPath(v2("/prod/auth/signin", query)), "/auth/signin");
+            });
+
+            for (const path of ["/auth/signin", "/prodXYZ/auth/signin"]) {
+                it(`does not change ${path} on ${host.domainName} with apiId ${host.apiId}`, function () {
+                    assertUnchanged(v2, path);
+                });
+            }
+        }
+    });
+
+    for (const { title, stage } of [
+        { title: "an empty stage", stage: "" },
+        { title: "a null stage", stage: null },
+    ]) {
+        for (const { title: hostTitle, host } of [
+            { title: "on the execute-api host", host: executeApiHost },
+            { title: "without domainName and apiId", host: {} },
+        ]) {
+            describe(`payload v2 with ${title} ${hostTitle}`, function () {
+                const v2 = (path, queryStringParameters) => v2Event(path, queryStringParameters, { stage, host });
+
+                for (const path of ["/auth/signin", "/null/auth/signin", "//evil.test/auth/signin", "/", "/null"]) {
+                    it(`does not change ${path}`, function () {
+                        assertUnchanged(v2, path);
+                    });
+                }
+            });
+        }
+    }
+
     describe("payload v1", function () {
         for (const { title, host } of [
             { title: "on the execute-api host", host: executeApiHost },
