@@ -1,0 +1,2 @@
+kind: Changed
+body: "dashboard: when `admins` is set, unlinking accounts through the dashboard now requires an admin, like the other dashboard APIs that change data."
