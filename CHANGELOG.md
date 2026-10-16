@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   webauthn: account recovery now replaces the account's existing passkeys with the newly registered one and signs out its existing sessions if the account's email was not verified before the recovery. Accounts with a verified email keep their passkeys and sessions. Apps that don't use the EmailVerification recipe never have verified emails, so for them every account recovery resets the account's passkeys and sessions.
 -   auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to.
 -   thirdparty: the GitHub provider now calls `validateAccessToken` on every sign in, including a custom `validateAccessToken` set in the provider config. The default one checks the access token with GitHub (one extra GitHub API call per sign in) and needs the client's `clientSecret`: add it to the GitHub provider config, or set a custom `validateAccessToken`.
+-   auth: the sign in and sign up APIs (when a request carries a session and `shouldTryLinkingWithSessionUser` is not `false`) and the webauthn register credential API now check the session with the core, so a revoked session gets a 401 even if its access token has not expired yet. This adds one core call to those requests.
 
 ## [22.1.1] - 2025-06-20
 
