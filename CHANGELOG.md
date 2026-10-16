@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   thirdparty: the GitHub provider now calls `validateAccessToken` on every sign in, including a custom `validateAccessToken` set in the provider config. The default one checks the access token with GitHub (one extra GitHub API call per sign in) and needs the client's `clientSecret`: add it to the GitHub provider config, or set a custom `validateAccessToken`.
 -   auth: the sign in and sign up APIs (when a request carries a session and `shouldTryLinkingWithSessionUser` is not `false`) and the webauthn register, remove and list credential APIs now check the session with the core, so a revoked session gets a 401 even if its access token has not expired yet. This adds one core call to those requests.
 -   framework: when the SDK parses a request body itself (with Koa, or with Express and Loopback if no body parser ran before the SuperTokens middleware), bodies larger than 1 MiB, also after decompressing gzip or deflate bodies, now get a 400 response. Bodies already parsed by your own body parser are not affected.
+-   totp: when the user has a verified TOTP device, removing a device without completing multi-factor auth is now only allowed for an unverified device, and only if no verified device has the same name (compared case-insensitively).
 
 ## [23.1.0] - 2025-11-27
 
