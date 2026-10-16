@@ -1,0 +1,2 @@
+kind: Changed
+body: "awsLambda: for API Gateway payload v2 events, the stage is now only removed from the start of the request path for requests sent to the API's own `execute-api` host on a named stage. Behind a custom domain or on the `$default` stage, paths that start with the stage name are no longer altered. If your requests reach the Lambda with such a prefix (e.g. an API mapping key that matches the stage name), include it in `apiBasePath`."
