@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   awsLambda: the API Gateway (payload v2) stage is now only stripped from the request path when it is a whole path segment, and the path is no longer parsed as part of a URL string when adding query params.
 -   session: access token structure validation now requires a string `tId` claim for v4 and later access tokens.
 
+### Changed
+
+-   awsLambda: for API Gateway payload v2 events, the stage is now only removed from the start of the request path for requests sent to the API's own `execute-api` host on a named stage. Behind a custom domain or on the `$default` stage, paths that start with the stage name are no longer altered. If your requests reach the Lambda with such a prefix (e.g. an API mapping key that matches the stage name), include it in `apiBasePath`.
+
 ## [23.1.0] - 2025-11-27
 
 -   Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
