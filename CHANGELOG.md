@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   awsLambda: for API Gateway payload v2 events, the stage is now only removed from the start of the request path for requests sent to the API's own `execute-api` host on a named stage. Behind a custom domain or on the `$default` stage, paths that start with the stage name are no longer altered. If your requests reach the Lambda with such a prefix (e.g. an API mapping key that matches the stage name), include it in `apiBasePath`.
+-   awsLambda: for API Gateway payload v2 events, the stage is now only removed from the start of the request path for requests sent to the API's own `execute-api` host on a named stage. Behind a custom domain or on the `$default` stage, paths that start with the stage name are no longer altered. If your requests reach the Lambda with such a prefix (e.g. a custom domain API mapping key that matches the stage name), include it in `apiBasePath`, and if you set it as `apiGatewayPath`, remove it from there (e.g. replace `apiGatewayPath: "/prod"` and `apiBasePath: "/auth"` with `apiBasePath: "/prod/auth"`). `apiGatewayPath` is added in front of both the request path and `apiBasePath`, so if you keep the prefix in both, requests are still routed, but the refresh token cookie path becomes `/prod/prod/auth/session/refresh` (so browsers don't send the refresh token to `/prod/auth/session/refresh`), and the prefix is also doubled in other URLs the SDK builds from `apiBasePath`.
 
 ## [22.1.1] - 2025-06-20
 
