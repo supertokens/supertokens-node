@@ -177,6 +177,9 @@ export type TypeInput = {
      * segments in the path are resolved (also percent-encoded ones, such as `%2e%2e`) and the scheme is lowercased, and
      * for http(s) URLs the host is lowercased and punycode (IDNA) encoded, the default port is dropped and an empty
      * path becomes `/` (e.g.: `HTTPS://App.Example.com:443/a/%2e%2e/cb` becomes `https://app.example.com/cb`).
+     * Adding the posted fields re-encodes the query string already in the URL (as `application/x-www-form-urlencoded`,
+     * e.g.: `?a=b%20c&flag` becomes `?a=b+c&flag=`) and replaces parameters named like a posted field, so the query of
+     * the redirect can differ from the query of `frontendRedirectURI`.
      * The whole `state` is chosen by whoever starts the sign in, so treat `frontendRedirectURI` as untrusted: parse it
      * (e.g.: with `new URL(frontendRedirectURI)`) and compare its protocol, host, port and path with the values you
      * allow, instead of comparing it as a string. Do not use prefix or substring checks: for example,
