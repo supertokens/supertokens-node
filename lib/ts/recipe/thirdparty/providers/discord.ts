@@ -14,6 +14,7 @@
  */
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { addClientAccessTokenCheck, checkDiscordAccessToken } from "./clientAccessTokenCheck";
 
 export default function Discord(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -55,6 +56,8 @@ export default function Discord(input: ProviderInput): TypeProvider {
 
             return config;
         };
+
+        addClientAccessTokenCheck(originalImplementation, input.config, checkDiscordAccessToken);
 
         if (oOverride !== undefined) {
             originalImplementation = oOverride(originalImplementation);
