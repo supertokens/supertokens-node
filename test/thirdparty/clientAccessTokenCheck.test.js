@@ -299,6 +299,24 @@ describe(`Access token checks for tokens sent by the client: ${printPath(
             );
         });
 
+        it("rejects an access token of another app that Facebook won't debug", async function () {
+            mockDebugToken(400, {
+                error: {
+                    message: "(#100) The App_id in the input_token did not match the Viewing App",
+                    type: "OAuthException",
+                    code: 100,
+                },
+            });
+            const userInfo = mockFacebookUserInfo();
+            const provider = await getProvider(facebookConfig);
+
+            await assert.rejects(
+                provider.getUserInfo({ oAuthTokens: { access_token: "fb-token" }, userContext: {} }),
+                /does not belong to your application/
+            );
+            assert.strictEqual(userInfo.isDone(), false);
+        });
+
         it("reports a failed debug token call", async function () {
             mockDebugToken(400, { error: { message: "Invalid OAuth access token", code: 190 } });
             const provider = await getProvider(facebookConfig);

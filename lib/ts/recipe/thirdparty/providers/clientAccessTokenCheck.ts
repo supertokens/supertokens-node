@@ -125,13 +125,12 @@ async function doAccessTokenCheckRequest(
     const stringResponse = await response.text();
     logDebugMessage(`Received response with status ${response.status}`);
 
+    // Error responses are parsed too: Facebook's error body tells a token of another app apart from a config problem
     let jsonResponse: any = undefined;
-    if (response.status < 400) {
-        try {
-            jsonResponse = JSON.parse(stringResponse);
-        } catch {
-            jsonResponse = undefined;
-        }
+    try {
+        jsonResponse = JSON.parse(stringResponse);
+    } catch {
+        jsonResponse = undefined;
     }
     return { status: response.status, jsonResponse };
 }
@@ -158,6 +157,19 @@ export const checkGoogleAccessToken: ClientAccessTokenCheck = async ({ accessTok
     }
 };
 
+// Facebook doesn't debug a token of another app: it answers with error 100, "The App_id in the input_token did not
+// match the Viewing App", instead of returning the token's app_id.
+function isFacebookErrorForTokenOfAnotherApp(jsonResponse: any): boolean {
+    const error = jsonResponse !== undefined && jsonResponse !== null ? jsonResponse.error : undefined;
+    return (
+        error !== undefined &&
+        error !== null &&
+        error.code === 100 &&
+        typeof error.message === "string" &&
+        /did not match the viewing app/i.test(error.message)
+    );
+}
+
 // Facebook's debug token API needs an app access token, which is made from the client id and the client secret.
 export const checkFacebookAccessToken: ClientAccessTokenCheck = async ({ accessToken, clientConfig, clientIds }) => {
     if (clientConfig.clientSecret === undefined) {
@@ -175,6 +187,9 @@ export const checkFacebookAccessToken: ClientAccessTokenCheck = async ({ accessT
         },
     });
     if (res.status !== 200 || res.jsonResponse === undefined || typeof res.jsonResponse.data !== "object") {
+        if (isFacebookErrorForTokenOfAnotherApp(res.jsonResponse)) {
+            throw new Error("Access token does not belong to your application");
+        }
         throw new Error(
             `Could not check the access token with Facebook (status ${res.status}). Please check the clientId and clientSecret of the Facebook provider.`
         );
