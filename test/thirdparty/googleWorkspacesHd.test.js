@@ -75,6 +75,8 @@ describe(`Google Workspaces hd restriction: ${printPath("[test/thirdparty/google
                                 config: {
                                     thirdPartyId: "google-workspaces",
                                     oidcDiscoveryEndpoint: `${IDP}/.well-known/openid-configuration`,
+                                    // These tests are about the hd check on the user info, so they accept any access token
+                                    validateAccessToken: async () => {},
                                     clients: [
                                         {
                                             clientId,
