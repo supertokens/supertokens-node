@@ -48,13 +48,16 @@ export default function getRecipeImplementation(): RecipeInterface {
 
                 // For all non GET requests we also want to check if the user is allowed to perform this operation
                 if (normaliseHttpMethod(input.req.getMethod()) !== "get") {
+                    // We check the path the request is routed on (i.e. without the query string)
+                    const requestPath = new NormalisedURLPath(input.req.getOriginalURL()).getAsStringDangerous();
+
                     // We dont want to block the analytics API
-                    if (input.req.getOriginalURL().endsWith(DASHBOARD_ANALYTICS_API)) {
+                    if (requestPath.endsWith(DASHBOARD_ANALYTICS_API)) {
                         return true;
                     }
 
                     // We do not want to block the sign out request
-                    if (input.req.getOriginalURL().endsWith(SIGN_OUT_API)) {
+                    if (requestPath.endsWith(SIGN_OUT_API)) {
                         return true;
                     }
 

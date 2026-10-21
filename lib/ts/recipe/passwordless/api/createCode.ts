@@ -55,6 +55,20 @@ export default async function createCode(
         });
     }
 
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        options.req,
+        options.res,
+        shouldTryLinkingWithSessionUser,
+        userContext
+    );
+
+    // We resolve the tenant before running the (tenant specific) email and phone number validators
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     // normalise and validate format of input
     if (
         email !== undefined &&
@@ -91,19 +105,6 @@ export default async function createCode(
         } else {
             phoneNumber = parsedPhoneNumber.format("E.164");
         }
-    }
-
-    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
-
-    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
-        options.req,
-        options.res,
-        shouldTryLinkingWithSessionUser,
-        userContext
-    );
-
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
     }
 
     let result = await apiImplementation.createCodePOST(

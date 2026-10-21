@@ -791,7 +791,12 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(preAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
-            if (isFakeEmail(email) && preAuthChecks.isFirstFactor) {
+            // We check the stored email of the matched login method as well, not just the one in the request
+            const authenticatingEmail = authenticatingUser.loginMethod?.email;
+            if (
+                (isFakeEmail(email) || (authenticatingEmail !== undefined && isFakeEmail(authenticatingEmail))) &&
+                preAuthChecks.isFirstFactor
+            ) {
                 // Fake emails cannot be used as a first factor
                 return {
                     status: "WRONG_CREDENTIALS_ERROR",

@@ -26,6 +26,19 @@ export declare function doPostRequest(
     status: number;
     stringResponse: string;
 }>;
+export declare function doPostJSONRequest(
+    url: string,
+    body: {
+        [key: string]: any;
+    },
+    headers?: {
+        [key: string]: string;
+    }
+): Promise<{
+    jsonResponse: Record<string, any> | undefined;
+    status: number;
+    stringResponse: string;
+}>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
     jwks: jose.JWTVerifyGetKey,
