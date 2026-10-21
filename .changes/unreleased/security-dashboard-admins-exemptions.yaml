@@ -1,2 +1,0 @@
-kind: Security
-body: "dashboard: the sign-out and analytics exemptions from the `admins` write restriction now match on the request path only, ignoring the query string."

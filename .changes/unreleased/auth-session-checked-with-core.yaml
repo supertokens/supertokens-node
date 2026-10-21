@@ -1,2 +1,0 @@
-kind: Changed
-body: "auth: the sign in and sign up APIs and the passwordless create code and resend code APIs (when a request carries a session and `shouldTryLinkingWithSessionUser` is not `false`), and the webauthn register, remove and list credential APIs now check the session with the core, so a revoked session gets a 401 even if its access token has not expired yet. This adds one core call to those requests."

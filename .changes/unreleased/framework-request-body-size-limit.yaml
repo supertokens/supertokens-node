@@ -1,2 +1,0 @@
-kind: Changed
-body: "framework: when the SDK parses a request body itself (with Koa, or with Express and Loopback if no body parser ran before the SuperTokens middleware), bodies larger than 1 MiB, also after decompressing gzip or deflate bodies, now get a 400 response. Bodies already parsed by your own body parser are not affected."

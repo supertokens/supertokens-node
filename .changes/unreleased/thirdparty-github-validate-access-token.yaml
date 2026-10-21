@@ -1,2 +1,0 @@
-kind: Changed
-body: "thirdparty: the GitHub provider now calls `validateAccessToken` on every sign in, including a custom `validateAccessToken` set in the provider config. The default one checks the access token with GitHub (one extra GitHub API call per sign in) and needs the client's `clientSecret`: add it to the GitHub provider config, or set a custom `validateAccessToken`."
