@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [23.1.1] - 2026-10-21
+
+### Security
+
+-   thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `websiteDomain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `isValidFrontendRedirectURI` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected.
+-   dashboard: the sign-out and analytics exemptions from the `admins` write restriction now match on the request path only, ignoring the query string.
+-   accountlinking: when `shouldRequireVerification` is `true`, automatic account linking now also requires the matching email to be verified in the primary user (as it already did for phone numbers). Apps using `shouldRequireVerification: true` now get no link in this case, which was always the documented intent.
+-   awsLambda: the API Gateway (payload v2) stage is now only stripped from the request path when it is a whole path segment, and the path is no longer parsed as part of a URL string when adding query params.
+-   session: access token structure validation now requires a string `tId` claim for v4 and later access tokens.
+
+### Changed
+
+-   awsLambda: for API Gateway payload v2 events, the stage is now only removed from the start of the request path for requests sent to the API's own `execute-api` host on a named stage. Behind a custom domain or on the `$default` stage, paths that start with the stage name are no longer altered. If your requests reach the Lambda with such a prefix (e.g. a custom domain API mapping key that matches the stage name), include it in `apiBasePath`, and if you set it as `apiGatewayPath`, remove it from there (e.g. replace `apiGatewayPath: "/prod"` and `apiBasePath: "/auth"` with `apiBasePath: "/prod/auth"`). `apiGatewayPath` is added in front of both the request path and `apiBasePath`, so if you keep the prefix in both, requests are still routed, but the refresh token cookie path becomes `/prod/prod/auth/session/refresh` (so browsers don't send the refresh token to `/prod/auth/session/refresh`), and the prefix is also doubled in other URLs the SDK builds from `apiBasePath`.
+-   webauthn: account recovery now replaces the account's existing passkeys with the newly registered one and signs out its existing sessions if the account's email was not verified before the recovery. Accounts with a verified email keep their passkeys and sessions. Apps that don't use the EmailVerification recipe never have verified emails, so for them every account recovery resets the account's passkeys and sessions.
+-   auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to.
+-   thirdparty: the GitHub provider now calls `validateAccessToken` on every sign in, including a custom `validateAccessToken` set in the provider config. The default one checks the access token with GitHub (one extra GitHub API call per sign in) and needs the client's `clientSecret`: add it to the GitHub provider config, or set a custom `validateAccessToken`.
+-   auth: the sign in and sign up APIs and the passwordless create code and resend code APIs (when a request carries a session and `shouldTryLinkingWithSessionUser` is not `false`), and the webauthn register, remove and list credential APIs now check the session with the core, so a revoked session gets a 401 even if its access token has not expired yet. This adds one core call to those requests.
+-   framework: when the SDK parses a request body itself (with Koa, or with Express and Loopback if no body parser ran before the SuperTokens middleware), bodies larger than 1 MiB, also after decompressing gzip or deflate bodies, now get a 400 response. Bodies already parsed by your own body parser are not affected.
+-   totp: when the user has a verified TOTP device, removing a device without completing multi-factor auth is now only allowed for an unverified device, and only if no verified device has the same name (compared case-insensitively).
+-   dashboard: when `admins` is set, unlinking accounts through the dashboard now requires an admin, like the other dashboard APIs that change data.
+-   thirdparty: with a specific `hd` (not `*`) in the Google Workspaces provider config, sign ins without an id token (e.g. with only an access token) now require the `hd` returned by Google's user info API to match it, and fail otherwise. Sign ins with an id token are checked as before.
+-   session: `validateClaimsForSessionHandle` now fetches claim values for the session's tenant, and leaves protected access token payload claims (such as `sub` and `tId`) out of the payload update it saves. In multi-tenant apps, claims it refetches (e.g. user roles, permissions or the MFA claim) for sessions of tenants other than the public one now get the values for the session's tenant, both in the returned validation result and in the updated access token payload. Sessions of the public tenant are handled as before.
+
 ## [23.1.0] - 2025-11-27
 
 -   Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired

@@ -562,7 +562,7 @@ if (major >= 18) {
                     url: "/api/auth/callback/apple",
                     test: async ({ fetch }) => {
                         let state = Buffer.from(
-                            JSON.stringify({ frontendRedirectURI: "http://localhost:3000/redirect" })
+                            JSON.stringify({ frontendRedirectURI: "https://supertokens.io/redirect" })
                         ).toString("base64");
                         let formData = { state, code: "testing" };
                         var encodedData = Object.keys(formData)
@@ -584,7 +584,7 @@ if (major >= 18) {
                         assert.deepStrictEqual(res.status, 303);
                         assert.deepEqual(
                             res.headers.get("location"),
-                            "http://localhost:3000/redirect?state=eyJmcm9udGVuZFJlZGlyZWN0VVJJIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL3JlZGlyZWN0In0%3D&code=testing"
+                            "https://supertokens.io/redirect?state=eyJmcm9udGVuZFJlZGlyZWN0VVJJIjoiaHR0cHM6Ly9zdXBlcnRva2Vucy5pby9yZWRpcmVjdCJ9&code=testing"
                         );
                     },
                 });

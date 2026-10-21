@@ -61,6 +61,28 @@ export default function GoogleWorkspaces(input: ProviderInput): TypeProvider {
             return config;
         };
 
+        const oGetUserInfo = originalImplementation.getUserInfo;
+        originalImplementation.getUserInfo = async function (input) {
+            const userInfo = await oGetUserInfo(input);
+
+            const hd = originalImplementation.config.additionalConfig?.hd;
+            if (hd !== undefined && hd !== "*") {
+                // If an id token was verified, validateIdTokenPayload has checked its hd claim. Otherwise we require
+                // the user info response to have the right hd value.
+                // This must match the condition under which getUserInfo (custom.ts) verifies the id token: it skips
+                // falsy values (e.g.: an empty string or null), so those must not count as verified here.
+                const idTokenWasVerified =
+                    Boolean(input.oAuthTokens.id_token) && originalImplementation.config.jwksURI !== undefined;
+                if (!idTokenWasVerified && userInfo.rawUserInfoFromProvider.fromUserInfoAPI?.hd !== hd) {
+                    throw new Error(
+                        "the value for hd in the user info response does not match the value provided in the config"
+                    );
+                }
+            }
+
+            return userInfo;
+        };
+
         if (oOverride !== undefined) {
             originalImplementation = oOverride(originalImplementation);
         }

@@ -1114,6 +1114,78 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 3
             );
         });
+
+        function getValidPayload(version) {
+            const payload = {
+                sessionHandle: "handle",
+                sub: "userId",
+                refreshTokenHash1: "hash",
+                exp: 0,
+                iat: 0,
+            };
+            if (version >= 4) {
+                payload.tId = "public";
+            }
+            if (version >= 5) {
+                payload.rsub = "userId";
+            }
+            return payload;
+        }
+
+        for (const version of [4, 5]) {
+            it(`should accept a string tId (v${version})`, () => {
+                validateAccessTokenStructure(getValidPayload(version), version);
+                validateAccessTokenStructure({ ...getValidPayload(version), tId: "tenant1" }, version);
+            });
+
+            for (const [description, tId] of [
+                ["null", null],
+                ["a number", 1],
+                ["an object", { id: "public" }],
+            ]) {
+                it(`should reject tId being ${description} (v${version})`, () => {
+                    assert.throws(
+                        () => validateAccessTokenStructure({ ...getValidPayload(version), tId }, version),
+                        /Access token does not contain all the information/
+                    );
+                });
+            }
+
+            it(`should reject a missing tId (v${version})`, () => {
+                const payload = getValidPayload(version);
+                delete payload.tId;
+                assert.throws(
+                    () => validateAccessTokenStructure(payload, version),
+                    /Access token does not contain all the information/
+                );
+            });
+        }
+
+        it("should reject a missing rsub (v5)", () => {
+            const payload = getValidPayload(5);
+            delete payload.rsub;
+            assert.throws(
+                () => validateAccessTokenStructure(payload, 5),
+                /Access token does not contain all the information/
+            );
+        });
+
+        it("should not check tId (v3)", () => {
+            validateAccessTokenStructure(getValidPayload(3), 3);
+            validateAccessTokenStructure({ ...getValidPayload(3), tId: 1 }, 3);
+            validateAccessTokenStructure({ ...getValidPayload(3), tId: null }, 3);
+        });
+
+        it("should reject a missing sub (v3, v4, v5)", () => {
+            for (const version of [3, 4, 5]) {
+                const payload = getValidPayload(version);
+                delete payload.sub;
+                assert.throws(
+                    () => validateAccessTokenStructure(payload, version),
+                    /Access token does not contain all the information/
+                );
+            }
+        });
     });
 });
 
