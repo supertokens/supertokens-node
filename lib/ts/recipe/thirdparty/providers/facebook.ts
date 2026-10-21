@@ -14,6 +14,7 @@
  */
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { addClientAccessTokenCheck, checkFacebookAccessToken } from "./clientAccessTokenCheck";
 
 export default function Facebook(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -104,6 +105,8 @@ export default function Facebook(input: ProviderInput): TypeProvider {
 
             return await oGetUserInfo(input);
         };
+
+        addClientAccessTokenCheck(originalImplementation, input.config, checkFacebookAccessToken);
 
         if (oOverride !== undefined) {
             originalImplementation = oOverride(originalImplementation);

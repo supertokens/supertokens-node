@@ -158,16 +158,21 @@ export default class SessionWrapper {
         let claimValidationResponse = await recipeImpl.validateClaims({
             userId: sessionInfo.userId,
             recipeUserId: sessionInfo.recipeUserId,
-            accessTokenPayload: sessionInfo.customClaimsInAccessTokenPayload,
+            // We add the tenant of the session, so that claim values are fetched for the right tenant
+            accessTokenPayload: { ...sessionInfo.customClaimsInAccessTokenPayload, tId: sessionInfo.tenantId },
             claimValidators,
             userContext: ctx,
         });
 
         if (claimValidationResponse.accessTokenPayloadUpdate !== undefined) {
+            const accessTokenPayloadUpdate = { ...claimValidationResponse.accessTokenPayloadUpdate };
+            for (const prop of protectedProps) {
+                delete accessTokenPayloadUpdate[prop];
+            }
             if (
                 !(await recipeImpl.mergeIntoAccessTokenPayload({
                     sessionHandle,
-                    accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
+                    accessTokenPayloadUpdate,
                     userContext: ctx,
                 }))
             ) {
