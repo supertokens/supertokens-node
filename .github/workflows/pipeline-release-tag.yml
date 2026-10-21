@@ -1,0 +1,179 @@
+name: "Release Pipeline"
+
+# Thin caller of the shared reusable release-tag workflow in supertokens/actions.
+# The shared five-job release skeleton (setup, register-version, mark-as-success,
+# release, merge — including the post-release dev sync) lives once in the
+# reusable workflow; only node's ecosystem follow-ups (docs publish + npm
+# publish) remain here and consume the reusable workflow's outputs via `needs`.
+#
+# Two behaviour changes vs. the previous per-repo copy, both inherited from the
+# shared workflow (see supertokens/actions .github/workflows/release-tag.yml):
+#   - register-version is restored — the PUT that creates the API version row
+#     and records the FDI/CDI compatibility arrays. node previously lacked this
+#     job and silently depended on a legacy CircleCI dev-tag script.
+#   - dev is synced with the release branch after a latest-version release, so
+#     the next dev-sync computes the correct next version (this step was missing
+#     from node's copy and is what let dev drift).
+#
+# These release paths only run when a dev-sync release PR (release/vX.Y.Z) is
+# merged into a version branch, or on manual dispatch — CI on a normal PR cannot
+# exercise them.
+#
+# Backports: on a version branch older than the newest released line, the
+# shared workflow sets isBackport (and isLatest is always false). The docs job
+# then does nothing, and the package is published under the version-X.Y.Z
+# dist-tag only; the publish step fails if dist-tags.latest moved anyway.
+# Older branches keep CHANGELOG.md by hand: the release PR (branch
+# release/vX.Y.Z, so that merging it starts this workflow) must add the
+# "## [X.Y.Z] - <date>" section and bump package.json, package-lock.json and
+# lib/ts/version.ts (+ lib/build/version.js).
+
+on:
+    pull_request:
+        types: [closed]
+        branches:
+            - "[0-9]+.[0-9]+"
+
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: The branch to create the release tag on
+                type: string
+                required: true
+
+            skip-test-checks:
+                description: Skip tests passed checks
+                type: boolean
+                default: false
+                required: false
+
+            skip-other-version-checks:
+                description: Skip server checks for core and frontend versions
+                type: boolean
+                default: false
+                required: false
+
+permissions:
+    contents: write
+    pull-requests: read
+
+jobs:
+    release-pipeline:
+        uses: supertokens/actions/.github/workflows/release-tag.yml@main
+        secrets: inherit
+        with:
+            sdk_name: node
+            branch: ${{ inputs.branch || '' }}
+            skip-test-checks: ${{ inputs.skip-test-checks || false }}
+            skip-other-version-checks: ${{ inputs.skip-other-version-checks || false }}
+            # Must cover every .changie.yaml replacement target so the release
+            # changelog commit stages the bumped version files.
+            changelog_add_paths: ".changes/ CHANGELOG.md package.json lib/ts/version.ts lib/build/version.js"
+
+    publish-docs:
+        # The website's node docs follow the newest line; backports leave them alone.
+        if: needs.release-pipeline.outputs.isBackport != 'true'
+        runs-on: ubuntu-latest
+        needs:
+            - release-pipeline
+
+        steps:
+            - uses: actions/create-github-app-token@v2
+              id: app-token
+              with:
+                  app-id: ${{ vars.RELEASE_APP_ID }}
+                  private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+                  owner: supertokens
+                  # This job checks out and dispatches a workflow in
+                  # supertokens-backend-website in addition to this repo.
+                  repositories: |
+                      ${{ github.event.repository.name }}
+                      supertokens-backend-website
+
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.release-pipeline.outputs.releaseTag }}
+                  fetch-tags: true
+                  path: supertokens-node
+
+            - uses: actions/checkout@v4
+              with:
+                  repository: supertokens/supertokens-backend-website
+                  token: ${{ steps.app-token.outputs.token }}
+                  path: supertokens-backend-website
+
+            - run: |
+                  shopt -s extglob # Enable extended globbing
+
+                  if [[ "${{ needs.release-pipeline.outputs.isLatest }}" == "true" ]]
+                  then
+                      # Delete everything except the version folders
+                      rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/!(*.*.X)
+                      # Copy files to the root dir
+                      cp -r supertokens-node/docs/* supertokens-backend-website/app/docs/sdk/docs/nodejs/
+                  fi
+
+                  # Delete the current version folder if it exists
+                  rm -rf supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.release-pipeline.outputs.versionXy }}.X
+                  # Copy the current docs
+                  mkdir -p supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.release-pipeline.outputs.versionXy }}.X
+                  cp -r supertokens-node/docs/* supertokens-backend-website/app/docs/sdk/docs/nodejs/${{ needs.release-pipeline.outputs.versionXy }}.X
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: node-docs-${{ needs.release-pipeline.outputs.version }}
+                  path: supertokens-backend-website/app/docs/sdk/docs/nodejs
+
+            - name: Trigger the backend website CI
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ steps.app-token.outputs.token }}
+                  script: |
+                      github.rest.actions.createWorkflowDispatch({
+                          owner: 'supertokens',
+                          repo: 'supertokens-backend-website',
+                          workflow_id: 'release-node-documentation-changes.yml',
+                          ref: 'master',
+                          inputs: {
+                              "version": `${{ needs.release-pipeline.outputs.version }}`,
+                              "artifact-name": `node-docs-${{ needs.release-pipeline.outputs.version }}`,
+                              "version-folder": `app/docs/sdk/docs/nodejs`,
+                              "run-id": `${{ github.run_id }}`,
+                              "stage":  "production",
+                          }
+                      })
+
+    publish:
+        runs-on: ubuntu-latest
+        environment: publish
+        needs:
+            - release-pipeline
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.release-pipeline.outputs.releaseTag }}
+                  fetch-tags: true
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  registry-url: "https://registry.npmjs.org/"
+
+            - run: |
+                  if [[ "${{ needs.release-pipeline.outputs.isLatest }}" == "true" && "${{ needs.release-pipeline.outputs.isBackport }}" != "true" ]]
+                  then
+                      npm publish --tag latest
+                  else
+                      pkg=$(jq -r .name package.json)
+                      latestBefore=$(npm view "$pkg" dist-tags.latest)
+                      npm publish --tag version-${{ needs.release-pipeline.outputs.version }}
+                      latestAfter=$(npm view "$pkg" dist-tags.latest)
+                      if [[ "$latestAfter" != "$latestBefore" ]]
+                      then
+                          echo "::error::dist-tags.latest moved from $latestBefore to $latestAfter. Restore it with: npm dist-tag add $pkg@$latestBefore latest"
+                          exit 1
+                      fi
+                  fi
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
