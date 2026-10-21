@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [22.1.2] - 2026-10-21
+
 ### Security
 
 -   thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `websiteDomain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `isValidFrontendRedirectURI` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected.
