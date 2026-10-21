@@ -12,10 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { encodeBase64 } from "../../../utils";
+import { encodeBase64, getUserContext } from "../../../utils";
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
-import { doGetRequest, doPostRequest } from "../../../thirdpartyUtils";
+import { doGetRequest, doPostJSONRequest } from "../../../thirdpartyUtils";
 
 function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
     fromIdTokenPayload?: any;
@@ -61,20 +61,30 @@ export default function Github(input: ProviderInput): TypeProvider {
 
     if (input.config.validateAccessToken === undefined) {
         input.config.validateAccessToken = async ({ accessToken, clientConfig }) => {
-            const basicAuthToken = encodeBase64(
-                `${clientConfig.clientId}:${clientConfig.clientSecret === undefined ? "" : clientConfig.clientSecret}`
-            );
+            if (clientConfig.clientSecret === undefined) {
+                throw new Error(
+                    "The GitHub provider needs the clientSecret of the client to validate access tokens. Please add it to the provider config, or set a custom validateAccessToken."
+                );
+            }
+            const basicAuthToken = encodeBase64(`${clientConfig.clientId}:${clientConfig.clientSecret}`);
 
-            const applicationResponse = await doPostRequest(
+            // GitHub's token check API only accepts a JSON body
+            const applicationResponse = await doPostJSONRequest(
                 `https://api.github.com/applications/${clientConfig.clientId}/token`,
                 {
                     access_token: accessToken,
                 },
                 {
                     Authorization: `Basic ${basicAuthToken}`,
-                    "Content-Type": "application/json",
+                    Accept: "application/vnd.github+json",
                 }
             );
+
+            if (applicationResponse.status === 401 || applicationResponse.status === 403) {
+                throw new Error(
+                    "GitHub rejected the client credentials used to validate the access token. Please check the clientId and clientSecret of the GitHub provider."
+                );
+            }
 
             if (applicationResponse.status !== 200) {
                 throw new Error("Invalid access token");
@@ -107,6 +117,15 @@ export default function Github(input: ProviderInput): TypeProvider {
         };
 
         originalImplementation.getUserInfo = async function (input) {
+            const accessToken = input.oAuthTokens.access_token;
+            if (accessToken !== undefined && originalImplementation.config.validateAccessToken !== undefined) {
+                await originalImplementation.config.validateAccessToken({
+                    accessToken,
+                    clientConfig: originalImplementation.config,
+                    userContext: getUserContext(input.userContext),
+                });
+            }
+
             const headers = {
                 Authorization: `Bearer ${input.oAuthTokens.access_token}`,
                 Accept: "application/vnd.github.v3+json",

@@ -14,6 +14,7 @@
  */
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { addClientAccessTokenCheck, checkGoogleAccessToken } from "./clientAccessTokenCheck";
 import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 export default function Google(input: ProviderInput): TypeProvider {
@@ -47,6 +48,8 @@ export default function Google(input: ProviderInput): TypeProvider {
 
             return config;
         };
+
+        addClientAccessTokenCheck(originalImplementation, input.config, checkGoogleAccessToken);
 
         if (oOverride !== undefined) {
             originalImplementation = oOverride(originalImplementation);

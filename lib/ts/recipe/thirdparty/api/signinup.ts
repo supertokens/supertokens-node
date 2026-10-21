@@ -72,6 +72,21 @@ export default async function signInUpAPI(
         });
     }
 
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, bodyParams);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        stInstance,
+        options.req,
+        options.res,
+        shouldTryLinkingWithSessionUser,
+        userContext
+    );
+
+    // We resolve the tenant before anything tenant specific (e.g.: the provider config) is loaded
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     const providerResponse = await options.recipeImplementation.getProvider({
         thirdPartyId,
         tenantId,
@@ -87,20 +102,6 @@ export default async function signInUpAPI(
     }
 
     const provider = providerResponse;
-
-    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, bodyParams);
-
-    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
-        stInstance,
-        options.req,
-        options.res,
-        shouldTryLinkingWithSessionUser,
-        userContext
-    );
-
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
-    }
 
     let result = await apiImplementation.signInUpPOST({
         provider,

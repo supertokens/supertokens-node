@@ -17,6 +17,7 @@ import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { TypeProvider, ProviderInput } from "../types";
 import NewProvider from "./custom";
+import { addClientAccessTokenCheck, checkGitLabAccessToken } from "./clientAccessTokenCheck";
 import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 // import NormalisedURLDomain from "../../../normalisedURLDomain";
 
@@ -49,6 +50,8 @@ export default function Gitlab(input: ProviderInput): TypeProvider {
 
             return config;
         };
+
+        addClientAccessTokenCheck(originalImplementation, input.config, checkGitLabAccessToken);
 
         if (oOverride !== undefined) {
             originalImplementation = oOverride(originalImplementation);

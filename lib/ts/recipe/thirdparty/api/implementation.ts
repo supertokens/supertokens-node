@@ -2,6 +2,8 @@ import { APIInterface } from "../";
 import { AuthUtils } from "../../../authUtils";
 import { logDebugMessage } from "../../../logger";
 import { decodeBase64 } from "../../../utils";
+import STError from "../../../error";
+import { getNormalisedOriginTuple } from "../utils";
 import type SuperTokens from "../../../supertokens";
 
 export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
@@ -225,11 +227,75 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
             };
         },
 
-        appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options }): Promise<void> {
-            const stateInBase64 = formPostInfoFromProvider.state;
-            const state = decodeBase64(stateInBase64);
-            const stateObj = JSON.parse(state);
-            const redirectURI = stateObj.frontendRedirectURI;
+        appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options, userContext }): Promise<void> {
+            const redirectURI = getFrontendRedirectURIFromState(formPostInfoFromProvider.state);
+
+            if (options.config.isValidFrontendRedirectURI !== undefined) {
+                // The app decides which targets are allowed, so we also accept custom schemes (e.g.: for mobile deep
+                // links) here, but never schemes that could run code or read local data in the browser.
+                if (!isAllowedRedirectTargetForCustomCheck(redirectURI)) {
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: "frontendRedirectURI in state must be an absolute URL with an allowed scheme",
+                    });
+                }
+
+                const isValid = await options.config.isValidFrontendRedirectURI({
+                    // We pass the URL in the form we redirect to (before adding the posted fields to the query), so the
+                    // app checks the same URL the browser navigates to, not the raw string from the state
+                    frontendRedirectURI: new URL(redirectURI).toString(),
+                    request: options.req,
+                    userContext,
+                });
+                if (isValid !== true) {
+                    logDebugMessage(
+                        "appleRedirectHandlerPOST: rejecting redirect because isValidFrontendRedirectURI did not return true"
+                    );
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: "frontendRedirectURI in state is not allowed",
+                    });
+                }
+            } else {
+                const redirectOrigin = getNormalisedOriginTuple(redirectURI);
+                if (redirectOrigin === undefined) {
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: "frontendRedirectURI in state must be an absolute http or https URL",
+                    });
+                }
+
+                const configuredOriginString = options.appInfo
+                    .getOrigin({ request: options.req, userContext })
+                    .getAsStringDangerous();
+                const configuredOrigin = getNormalisedOriginTuple(configuredOriginString);
+                if (configuredOrigin === undefined) {
+                    logDebugMessage(
+                        `appleRedirectHandlerPOST: rejecting redirect because the configured origin (${configuredOriginString}) is not an http or https URL. Use isValidFrontendRedirectURI to allow redirects in this case.`
+                    );
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: "frontendRedirectURI in state does not match the configured origin",
+                    });
+                }
+                if (
+                    redirectOrigin.protocol !== configuredOrigin.protocol ||
+                    redirectOrigin.hostname !== configuredOrigin.hostname ||
+                    redirectOrigin.port !== configuredOrigin.port
+                ) {
+                    logDebugMessage(
+                        `appleRedirectHandlerPOST: rejecting redirect because the origin of frontendRedirectURI (${formatOriginTuple(
+                            redirectOrigin
+                        )}) does not match the configured origin (${formatOriginTuple(
+                            configuredOrigin
+                        )}). If the origin depends on the request, check what it resolves to for this request, or use isValidFrontendRedirectURI.`
+                    );
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: "frontendRedirectURI in state does not match the configured origin",
+                    });
+                }
+            }
 
             const urlObj = new URL(redirectURI);
             for (const [key, value] of Object.entries(formPostInfoFromProvider)) {
@@ -241,4 +307,69 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
             options.res.sendHTMLResponse("");
         },
     };
+}
+
+// Schemes we never redirect to, because the browser would run code or expose local data with them
+const DISALLOWED_REDIRECT_SCHEMES = ["javascript:", "data:", "vbscript:", "file:", "blob:", "about:", "filesystem:"];
+
+function isAllowedRedirectTargetForCustomCheck(redirectURI: string): boolean {
+    let urlObj: URL;
+    try {
+        // This only succeeds for absolute URLs
+        urlObj = new URL(redirectURI);
+    } catch {
+        return false;
+    }
+    if (urlObj.protocol === "http:" || urlObj.protocol === "https:") {
+        return getNormalisedOriginTuple(redirectURI) !== undefined;
+    }
+    // URL normalises the scheme to lowercase
+    return !DISALLOWED_REDIRECT_SCHEMES.includes(urlObj.protocol);
+}
+
+function formatOriginTuple(origin: { protocol: string; hostname: string; port: string }): string {
+    return `${origin.protocol}//${origin.hostname}:${origin.port}`;
+}
+
+function getFrontendRedirectURIFromState(stateInBase64: unknown): string {
+    if (typeof stateInBase64 !== "string" || stateInBase64.length === 0) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the state in the request body",
+        });
+    }
+
+    if (!/^[A-Za-z0-9+/_-]+={0,2}$/.test(stateInBase64)) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must be base64 encoded",
+        });
+    }
+
+    let stateObj: unknown;
+    try {
+        stateObj = JSON.parse(decodeBase64(stateInBase64));
+    } catch {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must be a base64 encoded JSON object",
+        });
+    }
+
+    if (typeof stateObj !== "object" || stateObj === null || Array.isArray(stateObj)) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must be a base64 encoded JSON object",
+        });
+    }
+
+    const frontendRedirectURI = (stateObj as { frontendRedirectURI?: unknown }).frontendRedirectURI;
+    if (typeof frontendRedirectURI !== "string") {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "state must contain frontendRedirectURI as a string",
+        });
+    }
+
+    return frontendRedirectURI;
 }

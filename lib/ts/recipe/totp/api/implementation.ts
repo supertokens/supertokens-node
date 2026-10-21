@@ -63,7 +63,17 @@ export default function getAPIInterface(stInstance: SuperTokens): APIInterface {
                 userContext,
             });
 
-            if (deviceList.devices.some((device) => device.name === deviceName && device.verified)) {
+            // The core may match device names differently than a strict comparison (e.g.: case-insensitively),
+            // so we only allow removal without completed MFA if the name exactly matches an unverified device and
+            // it doesn't match any verified device even after normalisation.
+            const normaliseDeviceName = (name: string) => name.normalize("NFKC").toLowerCase();
+            const isRemovingOnlyAnUnverifiedDevice =
+                deviceList.devices.some((device) => device.name === deviceName && !device.verified) &&
+                !deviceList.devices.some(
+                    (device) => device.verified && normaliseDeviceName(device.name) === normaliseDeviceName(deviceName)
+                );
+
+            if (deviceList.devices.some((device) => device.verified) && !isRemovingOnlyAnUnverifiedDevice) {
                 await session.assertClaims([
                     stInstance
                         .getRecipeInstanceOrThrow("multifactorauth")
