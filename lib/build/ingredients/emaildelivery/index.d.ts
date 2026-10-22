@@ -4,3 +4,4 @@ export default class EmailDelivery<T> {
     ingredientInterfaceImpl: EmailDeliveryInterface<T>;
     constructor(config: TypeInputWithService<T>);
 }
+export type { EmailDeliveryInterface } from "./types";

@@ -26,3 +26,6 @@ export default class EmailDelivery<T> {
         this.ingredientInterfaceImpl = builder.build();
     }
 }
+
+
+export type { EmailDeliveryInterface } from "./types";
