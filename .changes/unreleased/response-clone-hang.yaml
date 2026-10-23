@@ -1,0 +1,2 @@
+kind: Fixed
+body: Prevent chunked Core responses from hanging with node-fetch-based fetch implementations, including dashboard tenant lists, while preserving request-scoped caching.
