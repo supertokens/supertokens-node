@@ -27,6 +27,8 @@ import { paths } from "./core/paths";
 import type SuperTokens from "./supertokens";
 import crossFetch from "cross-fetch";
 
+type CoreResponse = Pick<Response, "status" | "headers" | "text" | "json">;
+
 export class Querier {
     private static initCalled = false;
     private static hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined = undefined;
@@ -342,9 +344,8 @@ export class Querier {
 
                 logDebugMessage("Checking cache existence");
                 if (!Querier.disableCache && uniqueKey in (userContext._default?.coreCallCache ?? {})) {
-                    // Clone the cached response before returning it
                     const cachedResponse = userContext._default.coreCallCache[uniqueKey];
-                    return cachedResponse.clone();
+                    return cachedResponse;
                 }
                 /* CACHE CHECK END */
 
@@ -383,16 +384,23 @@ export class Querier {
                 }
 
                 if (response.status === 200 && !Querier.disableCache) {
-                    // Clone the response before caching it
-                    const responseClone = response.clone();
+                    // Buffer without cloning streams, and parse fresh JSON for each caller's mutation isolation.
+                    const bodyText = await response.text();
+                    const bufferedResponse: CoreResponse = {
+                        status: response.status,
+                        headers: response.headers,
+                        text: async () => bodyText,
+                        json: async () => JSON.parse(bodyText),
+                    };
                     userContext._default = {
                         ...userContext._default,
                         coreCallCache: {
                             ...userContext._default?.coreCallCache,
-                            [uniqueKey]: responseClone,
+                            [uniqueKey]: bufferedResponse,
                         },
                         globalCacheTag: Querier.globalCacheTag,
                     };
+                    return bufferedResponse;
                 }
 
                 return response;
@@ -608,7 +616,7 @@ export class Querier {
     private sendRequestHelper = async (
         path: NormalisedURLPath,
         method: string,
-        requestFunc: (url: string) => Promise<Response>,
+        requestFunc: (url: string) => Promise<CoreResponse>,
         numberOfTries: number,
         retryInfoMap?: Record<string, number>
     ): Promise<any> => {
@@ -650,9 +658,9 @@ export class Querier {
                 throw response;
             }
             if (response.headers.get("content-type")?.startsWith("text")) {
-                return { body: await response.clone().text(), headers: response.headers };
+                return { body: await response.text(), headers: response.headers };
             }
-            return { body: await response.clone().json(), headers: response.headers };
+            return { body: await response.json(), headers: response.headers };
         } catch (err) {
             if (
                 err.message !== undefined &&
