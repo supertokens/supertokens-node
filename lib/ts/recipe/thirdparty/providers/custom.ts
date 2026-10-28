@@ -49,11 +49,7 @@ export function getActualClientIdFromDevelopmentClientId(client_id: string): str
 function accessField(obj: any, key: string): any {
     const keyParts = key.split(".");
     for (const k of keyParts) {
-        if (obj === undefined) {
-            return undefined;
-        }
-
-        if (typeof obj !== "object") {
+        if (obj === undefined || obj === null || typeof obj !== "object") {
             return undefined;
         }
 
@@ -73,7 +69,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 
     if (config.userInfoMap?.fromUserInfoAPI?.userId !== undefined) {
         const userId = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap.fromUserInfoAPI.userId);
-        if (userId !== undefined) {
+        if (userId !== undefined && userId !== null) {
             thirdPartyUserId = userId;
         }
     }
@@ -83,7 +79,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
             rawUserInfoResponse.fromIdTokenPayload,
             config.userInfoMap.fromIdTokenPayload.userId
         );
-        if (userId !== undefined) {
+        if (userId !== undefined && userId !== null) {
             thirdPartyUserId = userId;
         }
     }
@@ -103,7 +99,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 
     if (config.userInfoMap?.fromUserInfoAPI?.email !== undefined) {
         const emailVal = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap.fromUserInfoAPI.email);
-        if (emailVal !== undefined) {
+        if (emailVal !== undefined && emailVal !== null) {
             email = emailVal;
         }
     }
@@ -113,7 +109,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
             rawUserInfoResponse.fromIdTokenPayload,
             config.userInfoMap.fromIdTokenPayload.email
         );
-        if (emailVal !== undefined) {
+        if (emailVal !== undefined && emailVal !== null) {
             email = emailVal;
         }
     }
@@ -129,9 +125,12 @@ function getSupertokensUserInfoResultFromRawUserInfo(
                 rawUserInfoResponse.fromUserInfoAPI,
                 config.userInfoMap.fromUserInfoAPI.emailVerified!
             );
-            result.email.isVerified =
-                emailVerifiedVal === true ||
-                (typeof emailVerifiedVal === "string" && emailVerifiedVal.toLowerCase() === "true");
+            // A source that does not include the field (e.g. no id token) must not override the other source
+            if (emailVerifiedVal !== undefined && emailVerifiedVal !== null) {
+                result.email.isVerified =
+                    emailVerifiedVal === true ||
+                    (typeof emailVerifiedVal === "string" && emailVerifiedVal.toLowerCase() === "true");
+            }
         }
 
         if (config.userInfoMap?.fromIdTokenPayload?.emailVerified !== undefined) {
@@ -139,7 +138,9 @@ function getSupertokensUserInfoResultFromRawUserInfo(
                 rawUserInfoResponse.fromIdTokenPayload,
                 config.userInfoMap.fromIdTokenPayload.emailVerified!
             );
-            result.email.isVerified = emailVerifiedVal === true || emailVerifiedVal === "true";
+            if (emailVerifiedVal !== undefined && emailVerifiedVal !== null) {
+                result.email.isVerified = emailVerifiedVal === true || emailVerifiedVal === "true";
+            }
         }
     }
 
