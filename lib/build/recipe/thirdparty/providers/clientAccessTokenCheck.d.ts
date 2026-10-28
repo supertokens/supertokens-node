@@ -14,11 +14,7 @@ export type ClientAccessTokenCheck = (input: {
  * - for the access token the SDK got itself, by exchanging an authorisation code with the provider. This works because
  *   a new provider instance is created for every request.
  */
-export declare function addClientAccessTokenCheck(
-    impl: TypeProvider,
-    providerConfig: ProviderConfig,
-    check: ClientAccessTokenCheck
-): void;
+export declare function addClientAccessTokenCheck(impl: TypeProvider, providerConfig: ProviderConfig, check: ClientAccessTokenCheck): void;
 export declare const checkGoogleAccessToken: ClientAccessTokenCheck;
 export declare const checkFacebookAccessToken: ClientAccessTokenCheck;
 export declare const checkGitLabAccessToken: ClientAccessTokenCheck;

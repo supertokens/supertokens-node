@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.0.5] - 2026-10-28
+
+### Fixed
+
+-   Prevent chunked Core responses from hanging with node-fetch-based fetch implementations, including dashboard tenant lists, while preserving request-scoped caching.
+
 ## [24.0.4] - 2026-10-21
 
 ### Changed
