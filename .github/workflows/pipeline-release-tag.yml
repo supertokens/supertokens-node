@@ -135,6 +135,13 @@ jobs:
     publish:
         runs-on: ubuntu-latest
         environment: publish
+        # npm trusted publishing: npm exchanges this job's GitHub OIDC token for a short-lived
+        # publish token. npmjs.com -> supertokens-node -> Settings -> Trusted publisher:
+        # GitHub Actions, supertokens / supertokens-node, workflow pipeline-release-tag.yml,
+        # environment publish. With OIDC, npm also attaches a provenance attestation.
+        permissions:
+            contents: read
+            id-token: write
         needs:
             - release-pipeline
 
@@ -146,8 +153,11 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "24"
                   registry-url: "https://registry.npmjs.org/"
+
+            # Trusted publishing needs npm 11.5.1 or newer.
+            - run: npm install -g npm@^11.5.1 && npm --version
 
             - run: |
                   if [[ "${{ needs.release-pipeline.outputs.isLatest }}" == "true" ]]
@@ -157,4 +167,6 @@ jobs:
                       npm publish --tag version-${{ needs.release-pipeline.outputs.version }}
                   fi
               env:
+                  # Fallback while the trusted publisher isn't set up on npm; npm tries OIDC first.
+                  # Remove it together with the NPM_TOKEN secret after the first trusted publish.
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
