@@ -20,6 +20,7 @@ const {
     extractInfoFromResponse,
     mockLambdaProxyEvent,
     mockLambdaProxyEventV2,
+    isCDIVersionCompatible,
 } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
@@ -190,13 +191,27 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
             ...result.multiValueHeaders,
         };
         let res3 = extractInfoFromResponse(result);
-        assert(res3.accessToken !== undefined);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so the refreshed access token is verified locally (without
+            // calling the core) and is never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            assert(res3.accessToken !== undefined);
+        }
+        const accessTokenAfterVerify = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         let revokeSessionEvent = mockLambdaProxyEvent(
             "/session/revoke",
             "POST",
             {
-                Cookie: `sAccessToken=${res3.accessToken}`,
+                Cookie: `sAccessToken=${accessTokenAfterVerify}`,
                 "anti-csrf": res2.antiCsrf,
             },
             null,
@@ -360,7 +375,21 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
             "set-cookie": result.cookies,
         };
         let res3 = extractInfoFromResponse(result);
-        assert(res3.accessToken !== undefined);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so the refreshed access token is verified locally (without
+            // calling the core) and is never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            assert(res3.accessToken !== undefined);
+        }
+        const accessTokenAfterVerify = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         let revokeSessionEvent = mockLambdaProxyEventV2(
             "/session/revoke",
@@ -370,7 +399,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
             },
             null,
             proxy,
-            [`sAccessToken=${res3.accessToken}`]
+            [`sAccessToken=${accessTokenAfterVerify}`]
         );
         result = await verifySession(revokeSession)(revokeSessionEvent, undefined);
         result.headers = {

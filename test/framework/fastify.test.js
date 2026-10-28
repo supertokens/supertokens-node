@@ -19,6 +19,7 @@ const {
 
     extractInfoFromResponse,
     extractCookieCountInfo,
+    isCDIVersionCompatible,
 } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
@@ -235,6 +236,31 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
         });
 
+        // Rotate once more (RT1 -> RT2) and use the new access token, so that the original refresh token (RT0) is
+        // from a stale lineage. On CDI >= 5.6 the immediately preceding refresh token stays valid for a grace period,
+        // so only reusing a token that is more than one generation old is detected as theft (on every CDI version).
+        let res2Rotated = extractInfoFromResponse(
+            await this.server.inject({
+                method: "post",
+                url: "/auth/session/refresh",
+                headers: {
+                    Cookie: `sRefreshToken=${res2.refreshToken}`,
+                    "anti-csrf": res2.antiCsrf,
+                },
+            })
+        );
+        assert.notStrictEqual(res2Rotated.refreshToken, undefined);
+        assert.notStrictEqual(res2Rotated.refreshToken, res2.refreshToken);
+
+        await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+            headers: {
+                Cookie: `sAccessToken=${res2Rotated.accessToken}`,
+                "anti-csrf": res2Rotated.antiCsrf,
+            },
+        });
+
         let res3 = await this.server.inject({
             method: "post",
             url: "/auth/session/refresh",
@@ -312,6 +338,31 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
         });
 
+        // Rotate once more (RT1 -> RT2) and use the new access token, so that the original refresh token (RT0) is
+        // from a stale lineage. On CDI >= 5.6 the immediately preceding refresh token stays valid for a grace period,
+        // so only reusing a token that is more than one generation old is detected as theft (on every CDI version).
+        let res2Rotated = extractInfoFromResponse(
+            await this.server.inject({
+                method: "post",
+                url: "/auth/session/refresh",
+                headers: {
+                    Cookie: `sRefreshToken=${res2.refreshToken}`,
+                    "anti-csrf": res2.antiCsrf,
+                },
+            })
+        );
+        assert.notStrictEqual(res2Rotated.refreshToken, undefined);
+        assert.notStrictEqual(res2Rotated.refreshToken, res2.refreshToken);
+
+        await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+            headers: {
+                Cookie: `sAccessToken=${res2Rotated.accessToken}`,
+                "anti-csrf": res2Rotated.antiCsrf,
+            },
+        });
+
         let res3 = await this.server.inject({
             method: "post",
             url: "/auth/session/refresh",
@@ -383,6 +434,31 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             headers: {
                 Cookie: `sAccessToken=${res2.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
+            },
+        });
+
+        // Rotate once more (RT1 -> RT2) and use the new access token, so that the original refresh token (RT0) is
+        // from a stale lineage. On CDI >= 5.6 the immediately preceding refresh token stays valid for a grace period,
+        // so only reusing a token that is more than one generation old is detected as theft (on every CDI version).
+        let res2Rotated = extractInfoFromResponse(
+            await this.server.inject({
+                method: "post",
+                url: "/auth/session/refresh",
+                headers: {
+                    Cookie: `sRefreshToken=${res2.refreshToken}`,
+                    "anti-csrf": res2.antiCsrf,
+                },
+            })
+        );
+        assert.notStrictEqual(res2Rotated.refreshToken, undefined);
+        assert.notStrictEqual(res2Rotated.refreshToken, res2.refreshToken);
+
+        await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+            headers: {
+                Cookie: `sAccessToken=${res2Rotated.accessToken}`,
+                "anti-csrf": res2Rotated.antiCsrf,
             },
         });
 
@@ -524,9 +600,23 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 },
             })
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verify is stateless, so verifying a freshly refreshed access token neither calls the core
+            // nor attaches a replacement access token.
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const latestAccessToken = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
@@ -534,7 +624,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}`,
+                Cookie: `sAccessToken=${latestAccessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -545,7 +635,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             method: "post",
             url: "/session/revoke",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}`,
+                Cookie: `sAccessToken=${latestAccessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -684,9 +774,23 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 },
             })
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verify is stateless, so verifying a freshly refreshed access token neither calls the core
+            // nor attaches a replacement access token.
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const latestAccessToken = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
@@ -694,7 +798,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}`,
+                Cookie: `sAccessToken=${latestAccessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -705,7 +809,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             method: "post",
             url: "/session/revoke",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}`,
+                Cookie: `sAccessToken=${latestAccessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });

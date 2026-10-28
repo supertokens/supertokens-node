@@ -306,6 +306,15 @@ export type RecipeInterface = {
           }
     >;
 
+    /**
+     * Verifies the assertion (`credential`) against the sign in options with the core.
+     *
+     * On cores with CDI 5.5 or newer a successful call consumes the sign in options: verifying
+     * the same `webauthnGeneratedOptionsId` again (including by calling `signIn`, which runs this
+     * function itself) returns `OPTIONS_NOT_FOUND_ERROR`. A failed call leaves the options usable.
+     * An override that calls this and then needs the post-verification steps of sign in should
+     * call `completeSignIn` with the result instead of `signIn`.
+     */
     verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;

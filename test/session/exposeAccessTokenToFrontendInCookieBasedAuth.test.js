@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, isCDIVersionCompatible } = require("../utils");
 const assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -205,7 +205,17 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
                             }
                         })
                 );
-                checkResponse(res, exposeAccessTokenToFrontendInCookieBasedAuth);
+                if (await isCDIVersionCompatible("5.6")) {
+                    // CDI >= 5.6: verify is stateless and never replaces the access token, so the tokens are
+                    // only attached by the refresh itself
+                    checkResponse(refreshRes, exposeAccessTokenToFrontendInCookieBasedAuth);
+                    const verifyInfo = extractInfoFromResponse(res);
+                    assert.strictEqual(verifyInfo.accessToken, undefined);
+                    assert.strictEqual(verifyInfo.accessTokenFromHeader, undefined);
+                    assert.strictEqual(verifyInfo.frontToken, undefined);
+                } else {
+                    checkResponse(res, exposeAccessTokenToFrontendInCookieBasedAuth);
+                }
             });
         });
 

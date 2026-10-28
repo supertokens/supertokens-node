@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, getQuerierInstance } = require("./utils");
+const { printPath, createCoreApplication, getQuerierInstance, isCDIVersionCompatible } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
@@ -151,7 +151,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const accessToken2 = parseJWTWithoutSignatureVerification(response2.accessToken.token);
         assert.notEqual(accessToken1.kid, accessToken2.kid, accessToken2.payload);
 
-        // This call should actually call the core
+        // On CDI < 5.6 this call should actually call the core
         const response3 = await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
@@ -165,21 +165,33 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         // This should have refreshed the keys because of the cache miss
         assert.strictEqual(requestMock.callCount, 2);
 
-        // This will call the core verify since parentRefreshTokenHash1 is defined
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
         const verifyState2 = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500
         );
-        assert(verifyState2 !== undefined);
+        let latestAccessToken;
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, the refreshed token is verified locally (with the newly
+            // fetched key) and the core never replaces it
+            assert(verifyState2 === undefined);
+            assert.strictEqual(response3.accessToken, undefined);
+            latestAccessToken = response2.accessToken.token;
+        } else {
+            // This will call the core verify since parentRefreshTokenHash1 is defined
+            assert(verifyState2 !== undefined);
+
+            const accessToken3 = parseJWTWithoutSignatureVerification(response3.accessToken.token);
+            assert.strictEqual(accessToken3.payload.parentRefreshTokenHash1, null);
+            assert.strictEqual(accessToken3.kid, accessToken2.kid);
+            latestAccessToken = response3.accessToken.token;
+        }
         ProcessState.getInstance().reset();
 
-        const accessToken3 = parseJWTWithoutSignatureVerification(response3.accessToken.token);
-        assert.strictEqual(accessToken3.payload.parentRefreshTokenHash1, null);
-        assert.strictEqual(accessToken3.kid, accessToken2.kid);
-        // We try to verify the new token without parentRefreshTokenHash1
+        // We try to verify the latest token (on CDI < 5.6 the new token without parentRefreshTokenHash1)
         const response4 = await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-            parseJWTWithoutSignatureVerification(response3.accessToken.token),
+            parseJWTWithoutSignatureVerification(latestAccessToken),
             response2.antiCsrfToken,
             true,
             false,
@@ -192,7 +204,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         // This should not have needed a key refresh
         assert.strictEqual(requestMock.callCount, 2);
 
-        // This will not call the core verify since parentRefreshTokenHash1 is null
+        // This will not call the core verify (on CDI < 5.6 since parentRefreshTokenHash1 is null)
         const verifyState3 = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500

@@ -879,7 +879,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a new Session */
+        /**
+         * @description Create a new Session
+         *
+         *     The minted access token's validity may be shortened by up to the configured `access_token_validity_jitter` fraction (default 5%); the actual expiry is in `accessToken.expiry`.
+         */
         post: operations["createNewSession"];
         delete?: never;
         options?: never;
@@ -959,7 +963,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Verify a Session */
+        /**
+         * @description Verify a Session
+         *
+         *     Verification is stateless: this API never writes to the database and never returns a replacement access token. Access token payload changes are only picked up on refresh.
+         *     With `checkDatabase: true` the session row is read to check that the session still exists and that the access token belongs to the current (or previous, within the rotation grace period) refresh token; a token from a rotated-out branch gets `UNAUTHORISED` (refresh to recover). The response then also tells whether the payload stored in the database differs from the one in the token (`payloadUpdateAvailable`).
+         *
+         *     This API can only be called from the `public` tenant; the tenant is taken from the access token.
+         */
         post: operations["verifySession"];
         delete?: never;
         options?: never;
@@ -976,7 +987,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Refresh a Session */
+        /**
+         * @description Refresh a Session
+         *
+         *     The refresh token is rotated on every successful refresh. The previously active refresh token stays accepted for the configured `refresh_token_rotation_grace_period` (default 30s) after a rotation, so a retried or concurrent refresh with it succeeds and gets its own fresh token pair (the tokens it displaces become invalid).
+         *     Presenting a refresh token outside the grace period, or one from an older generation, is reuse: the session is revoked and the response is `TOKEN_THEFT_DETECTED` or, for recent reuse when the core is configured with `recent_token_reuse_behaviour: UNAUTHORISED`, `UNAUTHORISED`; both carry `recentTokenReuseSubtype`.
+         *
+         *     The minted access token's validity may be shortened by up to the configured `access_token_validity_jitter` fraction (default 5%); the actual expiry is in `accessToken.expiry`.
+         */
         post: operations["refreshSession"];
         delete?: never;
         options?: never;
@@ -1106,7 +1124,7 @@ export interface paths {
                     Authorization?: components["parameters"]["api-key"];
                     /**
                      * @description X.Y of the X.Y.Z CDI version.
-                     * @example 5.2
+                     * @example 5.7
                      */
                     "cdi-version"?: components["parameters"]["cdi-version"];
                 };
@@ -1407,6 +1425,8 @@ export interface paths {
          *
          *     API is tenant specific if `includeAllTenants` is false.
          *     Else, `tenantId` is ignored.
+         *
+         *     A single-tenant count without `includeRecipeIds` is served from the core's user lifecycle ledger (a periodically anchored snapshot, normally with the changes since folded in) instead of being recomputed on every request. `asOf` is normally close to the request time but can be older (for example while a snapshot refresh is in progress or after a failed recount); read it to judge how fresh `count` is. Counts across all tenants or filtered by recipe are always computed exactly.
          */
         get: operations["getUsersCount"];
         put?: never;
@@ -2626,7 +2646,12 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Create or update a SAML client for the specified tenant. */
+        /**
+         * @description Create or update a SAML client for the specified tenant.
+         *
+         *     If `clientId` is omitted, a new client is created with a generated id (`st_saml_<uuid>`). If it matches an existing client, that client is replaced with the given values.
+         *     Requires the SAML feature to be enabled for the app (402 otherwise).
+         */
         put: operations["createOrUpdateSamlClient"];
         post?: never;
         delete?: never;
@@ -2678,7 +2703,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a new login redirect URL for a given SAML client ID. */
+        /**
+         * @description Start an SP-initiated login: builds (and, if enabled for the client, signs) a SAML AuthnRequest and returns the IdP SSO URL to redirect the user to.
+         *     The generated `RelayState` is stored by the core together with `clientId`, `redirectURI`, `state` and `acsURL`, and is required again in `/recipe/saml/callback`.
+         *
+         *     `redirectURI` must be one of the client's `redirectURIs`, otherwise `INVALID_CLIENT_ERROR` is returned.
+         */
         post: operations["createSamlLoginRedirect"];
         delete?: never;
         options?: never;
@@ -2695,7 +2725,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Handle the SAML response from the Identity Provider (IdP). */
+        /**
+         * @description Handle the SAML response posted by the Identity Provider (IdP) to the ACS URL.
+         *
+         *     - With a `relayState` (SP-initiated flow) the response is matched to the login started with `/recipe/saml/login`; the RelayState is single-use.
+         *     - Without a `relayState` (IdP-initiated flow) the client is resolved from the assertion's issuer, and the login is only accepted if the client has `allowIDPInitiatedLogin` set.
+         *
+         *     On success the user info is stored under a short-lived, single-use `code`, and the response contains the `redirectURI` to send the user to, with `code` (and `state`, if one was given at login) appended as query parameters.
+         *     The `code` is then exchanged with `/recipe/saml/user`.
+         */
         post: operations["handleSamlCallback"];
         delete?: never;
         options?: never;
@@ -2712,7 +2750,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Get user information using an access token. */
+        /**
+         * @description Exchange the single-use `code` returned by `/recipe/saml/callback` (passed as `accessToken`) for the authenticated user's SAML claims.
+         *     The code is removed on first use; a second call returns `INVALID_TOKEN_ERROR`.
+         */
         post: operations["getSamlUserInfo"];
         delete?: never;
         options?: never;
@@ -2900,7 +2941,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Sign in the user using the WebAuthn credential. */
+        /**
+         * @description Sign in the user using the WebAuthn credential.
+         *
+         *     The sign in options (`webauthnGeneratedOptionsId`, created with `/recipe/webauthn/options/signin`) are single-use:
+         *     they are consumed atomically with a successful verification, so the same assertion cannot be replayed.
+         *     Verifying the same assertion a second time returns `OPTIONS_NOT_FOUND_ERROR`.
+         *     Failed attempts do not consume the options; they stay usable until they expire or are removed.
+         */
         post: operations["signInWebAuthNUser"];
         delete?: never;
         options?: never;
@@ -3181,11 +3229,15 @@ export interface components {
             enableRefreshTokenRotation?: boolean;
         };
         samlClient: {
+            /** @example st_saml_c3e1b9f0-4d4e-4a8c-9b2a-6b1d7f1f1a2b */
             clientId: string;
+            /** @description Only present if one was set */
             clientSecret?: string;
             defaultRedirectURI: string;
             redirectURIs: string[];
+            /** @description The IdP's entity id, read from `metadataXML` */
             idpEntityId: string;
+            /** @description Base64 encoded signing certificate read from `metadataXML`, if present */
             idpSigningCertificate?: string;
             allowIDPInitiatedLogin: boolean;
             enableRequestSigning: boolean;
@@ -3294,6 +3346,14 @@ export interface components {
             status: components["schemas"]["unauthorisedResponse"];
             message?: components["schemas"]["message"];
         };
+        /**
+         * @description Why a presented refresh token was classified as reuse. Only present on reuse detected at refresh:
+         *     - `RECENT_PREV`: the previous refresh token, presented after the rotation grace period ended
+         *     - `ORPHANED_BRANCH`: a token displaced by a grace-period re-rotation
+         *     - `STALE_LINEAGE`: a token from an older generation
+         * @enum {string}
+         */
+        refreshTokenReuseSubtype: "RECENT_PREV" | "ORPHANED_BRANCH" | "STALE_LINEAGE";
         /** @enum {string} */
         helloResponse: "Hello";
         statusOKResponse: {
@@ -3329,6 +3389,8 @@ export interface components {
         requestUnauthorised: "Invalid API key";
         /** @enum {string} */
         licenseError: "License Error";
+        /** @example Only public tenantId can call this app specific API */
+        forbiddenError: string;
         /** @example customer1 */
         tenantId: string;
         thirdPartyProviderConfig: {
@@ -3532,6 +3594,15 @@ export interface components {
                 "text/plain": components["schemas"]["licenseError"];
             };
         };
+        /** @description error code 403 */
+        403: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "text/plain": components["schemas"]["forbiddenError"];
+            };
+        };
         /** @description error code 404 */
         404: {
             headers: {
@@ -3606,7 +3677,7 @@ export interface components {
         webauthnRid: string;
         /**
          * @description X.Y of the X.Y.Z CDI version.
-         * @example 5.2
+         * @example 5.7
          */
         "cdi-version": string;
         /** @example ZmE3YTA4NDEtY...MjM5MTgwMzIyMzE= */
@@ -3641,7 +3712,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3697,7 +3768,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3754,7 +3825,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3815,7 +3886,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3884,7 +3955,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3931,7 +4002,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -3986,7 +4057,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4045,7 +4116,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4087,7 +4158,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4144,7 +4215,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4190,7 +4261,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4259,7 +4330,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4333,7 +4404,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4379,7 +4450,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4437,7 +4508,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4483,7 +4554,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4534,7 +4605,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4603,7 +4674,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4676,7 +4747,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4735,7 +4806,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4790,7 +4861,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4838,7 +4909,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4890,7 +4961,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4932,7 +5003,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -4987,7 +5058,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5034,7 +5105,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5089,7 +5160,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5131,7 +5202,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5182,7 +5253,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5228,7 +5299,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5280,7 +5351,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5326,7 +5397,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5375,7 +5446,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5435,7 +5506,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5480,7 +5551,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5516,7 +5587,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5562,7 +5633,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5603,7 +5674,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5657,7 +5728,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5694,7 +5765,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5737,7 +5808,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5774,7 +5845,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5818,7 +5889,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5860,7 +5931,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5907,7 +5978,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5956,7 +6027,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -5995,7 +6066,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6034,7 +6105,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6081,7 +6152,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6120,7 +6191,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6167,7 +6238,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6204,7 +6275,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6248,7 +6319,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6285,7 +6356,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6304,6 +6375,12 @@ export interface operations {
                      * @example false
                      */
                     useDynamicSigningKey?: boolean;
+                    /**
+                     * @description Optional validity (in milliseconds) for the minted access token. Shorten-only: must be greater than 0 and at most the configured `access_token_validity`, otherwise the request fails with a 400.
+                     *     Defaults to the configured `access_token_validity`.
+                     * @example 300000
+                     */
+                    accessTokenValidity?: number;
                 };
             };
         };
@@ -6341,7 +6418,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6387,7 +6464,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6435,7 +6512,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6483,7 +6560,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6498,7 +6575,7 @@ export interface operations {
                     /** @example false */
                     doAntiCsrfCheck?: boolean;
                     /**
-                     * @description Decides if we always check if the session exists in the DB or just do token validation, defaults to false.
+                     * @description Decides if we always check if the session exists in the DB (and its refresh token lineage) or just do token validation, defaults to false.
                      * @example false
                      */
                     checkDatabase?: boolean;
@@ -6516,8 +6593,12 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
-                              session?: components["schemas"]["session"];
-                              accessToken?: components["schemas"]["cookieInfo"];
+                              session: components["schemas"]["session"];
+                              /**
+                               * @description Only present when `checkDatabase` is true. `true` if the access token payload stored in the database differs from the one in the verified token, i.e. a refresh would yield an updated payload.
+                               * @example false
+                               */
+                              payloadUpdateAvailable?: boolean;
                           }
                         | components["schemas"]["unauthorisedMessageResponse"]
                         | {
@@ -6528,6 +6609,7 @@ export interface operations {
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            403: components["responses"]["403"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -6542,7 +6624,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6556,6 +6638,12 @@ export interface operations {
                     enableAntiCsrf: components["schemas"]["enableAntiCsrf"];
                     antiCsrfToken?: components["schemas"]["token"];
                     useDynamicSigningKey: boolean;
+                    /**
+                     * @description Optional validity (in milliseconds) for the minted access token. Shorten-only: must be greater than 0 and at most the configured `access_token_validity`, otherwise the request fails with a 400.
+                     *     Defaults to the configured `access_token_validity`.
+                     * @example 300000
+                     */
+                    accessTokenValidity?: number;
                 };
             };
         };
@@ -6581,8 +6669,11 @@ export interface operations {
                                   userId: components["schemas"]["userId"];
                                   recipeUserId: components["schemas"]["userId"];
                               };
+                              recentTokenReuseSubtype?: components["schemas"]["refreshTokenReuseSubtype"];
                           }
-                        | components["schemas"]["unauthorisedMessageResponse"];
+                        | (components["schemas"]["unauthorisedMessageResponse"] & {
+                              recentTokenReuseSubtype?: components["schemas"]["refreshTokenReuseSubtype"];
+                          });
                 };
             };
             400: components["responses"]["400"];
@@ -6604,7 +6695,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6644,7 +6735,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6681,7 +6772,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6731,7 +6822,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6770,7 +6861,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6813,7 +6904,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6872,7 +6963,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6911,7 +7002,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -6954,7 +7045,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7038,7 +7129,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7124,7 +7215,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7161,7 +7252,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7208,7 +7299,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7266,7 +7357,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7302,7 +7393,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7363,7 +7454,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7439,7 +7530,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7545,7 +7636,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7586,13 +7677,18 @@ export interface operations {
                 includeRecipeIds?: components["parameters"]["includeRecipeIds"];
                 /** @description if set to true, will count users across all tenants in the app */
                 includeAllTenants?: boolean;
+                /**
+                 * @deprecated
+                 * @description Deprecated and ignored from CDI 5.7: the ledger-served count described above is the default behaviour.
+                 */
+                allowApproximate?: boolean;
             };
             header?: {
                 /** @example ajs30Nlbs0DjvsdFIne934n8NVee5n */
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7610,7 +7706,17 @@ export interface operations {
                     "application/json": {
                         status: components["schemas"]["statusOK"];
                         /** @example 1000000 */
-                        count?: number;
+                        count: number;
+                        /**
+                         * @description `true` for a single-tenant count without `includeRecipeIds` (served from the ledger); `false` for all-tenant or recipe-filtered counts, which are computed exactly.
+                         * @example false
+                         */
+                        approximate: boolean;
+                        /**
+                         * @description Time (ms since epoch) the returned count is accurate as of. For exact counts this is the request time; for ledger-served counts it can be older.
+                         * @example 1760000000000
+                         */
+                        asOf: number;
                     };
                 };
             };
@@ -7630,7 +7736,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7678,7 +7784,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7716,7 +7822,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7757,7 +7863,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7792,7 +7898,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7834,7 +7940,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7874,7 +7980,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7923,7 +8029,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -7958,7 +8064,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8004,7 +8110,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8039,7 +8145,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8079,7 +8185,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8124,7 +8230,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8169,7 +8275,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8214,7 +8320,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8259,7 +8365,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8304,7 +8410,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8349,7 +8455,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8394,7 +8500,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8439,7 +8545,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8480,7 +8586,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8521,7 +8627,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8565,7 +8671,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8609,7 +8715,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8651,7 +8757,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8693,7 +8799,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8753,7 +8859,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8797,7 +8903,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8834,7 +8940,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8871,7 +8977,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8917,7 +9023,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -8961,7 +9067,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9019,7 +9125,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9066,7 +9172,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9109,7 +9215,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9152,7 +9258,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9199,7 +9305,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9240,7 +9346,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9290,7 +9396,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9385,7 +9491,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9457,7 +9563,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9511,7 +9617,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9573,7 +9679,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9633,7 +9739,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9685,7 +9791,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9732,7 +9838,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9777,7 +9883,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9824,7 +9930,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9871,7 +9977,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -9919,7 +10025,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10005,7 +10111,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10078,7 +10184,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10119,7 +10225,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10201,7 +10307,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10211,12 +10317,36 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /**
+                     * @description Omit to create a client with a generated id
+                     * @example st_saml_c3e1b9f0-4d4e-4a8c-9b2a-6b1d7f1f1a2b
+                     */
                     clientId?: string;
+                    /** @description Optional secret, returned as stored in the client object */
                     clientSecret?: string;
+                    /**
+                     * @description Allowed `redirectURI` values for `/recipe/saml/login`; must not be empty
+                     * @example [
+                     *       "https://example.com/auth/callback/saml"
+                     *     ]
+                     */
                     redirectURIs: string[];
-                    defaultRedirectURI?: string;
+                    /**
+                     * @description Used for IdP-initiated logins, where no `redirectURI` was given at login time
+                     * @example https://example.com/auth/callback/saml
+                     */
+                    defaultRedirectURI: string;
+                    /** @description Base64 encoded IdP metadata XML. Rejected with a 400 if it does not decode to valid SAML metadata. */
                     metadataXML: string;
+                    /**
+                     * @description Whether unsolicited (IdP-initiated) SAML responses are accepted on the callback. Defaults to false.
+                     * @default false
+                     */
                     allowIDPInitiatedLogin?: boolean;
+                    /**
+                     * @description Whether AuthnRequests are signed with the core's SP key. Defaults to true.
+                     * @default true
+                     */
                     enableRequestSigning?: boolean;
                 };
             };
@@ -10234,7 +10364,7 @@ export interface operations {
                           } & components["schemas"]["samlClient"])
                         | {
                               /**
-                               * @example INVALID_METADATA_XML_ERROR
+                               * @example DUPLICATE_IDP_ENTITY_ERROR
                                * @enum {string}
                                */
                               status: "DUPLICATE_IDP_ENTITY_ERROR";
@@ -10243,6 +10373,7 @@ export interface operations {
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10257,7 +10388,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10294,7 +10425,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10337,7 +10468,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10348,8 +10479,14 @@ export interface operations {
             content: {
                 "application/json": {
                     clientId: string;
+                    /** @description Where the user is sent after the callback; must be one of the client's `redirectURIs` */
                     redirectURI: string;
+                    /**
+                     * @description The Assertion Consumer Service URL the IdP should post the SAML response to (the backend's SAML callback endpoint)
+                     * @example https://api.example.com/auth/saml/callback
+                     */
                     acsURL: string;
+                    /** @description Opaque value echoed back as the `state` query param of the `redirectURI` returned by the callback */
                     state?: string;
                 };
             };
@@ -10364,6 +10501,7 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
+                              /** @description IdP SSO URL with the `SAMLRequest` and `RelayState` query params */
                               ssoRedirectURI: string;
                           }
                         | {
@@ -10374,6 +10512,7 @@ export interface operations {
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10388,7 +10527,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10398,13 +10537,15 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /** @description The base64 encoded `SAMLResponse` form field posted by the IdP */
                     samlResponse: string;
+                    /** @description The `RelayState` form field posted by the IdP. Omit for IdP-initiated logins. */
                     relayState?: string;
                 };
             };
         };
         responses: {
-            /** @description Returns an intermediate code on success */
+            /** @description Returns the redirect URI (carrying an intermediate code) on success */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -10413,21 +10554,31 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
+                              /**
+                               * @description The login's `redirectURI` (or the client's `defaultRedirectURI` for IdP-initiated logins) with `code` and optionally `state` query params added
+                               * @example https://example.com/auth/callback/saml?code=4e5c0e6b-9a7f-4a7e-8d7a-2d1b6c1a9f10&state=abc
+                               */
                               redirectURI: string;
                           }
                         | {
-                              /** @enum {string} */
+                              /**
+                               * @description - `INVALID_RELAY_STATE_ERROR`: unknown, expired or already used `relayState`
+                               *     - `SAML_RESPONSE_VERIFICATION_FAILED_ERROR`: signature, issuer, audience, destination/recipient, InResponseTo, validity window or replay check failed
+                               *     - `INVALID_CLIENT_ERROR`: no client matches the response's issuer
+                               *     - `IDP_LOGIN_DISALLOWED_ERROR`: IdP-initiated response for a client without `allowIDPInitiatedLogin`
+                               * @enum {string}
+                               */
                               status:
                                   | "INVALID_RELAY_STATE_ERROR"
                                   | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
                                   | "INVALID_CLIENT_ERROR"
                                   | "IDP_LOGIN_DISALLOWED_ERROR";
-                              message: string;
                           };
                 };
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10442,7 +10593,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10452,8 +10603,10 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /** @description The `code` query param the user was redirected with after the callback */
                     accessToken: string;
-                    clientId: string;
+                    /** @description If given, must match the client the code was issued for (`INVALID_TOKEN_ERROR` otherwise) */
+                    clientId?: string;
                 };
             };
         };
@@ -10467,19 +10620,49 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
-                              sub: string;
-                              email: string;
-                              aud?: string;
-                              claims: Record<string, unknown>;
+                              /**
+                               * @description The user's id at the IdP. Taken from the first of: the Subject `NameID`,
+                               *     `http://schemas.microsoft.com/identity/claims/objectidentifier`,
+                               *     `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name`. `null` if none is present.
+                               */
+                              sub: string | null;
+                              /**
+                               * @description Taken from the first of: `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress`,
+                               *     `mail`, `email`, or the Subject `NameID` when it contains an `@`. `null` if none is present.
+                               */
+                              email: string | null;
+                              /** @description The SAML client id the code was issued for */
+                              aud: string;
+                              /**
+                               * @description All assertion attributes keyed by attribute `Name`, plus `NameID` and `NameIDFormat`. Each value is an array of strings.
+                               * @example {
+                               *       "NameID": [
+                               *         "user@example.com"
+                               *       ],
+                               *       "NameIDFormat": [
+                               *         "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+                               *       ],
+                               *       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": [
+                               *         "user@example.com"
+                               *       ]
+                               *     }
+                               */
+                              claims: {
+                                  [key: string]: string[];
+                              };
                           }
                         | {
-                              /** @enum {string} */
+                              /**
+                               * @description Unknown, expired or already used code, or the code was issued for another client
+                               * @enum {string}
+                               */
                               status: "INVALID_TOKEN_ERROR";
                           };
                 };
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10498,7 +10681,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10534,7 +10717,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10594,7 +10777,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10646,7 +10829,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10697,7 +10880,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10747,7 +10930,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10806,7 +10989,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10850,7 +11033,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -10959,7 +11142,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11032,7 +11215,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11097,7 +11280,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11164,7 +11347,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11175,9 +11358,9 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @example fa7a0841-b533-4478-9253-0fde890c576 */
-                    webauthnGeneratedOptionsId?: string;
+                    webauthnGeneratedOptionsId: string;
                     /** @description Credential returned by the browser */
-                    credential?: Record<string, unknown>;
+                    credential: Record<string, unknown>;
                 };
             };
         };
@@ -11204,7 +11387,12 @@ export interface operations {
                               reason?: string;
                           }
                         | {
-                              /** @enum {string} */
+                              /**
+                               * @description - `OPTIONS_NOT_FOUND_ERROR`: unknown or expired options id, or options already consumed by an earlier successful sign in
+                               *     - `CREDENTIAL_NOT_FOUND_ERROR`: no credential with this id is registered for the options' relying party
+                               *     - `UNKNOWN_USER_ID_ERROR`: the credential's user no longer exists
+                               * @enum {string}
+                               */
                               status:
                                   | "OPTIONS_NOT_FOUND_ERROR"
                                   | "CREDENTIAL_NOT_FOUND_ERROR"
@@ -11228,7 +11416,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11278,7 +11466,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11328,7 +11516,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11379,7 +11567,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };
@@ -11422,7 +11610,7 @@ export interface operations {
                 Authorization?: components["parameters"]["api-key"];
                 /**
                  * @description X.Y of the X.Y.Z CDI version.
-                 * @example 5.2
+                 * @example 5.7
                  */
                 "cdi-version"?: components["parameters"]["cdi-version"];
             };

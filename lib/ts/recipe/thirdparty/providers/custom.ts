@@ -478,13 +478,19 @@ export default function NewProvider(input: ProviderInput, type: "oauth2" | "saml
                 if (res.status !== "OK") {
                     throw new Error(`Failed to get user info: ${res.status}`);
                 }
+                if (res.sub === null) {
+                    throw new Error("Failed to get user info: the SAML response has no subject identifier");
+                }
 
                 return {
                     thirdPartyUserId: res.sub,
-                    email: {
-                        id: res.email,
-                        isVerified: true,
-                    },
+                    email:
+                        res.email === null
+                            ? undefined
+                            : {
+                                  id: res.email,
+                                  isVerified: true,
+                              },
                     rawUserInfoFromProvider: {
                         fromUserInfoAPI: res,
                     },

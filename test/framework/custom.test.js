@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, isCDIVersionCompatible } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../..");
@@ -143,10 +143,24 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
         await verifySession()(req3, resp3);
 
         let res3 = extractInfoFromResponse(resp3);
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so the refreshed access token is verified locally (without
+            // calling the core) and is never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const accessTokenAfterVerify = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
@@ -156,7 +170,7 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
             query: {},
             headers: new Headers(),
             cookies: {
-                sAccessToken: res3.accessToken,
+                sAccessToken: accessTokenAfterVerify,
             },
             getFormBody: () => {},
             getJSONBody: () => {},
@@ -172,7 +186,7 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
             query: {},
             headers: new Headers(),
             cookies: {
-                sAccessToken: res3.accessToken,
+                sAccessToken: accessTokenAfterVerify,
             },
             getFormBody: () => {},
             getJSONBody: () => {},

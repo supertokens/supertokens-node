@@ -119,6 +119,14 @@ export default class Wrapper {
         });
     }
 
+    /**
+     * Verifies the assertion (`credential`) against the sign in options with the core, without signing
+     * the user in.
+     *
+     * On cores with CDI 5.5 or newer a successful call consumes the sign in options: a later
+     * `verifyCredentials` or `signIn` with the same `webauthnGeneratedOptionsId` returns
+     * `OPTIONS_NOT_FOUND_ERROR`. A failed call leaves the options usable.
+     */
     static async verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;

@@ -1,0 +1,3 @@
+kind: Fixed
+body: "The SAML `getUserInfo` recipe function types `sub` and `email` as `string | null`, matching the core. SAML third-party sign in now fails with a clear error when the SAML response has no subject identifier, and handles a response without an email like other providers without one (fake email if `requireEmail` is false, otherwise `NO_EMAIL_GIVEN_BY_PROVIDER`)."
+time: 2026-10-28T22:17:54Z

@@ -1,0 +1,3 @@
+kind: Changed
+body: "Behaviour changes on newer cores: on cores 12.1+ two concurrent refreshes of the same refresh token revoke the session (the SuperTokens frontend SDKs serialise refreshes; custom clients must too); access token payload changes made server-side reach the client at its next refresh instead of the next verify; an access token whose refresh token has been rotated out now gets `TRY_REFRESH_TOKEN` instead of signing the user out; WebAuthn sign in options are single-use, so an override that calls `verifyCredentials` and then `signIn` gets `OPTIONS_NOT_FOUND_ERROR`; tenant-scoped user counts on cores 12.3+ are served from the core's ledger and may lag."
+time: 2026-10-28T22:17:53Z

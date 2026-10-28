@@ -12,7 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, extractInfoFromResponse, resetAll } = require("../utils");
+const {
+    printPath,
+    createCoreApplication,
+    extractInfoFromResponse,
+    resetAll,
+    isCDIVersionCompatible,
+} = require("../utils");
 const assert = require("assert");
 const SuperTokens = require("../..");
 const Session = require("../../recipe/session");
@@ -140,7 +146,13 @@ describe(`Switching useDynamicAccessTokenSigningKey after session creation: ${pr
                 tokensAfterRefresh.antiCsrfToken
             );
             const tokensAfterVerify = verifiedSession.getAllSessionTokensDangerously();
-            assert.strictEqual(tokensAfterVerify.accessAndFrontTokenUpdated, true);
+            if (await isCDIVersionCompatible("5.6")) {
+                // CDI >= 5.6: verify is stateless and never replaces the access token minted by the refresh
+                assert.strictEqual(tokensAfterVerify.accessAndFrontTokenUpdated, false);
+                assert.strictEqual(tokensAfterVerify.accessToken, tokensAfterRefresh.accessToken);
+            } else {
+                assert.strictEqual(tokensAfterVerify.accessAndFrontTokenUpdated, true);
+            }
             checkAccessTokenSigningKeyType(tokensAfterVerify, false);
 
             const verified2Session = await Session.getSessionWithoutRequestResponse(
