@@ -237,6 +237,17 @@ module.exports.createCoreApplication = async function ({ appId, coreConfig } = {
     return `${coreUrl}/appid-${appId}`;
 };
 
+// Cores on CDI >= 5.6 keep accepting the previous refresh token for a grace period after a rotation
+// (`refresh_token_rotation_grace_period`, default 30s). Tests that assert token theft detection on an
+// immediate reuse of a refresh token disable the grace period; older cores ignore the key, but we only
+// send it where the core knows it.
+module.exports.getCoreConfigWithoutRefreshGrace = async function (coreConfig = {}) {
+    const resp = await fetch(`${module.exports.getCoreUrl()}/apiversion`);
+    const { versions } = await resp.json();
+    const supportsGrace = versions.some((v) => maxVersion(v, "5.6") === v);
+    return supportsGrace ? { ...coreConfig, refresh_token_rotation_grace_period: 0 } : coreConfig;
+};
+
 module.exports.getAppIdFromConnectionURI = function (connectionURI) {
     return connectionURI.split("/").pop().split("-").pop();
 };
