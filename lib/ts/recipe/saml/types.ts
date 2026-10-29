@@ -109,8 +109,10 @@ export type RecipeInterface = {
     }) => Promise<
         | {
               status: "OK";
-              sub: string;
-              email: string;
+              /** `null` if the SAML response carries no subject identifier the core recognises */
+              sub: string | null;
+              /** `null` if the SAML response carries no email address */
+              email: string | null;
               claims: Record<string, any>;
           }
         | {

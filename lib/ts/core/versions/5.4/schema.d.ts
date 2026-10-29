@@ -2626,7 +2626,12 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Create or update a SAML client for the specified tenant. */
+        /**
+         * @description Create or update a SAML client for the specified tenant.
+         *
+         *     If `clientId` is omitted, a new client is created with a generated id (`st_saml_<uuid>`). If it matches an existing client, that client is replaced with the given values.
+         *     Requires the SAML feature to be enabled for the app (402 otherwise).
+         */
         put: operations["createOrUpdateSamlClient"];
         post?: never;
         delete?: never;
@@ -2678,7 +2683,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a new login redirect URL for a given SAML client ID. */
+        /**
+         * @description Start an SP-initiated login: builds (and, if enabled for the client, signs) a SAML AuthnRequest and returns the IdP SSO URL to redirect the user to.
+         *     The generated `RelayState` is stored by the core together with `clientId`, `redirectURI`, `state` and `acsURL`, and is required again in `/recipe/saml/callback`.
+         *
+         *     `redirectURI` must be one of the client's `redirectURIs`, and `acsURL` must be one of the client's `acsURLs` when that list is set; otherwise `INVALID_CLIENT_ERROR` is returned.
+         *
+         *     Version note: cores on 11.3.x / 11.4.x append `?SAMLRequest=...` even when the IdP SSO URL already has a query string, which yields a malformed `ssoRedirectURI`; 12.x uses `&` in that case.
+         */
         post: operations["createSamlLoginRedirect"];
         delete?: never;
         options?: never;
@@ -2695,7 +2707,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Handle the SAML response from the Identity Provider (IdP). */
+        /**
+         * @description Handle the SAML response posted by the Identity Provider (IdP) to the ACS URL.
+         *
+         *     - With a `relayState` (SP-initiated flow) the response is matched to the login started with `/recipe/saml/login`; the RelayState is single-use and the response's `InResponseTo`, `Destination` and `SubjectConfirmationData.Recipient` are checked against that login (since the GHSA-3r7x-rhvc-fw28 patched versions, 11.3.8 / 11.4.8 / 12.0.11 / 12.1.2 / 12.2.1 / 12.3.1; earlier 5.4 cores neither consume the RelayState nor run these checks).
+         *     - Without a `relayState` (IdP-initiated flow) the client is resolved from the assertion's issuer, and the login is only accepted if the client has `allowIDPInitiatedLogin` set and an `acsURLs` list.
+         *
+         *     On success the user info is stored under a short-lived, single-use `code`, and the response contains the `redirectURI` to send the user to, with `code` (and `state`, if one was given at login) appended as query parameters.
+         *     The `code` is then exchanged with `/recipe/saml/user`.
+         */
         post: operations["handleSamlCallback"];
         delete?: never;
         options?: never;
@@ -2712,7 +2732,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Get user information using an access token. */
+        /**
+         * @description Exchange the single-use `code` returned by `/recipe/saml/callback` (passed as `accessToken`) for the authenticated user's SAML claims.
+         *     The code is removed on first use; a second call returns `INVALID_TOKEN_ERROR`.
+         */
         post: operations["getSamlUserInfo"];
         delete?: never;
         options?: never;
@@ -3181,14 +3204,20 @@ export interface components {
             enableRefreshTokenRotation?: boolean;
         };
         samlClient: {
+            /** @example st_saml_c3e1b9f0-4d4e-4a8c-9b2a-6b1d7f1f1a2b */
             clientId: string;
+            /** @description Only present if one was set */
             clientSecret?: string;
             defaultRedirectURI: string;
             redirectURIs: string[];
+            /** @description The IdP's entity id, read from `metadataXML` */
             idpEntityId: string;
+            /** @description Base64 encoded signing certificate read from `metadataXML`, if present */
             idpSigningCertificate?: string;
             allowIDPInitiatedLogin: boolean;
             enableRequestSigning: boolean;
+            /** @description Only present if set (cores from 11.3.8 / 11.4.8 / 12.0.11 / 12.1.2 / 12.2.1 / 12.3.1) */
+            acsURLs?: string[];
         };
         /**
          * @description should be a JSON object (not a JSON literal nor an array)
@@ -10211,13 +10240,47 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /**
+                     * @description Omit to create a client with a generated id
+                     * @example st_saml_c3e1b9f0-4d4e-4a8c-9b2a-6b1d7f1f1a2b
+                     */
                     clientId?: string;
+                    /** @description Optional secret, returned as stored in the client object */
                     clientSecret?: string;
+                    /**
+                     * @description Allowed `redirectURI` values for `/recipe/saml/login`; must not be empty
+                     * @example [
+                     *       "https://example.com/auth/callback/saml"
+                     *     ]
+                     */
                     redirectURIs: string[];
-                    defaultRedirectURI?: string;
+                    /**
+                     * @description Used for IdP-initiated logins, where no `redirectURI` was given at login time
+                     * @example https://example.com/auth/callback/saml
+                     */
+                    defaultRedirectURI: string;
+                    /** @description Base64 encoded IdP metadata XML. Rejected with a 400 if it does not decode to valid SAML metadata. */
                     metadataXML: string;
+                    /**
+                     * @description Whether unsolicited (IdP-initiated) SAML responses are accepted on the callback. Defaults to false.
+                     *     Requires a non-empty `acsURLs` (400 otherwise) on cores from 11.3.8 / 11.4.8 / 12.0.11 / 12.1.2 / 12.2.1 / 12.3.1.
+                     * @default false
+                     */
                     allowIDPInitiatedLogin?: boolean;
+                    /**
+                     * @description Whether AuthnRequests are signed with the core's SP key. Defaults to true.
+                     * @default true
+                     */
                     enableRequestSigning?: boolean;
+                    /**
+                     * @description Optional allow-list of Assertion Consumer Service URLs (since core 11.3.8 / 11.4.8 / 12.0.11 / 12.1.2 / 12.2.1 / 12.3.1; earlier releases ignore the field). When set, the `acsURL` given to `/recipe/saml/login` must be a member, and the `Destination` / `SubjectConfirmationData.Recipient` of an IdP-initiated response must be a member when present.
+                     *     Required (at least one URL) when `allowIDPInitiatedLogin` is true. Entries must be strings that are not empty or whitespace-only (400 otherwise).
+                     *     Note: on these cores a PUT that leaves the key out clears a previously stored list; CDI 5.8 changes this.
+                     * @example [
+                     *       "https://api.example.com/auth/saml/callback"
+                     *     ]
+                     */
+                    acsURLs?: string[];
                 };
             };
         };
@@ -10234,7 +10297,7 @@ export interface operations {
                           } & components["schemas"]["samlClient"])
                         | {
                               /**
-                               * @example INVALID_METADATA_XML_ERROR
+                               * @example DUPLICATE_IDP_ENTITY_ERROR
                                * @enum {string}
                                */
                               status: "DUPLICATE_IDP_ENTITY_ERROR";
@@ -10243,6 +10306,7 @@ export interface operations {
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10348,8 +10412,14 @@ export interface operations {
             content: {
                 "application/json": {
                     clientId: string;
+                    /** @description Where the user is sent after the callback; must be one of the client's `redirectURIs` */
                     redirectURI: string;
+                    /**
+                     * @description The Assertion Consumer Service URL the IdP should post the SAML response to (the backend's SAML callback endpoint)
+                     * @example https://api.example.com/auth/saml/callback
+                     */
                     acsURL: string;
+                    /** @description Opaque value echoed back as the `state` query param of the `redirectURI` returned by the callback */
                     state?: string;
                 };
             };
@@ -10364,6 +10434,7 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
+                              /** @description IdP SSO URL with the `SAMLRequest` and `RelayState` query params */
                               ssoRedirectURI: string;
                           }
                         | {
@@ -10374,6 +10445,7 @@ export interface operations {
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10398,13 +10470,15 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /** @description The base64 encoded `SAMLResponse` form field posted by the IdP. Note that current cores answer input that is not valid base64 with a 500 rather than a 400. */
                     samlResponse: string;
+                    /** @description The `RelayState` form field posted by the IdP. Omit for IdP-initiated logins. */
                     relayState?: string;
                 };
             };
         };
         responses: {
-            /** @description Returns an intermediate code on success */
+            /** @description Returns the redirect URI (carrying an intermediate code) on success */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -10413,21 +10487,31 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
+                              /**
+                               * @description The login's `redirectURI` (or the client's `defaultRedirectURI` for IdP-initiated logins) with `code` and optionally `state` query params added
+                               * @example https://example.com/auth/callback/saml?code=4e5c0e6b-9a7f-4a7e-8d7a-2d1b6c1a9f10&state=abc
+                               */
                               redirectURI: string;
                           }
                         | {
-                              /** @enum {string} */
+                              /**
+                               * @description - `INVALID_RELAY_STATE_ERROR`: unknown, expired or already used `relayState`
+                               *     - `SAML_RESPONSE_VERIFICATION_FAILED_ERROR`: signature, issuer, audience or validity window check failed; on the GHSA-3r7x-rhvc-fw28 patched versions also the destination/recipient, InResponseTo and assertion replay checks
+                               *     - `INVALID_CLIENT_ERROR`: no client matches the response's issuer (before the GHSA-3r7x-rhvc-fw28 patched versions this case was a 500 for IdP-initiated responses)
+                               *     - `IDP_LOGIN_DISALLOWED_ERROR`: IdP-initiated response for a client without `allowIDPInitiatedLogin`, or without `acsURLs`
+                               * @enum {string}
+                               */
                               status:
                                   | "INVALID_RELAY_STATE_ERROR"
                                   | "SAML_RESPONSE_VERIFICATION_FAILED_ERROR"
                                   | "INVALID_CLIENT_ERROR"
                                   | "IDP_LOGIN_DISALLOWED_ERROR";
-                              message: string;
                           };
                 };
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };
@@ -10452,7 +10536,9 @@ export interface operations {
         requestBody?: {
             content: {
                 "application/json": {
+                    /** @description The `code` query param the user was redirected with after the callback */
                     accessToken: string;
+                    /** @description Must match the client the code was issued for (`INVALID_TOKEN_ERROR` otherwise) */
                     clientId: string;
                 };
             };
@@ -10467,19 +10553,50 @@ export interface operations {
                     "application/json":
                         | {
                               status: components["schemas"]["statusOK"];
-                              sub: string;
-                              email: string;
-                              aud?: string;
-                              claims: Record<string, unknown>;
+                              /**
+                               * @description The user's id at the IdP. Taken from the first of: the Subject `NameID`,
+                               *     `http://schemas.microsoft.com/identity/claims/objectidentifier`,
+                               *     `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name`. `null` if none is present.
+                               */
+                              sub: string | null;
+                              /**
+                               * @description Taken from the first of: `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress`,
+                               *     `mail`, `email`, or the Subject `NameID` when it contains an `@`. `null` if none is present.
+                               *     Version note: the `mail` / `email` fallbacks exist from core 12.0; 11.3.x / 11.4.x check `emailaddress`, then `NameID`.
+                               */
+                              email: string | null;
+                              /** @description The SAML client id the code was issued for */
+                              aud: string;
+                              /**
+                               * @description The attributes of the response's first assertion (the one whose audience is validated; cores before the GHSA-wfg2-vqfg-rqh6 patched versions merged the attributes of all assertions) keyed by attribute `Name`, plus `NameID` and `NameIDFormat`. Each value is an array of strings.
+                               * @example {
+                               *       "NameID": [
+                               *         "user@example.com"
+                               *       ],
+                               *       "NameIDFormat": [
+                               *         "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+                               *       ],
+                               *       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": [
+                               *         "user@example.com"
+                               *       ]
+                               *     }
+                               */
+                              claims: {
+                                  [key: string]: string[];
+                              };
                           }
                         | {
-                              /** @enum {string} */
+                              /**
+                               * @description Unknown, expired or already used code, or the code was issued for another client
+                               * @enum {string}
+                               */
                               status: "INVALID_TOKEN_ERROR";
                           };
                 };
             };
             400: components["responses"]["400"];
             401: components["responses"]["401"];
+            402: components["responses"]["402"];
             404: components["responses"]["404"];
             500: components["responses"]["500"];
         };

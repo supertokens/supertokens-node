@@ -8,26 +8,26 @@ SuperTokens takes the security of our software and users seriously. This policy 
 
 Use either of these private channels:
 
-- **GitHub Private Vulnerability Reporting**: on the affected repository, go to the **Security** tab -> **Report a vulnerability**. This is the preferred channel for issues in a specific repo.
-- **Email**: security@supertokens.com.
+-   **GitHub Private Vulnerability Reporting**: on the affected repository, go to the **Security** tab -> **Report a vulnerability**. This is the preferred channel for issues in a specific repo.
+-   **Email**: security@supertokens.com.
 
 To help us assess and fix issues quickly, please include:
 
-- the affected component and version (e.g., SuperTokens Core vX.Y.Z, `supertokens-node` vX.Y.Z);
-- the configuration used, including:
-  - all non-default configuration passed to all components (to the core, backend and frontend SDKs)
-  - all API calls made during the setup, with the exact payloads
-- a clear description of the issue and its impact;
-- reproduction steps and, where possible, a minimal proof-of-concept.
+-   the affected component and version (e.g., SuperTokens Core vX.Y.Z, `supertokens-node` vX.Y.Z);
+-   the configuration used, including:
+    -   all non-default configuration passed to all components (to the core, backend and frontend SDKs)
+    -   all API calls made during the setup, with the exact payloads
+-   a clear description of the issue and its impact;
+-   reproduction steps and, where possible, a minimal proof-of-concept.
 
 ## What to expect from us
 
 We follow a coordinated disclosure process:
 
-- **Acknowledgement:** within 5 business days.
-- **Initial assessment:** within 14 days, including a severity evaluation (CVSS) and whether we consider it in scope.
-- **Resolution & disclosure:** we work to a coordinated timeline, typically up to **90 days**, or until a fix is released, whichever comes first. We will keep you informed about progress.
-- **Publication:** confirmed vulnerabilities are published as **GitHub Security Advisories** with an associated **CVE**, naming the fixed version and remediation steps. We are ready to coordinate public-disclosure timing with you.
+-   **Acknowledgement:** within 5 business days.
+-   **Initial assessment:** within 14 days, including a severity evaluation (CVSS) and whether we consider it in scope.
+-   **Resolution & disclosure:** we work to a coordinated timeline, typically up to **90 days**, or until a fix is released, whichever comes first. We will keep you informed about progress.
+-   **Publication:** confirmed vulnerabilities are published as **GitHub Security Advisories** with an associated **CVE**, naming the fixed version and remediation steps. We are ready to coordinate public-disclosure timing with you.
 
 We assess and remediate issues based on their technical merits and a timeline appropriate to their severity. We do not base remediation or disclosure decisions on whether a report is private or public.
 
@@ -35,8 +35,8 @@ We assess and remediate issues based on their technical merits and a timeline ap
 
 We backport security fixes across SuperTokens Core and our SDKs according to the following policy:
 
-- **All security fixes** are backported for at least one year of releases.
-- **Critical security fixes** are backported further, beyond the one-year window.
+-   **All security fixes** are backported for at least one year of releases.
+-   **Critical security fixes** are backported further, beyond the one-year window.
 
 For SuperTokens Core, this currently means all security fixes are backported to **v11.0** and later, and critical fixes to **v6.0** and later. Each SDK follows the same one-year principle on its own release line. Versions outside these windows are end-of-life and do not receive security fixes; please upgrade to a supported version.
 
@@ -52,8 +52,8 @@ Please test **only against your own self-hosted or local instances**. Do not tes
 
 The following are documented, intentional design decisions, not vulnerabilities in themselves. Reports resting solely on these behaviors, without a concrete exploit under the documented deployment model, are handled as hardening feedback.
 
-- **No API key by default.** The Core ships without an API key and must be protected with an API key and/or private-network deployment when exposed. See: https://supertokens.com/docs/platform-configuration/supertokens-core/api-keys.
-- **The backend is a trusted part of the architecture.** The Core returns codes and tokens to the calling backend: Passwordless/OTP codes, magic-link codes, device IDs, and password-reset tokens are returned in Core API responses because delivery is the responsibility of your application backend; the Core has no channel to the frontend. See: https://supertokens.com/docs/platform-configuration/supertokens-core/security#behaviors-that-are-intentional-by-design.
+-   **No API key by default.** The Core ships without an API key and must be protected with an API key and/or private-network deployment when exposed. See: https://supertokens.com/docs/platform-configuration/supertokens-core/api-keys.
+-   **The backend is a trusted part of the architecture.** The Core returns codes and tokens to the calling backend: Passwordless/OTP codes, magic-link codes, device IDs, and password-reset tokens are returned in Core API responses because delivery is the responsibility of your application backend; the Core has no channel to the frontend. See: https://supertokens.com/docs/platform-configuration/supertokens-core/security#behaviors-that-are-intentional-by-design.
 
 ## Safe harbor
 

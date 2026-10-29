@@ -25,6 +25,10 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { UserContext } from "../../types";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 
+// The message of the UNAUTHORISED response a CDI >= 5.6 core sends from verify (with checkDatabase) for an
+// access token whose refresh token has been rotated out. It means "refresh once", not "session gone".
+const ROTATED_OUT_TOKEN_BRANCH_MESSAGE = "rotated-out token branch; refresh required";
+
 /**
  * @description call this to "login" a user.
  */
@@ -222,7 +226,15 @@ export async function getSession(
         }
     }
 
-    if (accessTokenInfo !== undefined && !alwaysCheckCore && accessTokenInfo.parentRefreshTokenHash1 === undefined) {
+    if (
+        accessTokenInfo !== undefined &&
+        !alwaysCheckCore &&
+        // On CDI < 5.6 the core promotes a token minted by a refresh (one with a parentRefreshTokenHash1)
+        // the first time it is verified, so we have to call it for those. From CDI 5.6 verification is
+        // stateless and the core never promotes, so calling it would only repeat on every request.
+        (accessTokenInfo.parentRefreshTokenHash1 === undefined ||
+            (await isCDIVersionAtLeast(helpers, "5.6", userContext)))
+    ) {
         return {
             session: {
                 handle: accessTokenInfo.sessionHandle,
@@ -248,14 +260,20 @@ export async function getSession(
     let response = await helpers.querier.sendPostRequest("/recipe/session/verify", requestBody, userContext);
 
     if (response.status === "OK") {
+        // Verify only returns a replacement access token on CDI < 5.6 (it promoted the token or updated
+        // its payload); from CDI 5.6 payload changes reach the client at its next refresh.
+        const accessToken =
+            "accessToken" in response && !(await isCDIVersionAtLeast(helpers, "5.6", userContext))
+                ? response.accessToken
+                : undefined;
         return {
-            accessToken: response.accessToken,
+            accessToken,
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
                 recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 expiryTime:
-                    response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
+                    accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
                     accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
                     parsedAccessToken.payload["expiryTime"], // if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
                 tenantId: response.session?.tenantId || accessTokenInfo?.tenantId || DEFAULT_TENANT_ID,
@@ -263,6 +281,21 @@ export async function getSession(
             },
         };
     } else if (response.status === "UNAUTHORISED") {
+        if (
+            alwaysCheckCore &&
+            response.message === ROTATED_OUT_TOKEN_BRANCH_MESSAGE &&
+            (await isCDIVersionAtLeast(helpers, "5.6", userContext))
+        ) {
+            // From CDI 5.6, with checkDatabase the core rejects a validly signed, unexpired access token whose
+            // refresh token has been rotated out. The session is still alive: a refresh recovers it.
+            logDebugMessage(
+                "getSession: Returning TRY_REFRESH_TOKEN because the core reported a rotated-out access token"
+            );
+            throw new STError({
+                message: response.message,
+                type: STError.TRY_REFRESH_TOKEN,
+            });
+        }
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");
         throw new STError({
             message: response.message,
@@ -275,6 +308,11 @@ export async function getSession(
             type: STError.TRY_REFRESH_TOKEN,
         });
     }
+}
+
+async function isCDIVersionAtLeast(helpers: Helpers, version: string, userContext: UserContext): Promise<boolean> {
+    const apiVersion = await helpers.querier.getAPIVersion(userContext);
+    return maxVersion(apiVersion, version) === apiVersion;
 }
 
 /**

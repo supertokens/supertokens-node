@@ -309,6 +309,22 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
 
             const recipeId = "webauthn";
 
+            // This has to run before verifyCredentials: from CDI 5.5 a successful verification consumes
+            // the sign in options, so looking them up afterwards would always fail.
+            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
+                webauthnGeneratedOptionsId,
+                tenantId,
+                userContext,
+            });
+            if (generatedOptions.status !== "OK") {
+                logDebugMessage(
+                    `signInPOST: returning INVALID_CREDENTIALS_ERROR because getGeneratedOptions returned ${generatedOptions.status}`
+                );
+                return {
+                    status: "INVALID_CREDENTIALS_ERROR",
+                };
+            }
+
             const verifyResult = await options.recipeImplementation.verifyCredentials({
                 credential,
                 webauthnGeneratedOptionsId,
@@ -326,20 +342,6 @@ export default function getAPIImplementation(stInstance: SuperTokens): APIInterf
                     }`
                 );
                 return { status: "INVALID_CREDENTIALS_ERROR" };
-            }
-
-            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
-                webauthnGeneratedOptionsId,
-                tenantId,
-                userContext,
-            });
-            if (generatedOptions.status !== "OK") {
-                logDebugMessage(
-                    `signInPOST: returning INVALID_CREDENTIALS_ERROR because getGeneratedOptions returned ${generatedOptions.status}`
-                );
-                return {
-                    status: "INVALID_CREDENTIALS_ERROR",
-                };
             }
 
             const checkCredentialsOnTenant = async () => {

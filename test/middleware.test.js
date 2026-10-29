@@ -16,6 +16,7 @@ const {
     printPath,
 
     createCoreApplication,
+    getCoreConfigWithoutRefreshGrace,
 
     extractInfoFromResponse,
     delay,
@@ -35,6 +36,9 @@ let { verifySession } = require("../recipe/session/framework/express");
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
  */
 
+// On cores with CDI >= 5.6 session verification is stateless and never returns a replacement access token,
+// so `res3.accessToken` (the token swapped in by the first verify after a refresh) is undefined there and the
+// access token from the refresh (`res2.accessToken`) stays in use.
 describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
         ProcessState.getInstance().reset();
@@ -88,7 +92,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await createCoreApplication({
+            coreConfig: await getCoreConfigWithoutRefreshGrace(),
+        });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -305,7 +311,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -336,7 +342,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/logout")
-                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                    .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -372,7 +378,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with auto refresh", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await createCoreApplication({
+            coreConfig: await getCoreConfigWithoutRefreshGrace(),
+        });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -589,7 +597,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -624,7 +632,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/logout")
-                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                    .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -647,7 +655,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -661,7 +669,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await createCoreApplication({
+            coreConfig: await getCoreConfigWithoutRefreshGrace(),
+        });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -887,7 +897,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -919,7 +929,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/custom/logout")
-                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                    .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -941,7 +951,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -955,7 +965,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config with auto refresh", async function () {
-        const connectionURI = await createCoreApplication();
+        const connectionURI = await createCoreApplication({
+            coreConfig: await getCoreConfigWithoutRefreshGrace(),
+        });
 
         SuperTokens.init({
             supertokens: {
@@ -1184,7 +1196,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1216,7 +1228,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/custom/logout")
-                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                    .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1239,7 +1251,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1562,7 +1574,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handle")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1578,7 +1590,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/custom/logout")
-                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                    .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1679,7 +1691,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware without error handler added", async function () {
-        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 5 } });
+        const connectionURI = await createCoreApplication({
+            coreConfig: await getCoreConfigWithoutRefreshGrace({ access_token_validity: 5 }),
+        });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1807,7 +1821,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         await request(app)
             .get("/user/handleV0")
-            .set("Cookie", ["sAccessToken=" + res3.accessToken])
+            .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
             .set("anti-csrf", res2.antiCsrf)
             .expect(200);
         let r4 = await request(app)
@@ -1820,7 +1834,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res4 = extractInfoFromResponse(
             await request(app)
                 .post("/logout")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
         );
@@ -1834,7 +1848,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await delay(2);
         let r5 = await request(app)
             .get("/user/handleV0")
-            .set("Cookie", ["sAccessToken=" + res3.accessToken])
+            .set("Cookie", ["sAccessToken=" + (res3.accessToken ?? res2.accessToken)])
             .expect(401);
         assert.strictEqual(r5.body.message, "try refresh token");
     });

@@ -22,6 +22,7 @@ const {
     mockResponse,
     mockRequest,
     getQuerierInstance,
+    isCDIVersionCompatible,
 } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
@@ -806,6 +807,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             {}
         );
 
+        // Rotate once more: on CDI >= 5.6 the token just rotated out (response.refreshToken) stays valid for a
+        // short grace period, so theft is only detected for a token from an older generation.
+        let response3 = await SessionFunctions.refreshSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
+            response2.refreshToken.token,
+            response2.antiCsrfToken,
+            false,
+            true,
+            {}
+        );
+
+        await SessionFunctions.getSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
+            parseJWTWithoutSignatureVerification(response3.accessToken.token),
+            response3.antiCsrfToken,
+            true,
+            false,
+            SessionRecipe.getInstanceOrThrowError().config,
+            {}
+        );
+
         try {
             await SessionFunctions.refreshSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
@@ -861,6 +883,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
+            true,
+            false,
+            SessionRecipe.getInstanceOrThrowError().config,
+            {}
+        );
+
+        // Rotate once more: on CDI >= 5.6 the token just rotated out (response.refreshToken) stays valid for a
+        // short grace period, so theft is only detected for a token from an older generation.
+        let response3 = await SessionFunctions.refreshSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
+            response2.refreshToken.token,
+            response2.antiCsrfToken,
+            false,
+            true,
+            {}
+        );
+
+        await SessionFunctions.getSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
+            parseJWTWithoutSignatureVerification(response3.accessToken.token),
+            response3.antiCsrfToken,
             true,
             false,
             SessionRecipe.getInstanceOrThrowError().config,
@@ -978,17 +1021,32 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(response3.session !== undefined);
-        assert(response3.accessToken !== undefined);
-        assert(Object.keys(response3).length === 2);
+        let verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so a refreshed token is verified locally and never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(response3.session !== undefined);
+            assert(response3.accessToken === undefined);
+            assert(Object.keys(response3).length === 1);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(response3.session !== undefined);
+            assert(response3.accessToken !== undefined);
+            assert(Object.keys(response3).length === 2);
+        }
 
         ProcessState.getInstance().reset();
 
         let response4 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            parseJWTWithoutSignatureVerification(response3.accessToken.token),
+            parseJWTWithoutSignatureVerification(
+                verifyIsStateless ? response2.accessToken.token : response3.accessToken.token
+            ),
             response2.antiCsrfToken,
             true,
             false,

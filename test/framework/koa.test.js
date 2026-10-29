@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, isCDIVersionCompatible } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
@@ -284,6 +284,35 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 })
         );
 
+        // Rotate once more: on CDI >= 5.6 the refresh token that was just rotated out stays valid for a short grace
+        // period, so theft is only detected when a token from an older generation is reused.
+        let res2b = extractInfoFromResponse(
+            await new Promise((resolve, reject) =>
+                request(this.server)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res2.refreshToken])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        assert(res2b.refreshToken !== undefined);
+
+        await new Promise((resolve, reject) =>
+            request(this.server)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res2b.accessToken])
+                .set("anti-csrf", res2b.antiCsrf)
+                .end((err, res) => {
+                    resolve();
+                })
+        );
+
         let res3 = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/auth/session/refresh")
@@ -377,6 +406,35 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res2.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
+                .end((err, res) => {
+                    resolve();
+                })
+        );
+
+        // Rotate once more: on CDI >= 5.6 the refresh token that was just rotated out stays valid for a short grace
+        // period, so theft is only detected when a token from an older generation is reused.
+        let res2b = extractInfoFromResponse(
+            await new Promise((resolve, reject) =>
+                request(this.server)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res2.refreshToken])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        assert(res2b.refreshToken !== undefined);
+
+        await new Promise((resolve, reject) =>
+            request(this.server)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res2b.accessToken])
+                .set("anti-csrf", res2b.antiCsrf)
                 .end((err, res) => {
                     resolve();
                 })
@@ -519,16 +577,30 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                     })
             )
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so the refreshed access token is verified locally (without
+            // calling the core) and is never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const accessTokenAfterVerify = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
         await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + accessTokenAfterVerify])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -544,7 +616,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/revoke")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + accessTokenAfterVerify])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -735,16 +807,30 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                     })
             )
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        const verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so the refreshed access token is verified locally (without
+            // calling the core) and is never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const accessTokenAfterVerify = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
         await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + accessTokenAfterVerify])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -760,7 +846,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(this.server)
                 .post("/session/revoke")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + accessTokenAfterVerify])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {

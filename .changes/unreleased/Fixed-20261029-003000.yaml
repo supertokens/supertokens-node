@@ -1,0 +1,3 @@
+kind: Fixed
+body: "WebAuthn `signInPOST` looked up the generated sign in options only after verifying the credential; on cores 12.0.8+ (CDI 5.5), where verification consumes the options, every API sign in failed with `INVALID_CREDENTIALS_ERROR`. The options are now read before verification."
+time: 2026-10-29T00:30:00Z

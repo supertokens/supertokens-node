@@ -20,6 +20,7 @@ const {
     extractInfoFromResponse,
 
     delay,
+    isCDIVersionCompatible,
 } = require("./utils");
 let assert = require("assert");
 const express = require("express");
@@ -261,6 +262,36 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
+        // Rotate once more: on CDI >= 5.6 the token just rotated out (res.refreshToken) stays valid for a short
+        // grace period, so theft is only detected for a token from an older generation.
+        let resRotated = extractInfoFromResponse(
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res2.refreshToken])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        assert(resRotated.accessToken !== undefined);
+        assert(resRotated.refreshToken !== undefined);
+
+        await new Promise((resolve, reject) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + resRotated.accessToken])
+                .set("anti-csrf", resRotated.antiCsrf)
+                .end((err, res) => {
+                    resolve();
+                })
+        );
+
         let res3 = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/session/refresh")
@@ -352,6 +383,36 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res2.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
+                .end((err, res) => {
+                    resolve();
+                })
+        );
+
+        // Rotate once more: on CDI >= 5.6 the token just rotated out (res.refreshToken) stays valid for a short
+        // grace period, so theft is only detected for a token from an older generation.
+        let resRotated = extractInfoFromResponse(
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res2.refreshToken])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        assert(resRotated.accessToken !== undefined);
+        assert(resRotated.refreshToken !== undefined);
+
+        await new Promise((resolve, reject) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + resRotated.accessToken])
+                .set("anti-csrf", resRotated.antiCsrf)
                 .end((err, res) => {
                     resolve();
                 })
@@ -488,16 +549,29 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     })
             )
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        let verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so a refreshed token is verified locally and never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const latestAccessToken = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
         await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + latestAccessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -513,7 +587,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + latestAccessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -647,16 +721,29 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     })
             )
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessTokenFromHeader !== undefined);
+        let verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so a refreshed token is verified locally and never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessTokenFromHeader === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessTokenFromHeader !== undefined);
+        }
+        const latestAccessToken = verifyIsStateless ? res2.accessTokenFromHeader : res3.accessTokenFromHeader;
 
         ProcessState.getInstance().reset();
 
         await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
-                .set("Authorization", `Bearer ${res3.accessTokenFromHeader}`)
+                .set("Authorization", `Bearer ${latestAccessToken}`)
 
                 .end((err, res) => {
                     if (err) {
@@ -672,7 +759,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
-                .set("Authorization", `Bearer ${res3.accessTokenFromHeader}`)
+                .set("Authorization", `Bearer ${latestAccessToken}`)
 
                 .expect(200)
                 .end((err, res) => {
@@ -1019,16 +1106,29 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     })
             )
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        let verifyIsStateless = await isCDIVersionCompatible("5.6");
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so a refreshed token is verified locally and never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+        }
+        const latestAccessToken = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
         await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + latestAccessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -1044,7 +1144,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + latestAccessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -2391,19 +2491,33 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     })
             )
         );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        let verifyIsStateless = await isCDIVersionCompatible("5.6");
         assert.strictEqual(getSessionCalled, true);
         assert.notStrictEqual(session, undefined);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
-        assert.strictEqual(session.getAccessToken(), decodeURIComponent(res3.accessToken));
+        if (verifyIsStateless) {
+            // CDI >= 5.6: verification is stateless, so a refreshed token is verified locally and never replaced
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1000
+            );
+            assert(verifyState === undefined);
+            assert(res3.accessToken === undefined);
+            assert(res3.frontToken === undefined);
+            assert.strictEqual(session.getAccessToken(), decodeURIComponent(res2.accessToken));
+        } else {
+            let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+            assert(verifyState !== undefined);
+            assert(res3.accessToken !== undefined);
+            assert.strictEqual(session.getAccessToken(), decodeURIComponent(res3.accessToken));
+        }
+        const latestAccessToken = verifyIsStateless ? res2.accessToken : res3.accessToken;
 
         ProcessState.getInstance().reset();
 
         await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + latestAccessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -2419,7 +2533,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", ["sAccessToken=" + res3.accessToken])
+                .set("Cookie", ["sAccessToken=" + latestAccessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
