@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.1.0] - 2026-10-29
+
+### Added
+
+-   Supports CDI 5.5, 5.6 and 5.7.
+
+### Changed
+
+-   Behaviour changes on cores 12.1+ (CDI 5.6): after a refresh, the previous refresh token stays accepted for a grace period (`refresh_token_rotation_grace_period`, default 30 s), so a retried or concurrent refresh succeeds instead of being reported as token theft; the token pair displaced by that second refresh is dead, so with two concurrent refreshes the losing client's next refresh revokes the session (the SuperTokens frontend SDKs serialise refreshes; custom clients must too). Session verification is stateless on the core: `verifySession`/`getSession` never return a replacement access token (not after a refresh and not with `checkDatabase: true`), and access token payload changes made server-side by session handle (`mergeIntoAccessTokenPayload`, `setClaimValue`, `removeClaim`) reach the token at the next refresh instead of the next verification - revoke the session if a change must take effect immediately. An access token whose refresh token has been rotated out now gets `TRY_REFRESH_TOKEN` instead of signing the user out. On cores 12.0.8+ (CDI 5.5) WebAuthn sign in options are single-use, so an override that calls `verifyCredentials` and then `signIn` gets `OPTIONS_NOT_FOUND_ERROR`. On cores 12.3+ (CDI 5.7) tenant-scoped user counts are served from the core's ledger and may lag.
+
+### Fixed
+
+-   Prevent chunked Core responses from hanging with node-fetch-based fetch implementations, including dashboard tenant lists, while preserving request-scoped caching.
+-   The SAML `getUserInfo` recipe function types `sub` and `email` as `string | null`, matching the core. SAML third-party sign in now fails with a clear error when the SAML response has no subject identifier, and handles a response without an email like other providers without one (fake email if `requireEmail` is false, otherwise `NO_EMAIL_GIVEN_BY_PROVIDER`).
+-   WebAuthn `signInPOST` looked up the generated sign in options only after verifying the credential; on cores 12.0.8+ (CDI 5.5), where verification consumes the options, every API sign in failed with `INVALID_CREDENTIALS_ERROR`. The options are now read before verification.
+
 ## [24.0.4] - 2026-10-21
 
 ### Changed
