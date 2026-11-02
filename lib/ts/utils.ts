@@ -320,7 +320,14 @@ export function setRequestInUserContextIfNotDefined(userContext: UserContext | u
 export function getTopLevelDomainForSameSiteResolution(url: string): string {
     let urlObj = new URL(url);
     let hostname = urlObj.hostname;
-    if (hostname.startsWith("localhost") || hostname.startsWith("localhost.org") || isAnIpAddress(hostname)) {
+    // URL keeps IPv6 hosts in brackets (e.g. "[::1]"), and has already validated them by this point.
+    const isIPv6Address = hostname.startsWith("[") && hostname.endsWith("]");
+    if (
+        hostname.startsWith("localhost") ||
+        hostname.startsWith("localhost.org") ||
+        isAnIpAddress(hostname) ||
+        isIPv6Address
+    ) {
         // we treat these as the same TLDs since we can use sameSite lax for all of them.
         return "localhost";
     }
