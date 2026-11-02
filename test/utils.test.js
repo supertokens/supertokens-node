@@ -35,6 +35,12 @@ describe("getTopLevelDomainForSameSiteResolution test", () => {
         assert.equal(getTopLevelDomainForSameSiteResolution("https://192.168.1.1"), "localhost");
     });
 
+    it('should return "localhost" for IPv6 addresses', () => {
+        assert.equal(getTopLevelDomainForSameSiteResolution("http://[::1]:3000"), "localhost");
+        assert.equal(getTopLevelDomainForSameSiteResolution("https://[2001:db8::1]"), "localhost");
+        assert.equal(getTopLevelDomainForSameSiteResolution("http://[::ffff:127.0.0.1]/test-path"), "localhost");
+    });
+
     it("should return the correct domain for normal URLs", () => {
         assert.equal(getTopLevelDomainForSameSiteResolution("https://www.example.com"), "example.com");
         assert.equal(getTopLevelDomainForSameSiteResolution("http://sub.domain.co.uk"), "domain.co.uk");

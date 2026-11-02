@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+-   `supertokens.init` no longer throws "Please make sure that the apiDomain and websiteDomain have correct values" when `apiDomain` or `websiteDomain` is an IPv6 address (e.g. `http://[::1]:3001`). IPv6 hosts are now treated like IPv4 addresses for cookie `sameSite` resolution.
+
 ## [24.1.0] - 2026-10-29
 
 ### Added
