@@ -15,6 +15,7 @@
 const { printPath, createCoreApplication, getQuerierInstance, getCoreUrl } = require("./utils");
 let ST = require("../");
 let assert = require("assert");
+const http = require("http");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
@@ -400,5 +401,59 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             2000
         );
         assert(noCacheHeaderAdded !== undefined);
+    });
+
+    it("test that a tenant or app not found response from the core is thrown as a BAD_INPUT_ERROR", async function () {
+        const message =
+            "AppId or tenantId not found => Tenant with the following connectionURIDomain, appId and tenantId combination not found: (, public, unknown)";
+
+        // a minimal fake core, so that this test does not need a running SuperTokens core
+        const fakeCore = http.createServer((req, res) => {
+            if (req.url.startsWith("/apiversion")) {
+                res.setHeader("content-type", "application/json");
+                res.end(JSON.stringify({ versions: ["5.4"] }));
+                return;
+            }
+            res.statusCode = 400;
+            res.setHeader("content-type", "text/plain");
+            res.end(req.url.startsWith("/unknown/") ? message : "Some other bad request");
+        });
+        await new Promise((resolve) => fakeCore.listen(0, "127.0.0.1", resolve));
+
+        try {
+            ST.init({
+                supertokens: {
+                    connectionURI: "http://127.0.0.1:" + fakeCore.address().port,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+            });
+
+            let querier = getQuerierInstance(SessionRecipe.getInstanceOrThrowError().getRecipeId());
+
+            try {
+                await querier.sendGetRequest("/unknown/recipe/some/path", {}, {});
+                fail("expected the request to throw");
+            } catch (err) {
+                assert(ST.Error.isErrorFromSuperTokens(err));
+                assert.strictEqual(err.type, ST.Error.BAD_INPUT_ERROR);
+                assert.strictEqual(err.message, message);
+            }
+
+            // other 400 responses from the core keep being thrown as generic errors
+            try {
+                await querier.sendGetRequest("/recipe/other", {}, {});
+                fail("expected the request to throw");
+            } catch (err) {
+                assert(!ST.Error.isErrorFromSuperTokens(err));
+                assert(err.message.includes("status code: 400 and message: Some other bad request"));
+            }
+        } finally {
+            await new Promise((resolve) => fakeCore.close(resolve));
+        }
     });
 });

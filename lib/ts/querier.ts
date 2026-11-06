@@ -25,7 +25,11 @@ import { NetworkInterceptor } from "./types";
 import { PathParam, RequestBody, ResponseBody } from "./core/types";
 import { paths } from "./core/paths";
 import type SuperTokens from "./supertokens";
+import STError from "./error";
 import crossFetch from "cross-fetch";
+
+// Prefix of the message sent by the core (with status 400) when the tenant or app of a request is unknown
+const TENANT_OR_APP_NOT_FOUND_MESSAGE_PREFIX = "AppId or tenantId not found";
 
 type CoreResponse = Pick<Response, "status" | "headers" | "text" | "json">;
 
@@ -688,6 +692,19 @@ export class Querier {
                     }
                 }
 
+                const responseText = await err.text();
+
+                // The core responds with a 400 when the tenant or app of the request does not exist.
+                // This is an error in the input of the caller, so we surface it as a BAD_INPUT_ERROR
+                // (which the error handler turns into a 400 response) instead of a generic 500.
+                if (err.status === 400 && responseText.startsWith(TENANT_OR_APP_NOT_FOUND_MESSAGE_PREFIX)) {
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: responseText,
+                        payload: undefined,
+                    });
+                }
+
                 throw new Error(
                     "SuperTokens core threw an error for a " +
                         method +
@@ -696,7 +713,7 @@ export class Querier {
                         "' with status code: " +
                         err.status +
                         " and message: " +
-                        (await err.text())
+                        responseText
                 );
             }
 

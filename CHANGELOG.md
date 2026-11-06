@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+-   When the core responds with a 400 because the tenant or app of a request does not exist, the SDK now raises a `BAD_INPUT_ERROR` (handled as a 400 response by the error handler) instead of a generic error that resulted in a 500 ([#640](https://github.com/supertokens/supertokens-node/issues/640)).
+
 ## [24.1.0] - 2026-10-29
 
 ### Added
