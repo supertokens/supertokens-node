@@ -1074,9 +1074,16 @@ export const AuthUtils = {
 
         if (validFactorIds.length === 0) {
             if (!hasSession) {
+                const message =
+                    "The factor(s) used by this sign in / sign up request (" +
+                    factorIds.join(", ") +
+                    ") are not enabled as first factors for the tenant (" +
+                    tenantId +
+                    "). Enable it as a first factor, or send a valid session to authenticate with it as a secondary factor.";
+                logDebugMessage("filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: " + message);
                 throw new SessionError({
                     type: SessionError.UNAUTHORISED,
-                    message: "A valid session is required to authenticate with secondary factors",
+                    message,
                 });
             } else {
                 throw new SuperTokensError({

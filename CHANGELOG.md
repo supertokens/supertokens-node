@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+-   The `UNAUTHORISED` error raised when a sign in / sign up request uses a factor that is not enabled as a first factor for the tenant, and has no session, now says which factors and tenant are involved instead of only mentioning that a session is required. The error type and the response status are unchanged ([#974](https://github.com/supertokens/supertokens-node/issues/974)).
+
 ## [24.1.0] - 2026-10-29
 
 ### Added
