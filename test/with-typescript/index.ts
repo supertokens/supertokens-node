@@ -128,6 +128,14 @@ UserMetadata.updateUserMetadata("...", {
     },
 });
 
+// interfaces (which have no implicit index signature) must be accepted as metadata updates
+interface UserMetaInterface {
+    foo: string;
+    nested?: { bar: number };
+}
+const userMetaFromInterface: UserMetaInterface = { foo: "bar" };
+UserMetadata.updateUserMetadata("...", userMetaFromInterface);
+
 UserMetadata.getUserMetadata("xyz").then((data) => {
     let firstName: string = data.metadata.firstName;
     console.log(firstName);

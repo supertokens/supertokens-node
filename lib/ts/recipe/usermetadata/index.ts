@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { JSONObject } from "../../types";
+import { JSONObject, JSONValue } from "../../types";
 import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
@@ -28,7 +28,13 @@ export default class Wrapper {
         });
     }
 
-    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: Record<string, any>) {
+    // The mapped constraint (instead of `JSONObject`) lets callers pass values typed with a TS `interface`,
+    // which has no implicit index signature and is therefore not assignable to `JSONObject`.
+    static async updateUserMetadata<T extends { [K in keyof T]: JSONValue }>(
+        userId: string,
+        metadataUpdate: T,
+        userContext?: Record<string, any>
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
             userId,
             metadataUpdate,
