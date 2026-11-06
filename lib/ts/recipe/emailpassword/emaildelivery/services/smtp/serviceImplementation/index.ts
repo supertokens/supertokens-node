@@ -38,6 +38,8 @@ export function getServiceImplementation(
                     to: input.toEmail,
                     subject: input.subject,
                     html: input.body,
+                    // when provided, the email is sent as multipart/alternative with both parts
+                    text: input.plainTextBody,
                 });
             } else {
                 await transporter.sendMail({
