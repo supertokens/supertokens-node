@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
--   The debug log emitted when the middleware skips a request because its path does not start with `apiBasePath` now also prints the configured `apiBasePath`, and, if an `apiGatewayPath` is configured, the received URL and that prefix, since the logged request path is not necessarily the URL the client called ([#912](https://github.com/supertokens/supertokens-node/issues/912)).
-
 ## [24.1.0] - 2026-10-29
 
 ### Added

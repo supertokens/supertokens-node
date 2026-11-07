@@ -433,8 +433,8 @@ export default class SuperTokens {
 
     middleware = async (request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<boolean> => {
         logDebugMessage("middleware: Started");
-        const originalURL = request.getOriginalURL();
-        let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(originalURL));
+        const originalPath = new NormalisedURLPath(request.getOriginalURL());
+        let path = this.appInfo.apiGatewayPath.appendPath(originalPath);
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
         const handlerFromApis = this.pluginRouteHandlers.find(
@@ -477,7 +477,8 @@ export default class SuperTokens {
                     this.appInfo.apiBasePath.getAsStringDangerous() +
                     (this.appInfo.apiGatewayPath.getAsStringDangerous() !== ""
                         ? ". The request path is the received URL (" +
-                          originalURL +
+                          // only the path: the query string can contain secrets (e.g. tokens)
+                          originalPath.getAsStringDangerous() +
                           ") prefixed with the configured apiGatewayPath (" +
                           this.appInfo.apiGatewayPath.getAsStringDangerous() +
                           "), which may differ from the URL the client actually called"

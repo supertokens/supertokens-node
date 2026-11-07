@@ -1,0 +1,3 @@
+kind: Changed
+body: "The debug log emitted when the middleware skips a request because its path does not start with `apiBasePath` now also prints the configured `apiBasePath`, and, if an `apiGatewayPath` is configured, the received path (without its query string) and that prefix, since the logged request path is not necessarily the URL the client called ([#912](https://github.com/supertokens/supertokens-node/issues/912))."
+time: 2026-11-07T10:01:00Z
