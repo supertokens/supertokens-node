@@ -1,0 +1,3 @@
+kind: Fixed
+body: "When the core responds with a 400 because the tenant of a request does not exist, the SDK now raises a `BAD_INPUT_ERROR` (handled as a 400 response with the message `Tenant not found` by the error handler) instead of a generic error that resulted in a 500. The core's own message is only written to the debug log ([#640](https://github.com/supertokens/supertokens-node/issues/640))."
+time: 2026-11-07T10:02:00Z

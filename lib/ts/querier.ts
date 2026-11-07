@@ -28,8 +28,9 @@ import type SuperTokens from "./supertokens";
 import STError from "./error";
 import crossFetch from "cross-fetch";
 
-// Prefix of the message sent by the core (with status 400) when the tenant or app of a request is unknown
-const TENANT_OR_APP_NOT_FOUND_MESSAGE_PREFIX = "AppId or tenantId not found";
+// Prefix of the message sent by the core (with status 400) when the tenant of a request is unknown. An unknown app is
+// deliberately not matched: the app comes from the connectionURI, so it is a server misconfiguration, not a bad request.
+const TENANT_NOT_FOUND_MESSAGE_PREFIX = "AppId or tenantId not found => Tenant with";
 
 type CoreResponse = Pick<Response, "status" | "headers" | "text" | "json">;
 
@@ -694,13 +695,15 @@ export class Querier {
 
                 const responseText = await err.text();
 
-                // The core responds with a 400 when the tenant or app of the request does not exist.
-                // This is an error in the input of the caller, so we surface it as a BAD_INPUT_ERROR
-                // (which the error handler turns into a 400 response) instead of a generic 500.
-                if (err.status === 400 && responseText.startsWith(TENANT_OR_APP_NOT_FOUND_MESSAGE_PREFIX)) {
+                // The core responds with a 400 when the tenant of the request does not exist. This is an error in the
+                // input of the caller, so we surface it as a BAD_INPUT_ERROR (which the error handler turns into a 400
+                // response) instead of a generic 500. The message returned to the client is fixed: the core's message
+                // names the connectionURIDomain / appId, so it is only logged.
+                if (err.status === 400 && responseText.startsWith(TENANT_NOT_FOUND_MESSAGE_PREFIX)) {
+                    logDebugMessage("Querier: core reported an unknown tenant: " + responseText);
                     throw new STError({
                         type: STError.BAD_INPUT_ERROR,
-                        message: responseText,
+                        message: "Tenant not found",
                         payload: undefined,
                     });
                 }

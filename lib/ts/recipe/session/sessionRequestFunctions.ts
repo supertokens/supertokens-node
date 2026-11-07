@@ -378,7 +378,7 @@ export async function refreshSessionInRequest({
     } catch (ex) {
         if (
             SessionError.isErrorFromSuperTokens(ex) &&
-            (ex.type === SessionError.TOKEN_THEFT_DETECTED || ex.payload.clearTokens === true)
+            (ex.type === SessionError.TOKEN_THEFT_DETECTED || ex.payload?.clearTokens === true)
         ) {
             // We clear the LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME here because we want to limit the scope of this legacy/migration code
             // so the token clearing functions in the error handlers do not

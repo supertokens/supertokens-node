@@ -403,9 +403,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert(noCacheHeaderAdded !== undefined);
     });
 
-    it("test that a tenant or app not found response from the core is thrown as a BAD_INPUT_ERROR", async function () {
-        const message =
+    it("test that a tenant not found response from the core is thrown as a BAD_INPUT_ERROR", async function () {
+        const coreMessage =
             "AppId or tenantId not found => Tenant with the following connectionURIDomain, appId and tenantId combination not found: (, public, unknown)";
+        const appMessage =
+            "AppId or tenantId not found => App with the following connectionURIDomain and appId combination not found: (, unknownapp)";
 
         // a minimal fake core, so that this test does not need a running SuperTokens core
         const fakeCore = http.createServer((req, res) => {
@@ -416,7 +418,13 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             }
             res.statusCode = 400;
             res.setHeader("content-type", "text/plain");
-            res.end(req.url.startsWith("/unknown/") ? message : "Some other bad request");
+            if (req.url.startsWith("/unknown/")) {
+                res.end(coreMessage);
+            } else if (req.url.startsWith("/unknownapp/")) {
+                res.end(appMessage);
+            } else {
+                res.end("Some other bad request");
+            }
         });
         await new Promise((resolve) => fakeCore.listen(0, "127.0.0.1", resolve));
 
@@ -441,16 +449,23 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             } catch (err) {
                 assert(ST.Error.isErrorFromSuperTokens(err));
                 assert.strictEqual(err.type, ST.Error.BAD_INPUT_ERROR);
-                assert.strictEqual(err.message, message);
+                // the core's message (which contains the appId) must not be sent to clients
+                assert.strictEqual(err.message, "Tenant not found");
             }
 
-            // other 400 responses from the core keep being thrown as generic errors
-            try {
-                await querier.sendGetRequest("/recipe/other", {}, {});
-                fail("expected the request to throw");
-            } catch (err) {
-                assert(!ST.Error.isErrorFromSuperTokens(err));
-                assert(err.message.includes("status code: 400 and message: Some other bad request"));
+            // an unknown app is a server misconfiguration, so it stays a generic error
+            // and other 400 responses from the core also keep being thrown as generic errors
+            for (const [path, text] of [
+                ["/unknownapp/recipe/some/path", appMessage],
+                ["/recipe/other", "Some other bad request"],
+            ]) {
+                try {
+                    await querier.sendGetRequest(path, {}, {});
+                    fail("expected the request to throw");
+                } catch (err) {
+                    assert(!ST.Error.isErrorFromSuperTokens(err));
+                    assert(err.message.includes("status code: 400 and message: " + text));
+                }
             }
         } finally {
             await new Promise((resolve) => fakeCore.close(resolve));
