@@ -128,13 +128,34 @@ UserMetadata.updateUserMetadata("...", {
     },
 });
 
-// interfaces (which have no implicit index signature) must be accepted as metadata updates
+// interfaces (which have no implicit index signature) must be accepted as metadata updates, also when nested
+interface UserMetaPreferences {
+    theme: string;
+}
 interface UserMetaInterface {
     foo: string;
     nested?: { bar: number };
+    preferences: UserMetaPreferences;
+    tags: string[];
 }
-const userMetaFromInterface: UserMetaInterface = { foo: "bar" };
+const userMetaFromInterface: UserMetaInterface = { foo: "bar", preferences: { theme: "dark" }, tags: [] };
 UserMetadata.updateUserMetadata("...", userMetaFromInterface);
+
+// ... but values that are not JSON compatible objects must still be rejected
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", "hello");
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", 42);
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", null);
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", undefined);
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", ["a"]);
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", { fn: () => 1 });
+// @ts-expect-error
+UserMetadata.updateUserMetadata("...", { date: new Date() });
 
 UserMetadata.getUserMetadata("xyz").then((data) => {
     let firstName: string = data.metadata.firstName;

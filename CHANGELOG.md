@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
--   `UserMetadata.updateUserMetadata` now accepts values typed with a TypeScript `interface`, not only `type` aliases or object literals ([#857](https://github.com/supertokens/supertokens-node/issues/857)).
-
 ## [24.1.0] - 2026-10-29
 
 ### Added

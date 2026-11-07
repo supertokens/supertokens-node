@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { JSONObject, JSONValue } from "../../types";
+import { JSONObject } from "../../types";
 import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
+import { RecipeInterface, MetadataUpdate } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getUserMetadata(
@@ -11,13 +11,9 @@ export default class Wrapper {
         status: "OK";
         metadata: any;
     }>;
-    static updateUserMetadata<
-        T extends {
-            [K in keyof T]: JSONValue;
-        }
-    >(
+    static updateUserMetadata<T extends object>(
         userId: string,
-        metadataUpdate: T,
+        metadataUpdate: MetadataUpdate<T>,
         userContext?: Record<string, any>
     ): Promise<{
         status: "OK";

@@ -14,7 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { JSONObject, UserContext } from "../../types";
+import { JSONObject, JSONPrimitive, UserContext } from "../../types";
 
 export type TypeInput = {
     override?: {
@@ -61,3 +61,23 @@ export type RecipeInterface = {
         status: "OK";
     }>;
 };
+
+/**
+ * Recursively checks that `V` can be stored as JSON. Unlike `JSONObject`, it does not require an index signature,
+ * so values typed with a TypeScript `interface` are accepted, at any depth. Functions, symbols, dates etc. resolve to
+ * `never`.
+ */
+export type JSONCompatible<V> = V extends JSONPrimitive | undefined
+    ? V
+    : V extends (...args: any[]) => any
+    ? never
+    : V extends ReadonlyArray<infer U>
+    ? Array<JSONCompatible<U>>
+    : V extends object
+    ? { [K in keyof V]: JSONCompatible<V[K]> }
+    : never;
+
+/**
+ * The type of a metadata update: a JSON compatible object (not an array or a primitive).
+ */
+export type MetadataUpdate<T> = (T extends ReadonlyArray<any> ? never : T) & JSONCompatible<T>;
