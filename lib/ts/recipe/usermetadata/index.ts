@@ -16,7 +16,7 @@
 import { JSONObject } from "../../types";
 import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
+import { RecipeInterface, MetadataUpdate } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -28,10 +28,17 @@ export default class Wrapper {
         });
     }
 
-    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: Record<string, any>) {
+    // `MetadataUpdate<T>` (instead of `JSONObject`) lets callers pass values typed with a TS `interface`, which has
+    // no implicit index signature and is therefore not assignable to `JSONObject`, while still rejecting values
+    // that are not JSON compatible objects (primitives, arrays, functions, ...).
+    static async updateUserMetadata<T extends object>(
+        userId: string,
+        metadataUpdate: MetadataUpdate<T>,
+        userContext?: Record<string, any>
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
             userId,
-            metadataUpdate,
+            metadataUpdate: metadataUpdate as JSONObject,
             userContext: getUserContext(userContext),
         });
     }

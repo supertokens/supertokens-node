@@ -1,24 +1,27 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
-import { JSONObject, UserContext } from "../../types";
+import { JSONObject, JSONPrimitive, UserContext } from "../../types";
 export type TypeInput = {
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type TypeNormalisedInput = {
     override: {
-        functions: (originalImplementation: RecipeInterface, builder: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export type APIInterface = {};
 export type RecipeInterface = {
-    getUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    getUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
         metadata: any;
     }>;
@@ -30,18 +33,31 @@ export type RecipeInterface = {
      *   - update: `{ "notifications": { "sms": true }, "todos": null }`
      *   - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
      */
-    updateUserMetadata: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: UserContext;
-    }) => Promise<{
+    updateUserMetadata: (input: { userId: string; metadataUpdate: JSONObject; userContext: UserContext }) => Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
-    clearUserMetadata: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    clearUserMetadata: (input: { userId: string; userContext: UserContext }) => Promise<{
         status: "OK";
     }>;
 };
+/**
+ * Recursively checks that `V` can be stored as JSON. Unlike `JSONObject`, it does not require an index signature,
+ * so values typed with a TypeScript `interface` are accepted, at any depth. Functions, symbols, dates etc. resolve to
+ * `never`.
+ */
+export type JSONCompatible<V> = V extends JSONPrimitive | undefined
+    ? V
+    : V extends (...args: any[]) => any
+    ? never
+    : V extends ReadonlyArray<infer U>
+    ? Array<JSONCompatible<U>>
+    : V extends object
+    ? {
+          [K in keyof V]: JSONCompatible<V[K]>;
+      }
+    : never;
+/**
+ * The type of a metadata update: a JSON compatible object (not an array or a primitive).
+ */
+export type MetadataUpdate<T> = (T extends ReadonlyArray<any> ? never : T) & JSONCompatible<T>;
