@@ -433,7 +433,8 @@ export default class SuperTokens {
 
     middleware = async (request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<boolean> => {
         logDebugMessage("middleware: Started");
-        let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
+        const originalPath = new NormalisedURLPath(request.getOriginalURL());
+        let path = this.appInfo.apiGatewayPath.appendPath(originalPath);
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
         const handlerFromApis = this.pluginRouteHandlers.find(
@@ -471,7 +472,17 @@ export default class SuperTokens {
         if (!path.startsWith(this.appInfo.apiBasePath)) {
             logDebugMessage(
                 "middleware: Not handling because request path did not start with config path. Request path: " +
-                    path.getAsStringDangerous()
+                    path.getAsStringDangerous() +
+                    ". Config path (apiBasePath): " +
+                    this.appInfo.apiBasePath.getAsStringDangerous() +
+                    (this.appInfo.apiGatewayPath.getAsStringDangerous() !== ""
+                        ? ". The request path is the received URL (" +
+                          // only the path: the query string can contain secrets (e.g. tokens)
+                          originalPath.getAsStringDangerous() +
+                          ") prefixed with the configured apiGatewayPath (" +
+                          this.appInfo.apiGatewayPath.getAsStringDangerous() +
+                          "), which may differ from the URL the client actually called"
+                        : "")
             );
             return false;
         }
