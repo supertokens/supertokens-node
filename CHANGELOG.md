@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
--   `GetContentResult` (returned by `getContent` in the SMTP email delivery services) has a new optional `plainTextBody` field. When `isHtml` is `true` and `plainTextBody` is set, the email is sent with both an HTML and a plain text part, so overrides can now provide both ([#431](https://github.com/supertokens/supertokens-node/issues/431)).
-
 ## [24.1.0] - 2026-10-29
 
 ### Added
