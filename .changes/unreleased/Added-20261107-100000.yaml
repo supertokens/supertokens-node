@@ -1,0 +1,3 @@
+kind: Added
+body: "`GetContentResult` (returned by `getContent` in the SMTP email delivery services) has a new optional `plainTextBody` field. When `isHtml` is `true` and `plainTextBody` is set, the email is sent with both an HTML and a plain text part, so overrides can now provide both ([#431](https://github.com/supertokens/supertokens-node/issues/431)). This is currently available in the Node SDK only."
+time: 2026-11-07T10:00:00Z
