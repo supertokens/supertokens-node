@@ -22,11 +22,17 @@ let Multitenancy = require("../../recipe/multitenancy");
 let Passwordless = require("../../recipe/passwordless");
 let ThirdParty = require("../../recipe/thirdparty");
 let Session = require("../../recipe/session");
+let WebAuthn = require("../../recipe/webauthn");
+const createSoftAuthenticator = require("../webauthn/lib/softAuthenticator");
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
 
 const email = "x@example.com";
+
+// Must be a consistent pair: the core checks that the origin host ends with the relying party id.
+const RP_ID = "supertokens.io";
+const ORIGIN = "https://supertokens.io";
 
 async function setup() {
     const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
@@ -59,12 +65,17 @@ async function setup() {
                     providers: [{ config: { thirdPartyId: "google", clients: [{ clientId: "", clientSecret: "" }] } }],
                 },
             }),
+            WebAuthn.init({
+                getRelyingPartyId: async () => RP_ID,
+                getOrigin: async () => ORIGIN,
+            }),
             Session.init(),
         ],
     });
 
-    await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword", "thirdparty", "otp-email"] });
-    await Multitenancy.createOrUpdateTenant("t2", { firstFactors: ["emailpassword", "thirdparty", "otp-email"] });
+    const firstFactors = ["emailpassword", "thirdparty", "otp-email", "webauthn"];
+    await Multitenancy.createOrUpdateTenant("t1", { firstFactors });
+    await Multitenancy.createOrUpdateTenant("t2", { firstFactors });
 
     const app = express();
     app.use(middleware());
@@ -172,5 +183,55 @@ describe(`getAuthenticatingUserAndAddToCurrentTenantIfRequired: ${printPath(
         assert.strictEqual(res.body.status, "OK");
         assert.strictEqual(res.body.createdNewRecipeUser, false);
         assert.strictEqual(res.body.user.id, t2SignUp.user.id);
+    });
+    // The core verifies a webauthn credential against the tenant of the sign in, so a credential that only
+    // exists on another tenant is rejected before the authenticating user lookup runs, even with a session
+    // from the primary user it is linked to.
+    it("webauthn sign in with a session does not accept a credential of a linked login method from another tenant", async function () {
+        const app = await setup();
+        const authenticator = createSoftAuthenticator({ rpId: RP_ID, origin: ORIGIN });
+        let userHandle;
+        let webauthnRecipeUserId;
+        const primaryUser = await createPrimaryUserOnT1SharedWithT2(async () => {
+            const registerOptions = await request(app).post("/auth/t1/webauthn/options/register").send({ email });
+            assert.strictEqual(registerOptions.body.status, "OK");
+            userHandle = registerOptions.body.user.id;
+            const signUp = await request(app)
+                .post("/auth/t1/webauthn/signup")
+                .send({
+                    credential: authenticator.createAttestation(registerOptions.body, { signCount: 0 }),
+                    webauthnGeneratedOptionsId: registerOptions.body.webauthnGeneratedOptionsId,
+                    shouldTryLinkingWithSessionUser: false,
+                });
+            assert.strictEqual(signUp.body.status, "OK");
+            webauthnRecipeUserId = STExpress.convertToRecipeUserId(signUp.body.user.loginMethods[0].recipeUserId);
+            return webauthnRecipeUserId;
+        });
+
+        // A session on t2 for the primary user, created through the third-party login method shared with t2.
+        const tpLoginMethod = (await STExpress.getUser(primaryUser.id)).loginMethods.find(
+            (lm) => lm.recipeId === "thirdparty"
+        );
+        const session = await Session.createNewSessionWithoutRequestResponse("t2", tpLoginMethod.recipeUserId);
+
+        const signInOptions = await request(app).post("/auth/t2/webauthn/options/signin").send({});
+        assert.strictEqual(signInOptions.body.status, "OK");
+
+        const res = await request(app)
+            .post("/auth/t2/webauthn/signin")
+            .set("Authorization", `Bearer ${session.getAccessToken()}`)
+            .send({
+                credential: authenticator.createAssertion(signInOptions.body, { signCount: 0, userHandle }),
+                webauthnGeneratedOptionsId: signInOptions.body.webauthnGeneratedOptionsId,
+                shouldTryLinkingWithSessionUser: true,
+            });
+
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.body.status, "INVALID_CREDENTIALS_ERROR");
+
+        const webauthnLoginMethod = (await STExpress.getUser(primaryUser.id)).loginMethods.find(
+            (lm) => lm.recipeUserId.getAsString() === webauthnRecipeUserId.getAsString()
+        );
+        assert.deepStrictEqual(webauthnLoginMethod.tenantIds, ["t1"]);
     });
 });
