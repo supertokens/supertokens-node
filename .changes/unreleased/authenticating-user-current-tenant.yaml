@@ -1,0 +1,2 @@
+kind: Fixed
+body: Sign in on a tenant no longer fails with "You have found a bug" when a primary user shared with that tenant has a matching login method of the same recipe only on another tenant. Login methods outside the current tenant are no longer treated as the authenticating login method.

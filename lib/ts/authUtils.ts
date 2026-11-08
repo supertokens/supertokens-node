@@ -389,6 +389,7 @@ export const AuthUtils = {
                     loginMethod: user.loginMethods.find(
                         (lm) =>
                             lm.recipeId === recipeId &&
+                            lm.tenantIds.includes(tenantId) &&
                             ((accountInfo.email !== undefined && lm.hasSameEmailAs(accountInfo.email)) ||
                                 lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) ||
                                 lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty) ||
