@@ -15,7 +15,7 @@
 
 import type { Context, Next } from "koa";
 import type { HTTPMethod } from "../../types";
-import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
+import { isBuffer, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { getHeaderValueFromIncomingMessage, parseJSONBodyFromRequest, parseURLEncodedFormData } from "../utils";
@@ -33,12 +33,35 @@ export class KoaRequest extends BaseRequest {
     }
 
     protected getFormDataFromRequestBody = async (): Promise<any> => {
+        const bodyParsedByMiddleware = this.getBodyParsedByMiddleware();
+        if (bodyParsedByMiddleware !== undefined) {
+            return bodyParsedByMiddleware;
+        }
         return parseURLEncodedFormData(this.ctx.req);
     };
 
     protected getJSONFromRequestBody = async (): Promise<any> => {
+        const bodyParsedByMiddleware = this.getBodyParsedByMiddleware();
+        if (bodyParsedByMiddleware !== undefined) {
+            return bodyParsedByMiddleware;
+        }
         const parsedJSONBody = await parseJSONBodyFromRequest(this.ctx.req);
         return parsedJSONBody === undefined ? {} : parsedJSONBody;
+    };
+
+    /**
+     * Body parser middlewares (like koa-bodyparser, @koa/bodyparser or koa-body) read the request stream
+     * and put the parsed body into `ctx.request.body`. Once that has happened, the stream can't be read again,
+     * so we have to use the body they parsed. If the stream hasn't been read yet (e.g. because there is no body
+     * parser, or it skipped the request because of its content type), this returns undefined and we parse the
+     * body ourselves.
+     */
+    private getBodyParsedByMiddleware = (): object | undefined => {
+        const body: unknown = (this.ctx.request as { body?: unknown }).body;
+        if (this.ctx.req.readable || typeof body !== "object" || body === null || isBuffer(body)) {
+            return undefined;
+        }
+        return body;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {

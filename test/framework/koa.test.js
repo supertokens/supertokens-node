@@ -2206,6 +2206,144 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(res.statusCode === 200);
         assert(res.body.users.length === 0);
     });
+
+    describe("with a body parser middleware before the SuperTokens middleware", function () {
+        // Works like koa-bodyparser: it reads the request stream and puts the parsed body into ctx.request.body,
+        // or, for content types it doesn't handle, sets ctx.request.body to {} without reading the stream.
+        function bodyParser() {
+            return async (ctx, next) => {
+                const contentType = ctx.get("content-type");
+                if (contentType.startsWith("application/json")) {
+                    const raw = await readStream(ctx.req);
+                    ctx.request.body = raw === "" ? {} : JSON.parse(raw);
+                } else if (contentType.startsWith("application/x-www-form-urlencoded")) {
+                    const raw = await readStream(ctx.req);
+                    ctx.request.body = Object.fromEntries(new URLSearchParams(raw).entries());
+                } else {
+                    ctx.request.body = {};
+                }
+                await next();
+            };
+        }
+
+        async function readStream(stream) {
+            let raw = "";
+            for await (const chunk of stream) {
+                raw += chunk;
+            }
+            return raw;
+        }
+
+        async function initSuperTokens() {
+            const connectionURI = await createCoreApplication();
+            SuperTokens.init({
+                framework: "koa",
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "http://api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "http://supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "apple",
+                                        clients: [
+                                            {
+                                                clientId: "4398792-io.supertokens.example.service",
+                                                additionalConfig: {
+                                                    keyId: "7M48Y4RYDL",
+                                                    privateKey:
+                                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                    teamId: "YWQCXGJRJL",
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
+                ],
+            });
+        }
+
+        it("uses the JSON body parsed by the body parser", async function () {
+            await initSuperTokens();
+
+            const app = new Koa();
+            app.use(bodyParser());
+            app.use(KoaFramework.middleware());
+
+            const res = await request(app.callback())
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        { id: "email", value: "test@example.com" },
+                        { id: "password", value: "validpass123" },
+                    ],
+                });
+
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.user.emails[0], "test@example.com");
+        });
+
+        it("uses the form data parsed by the body parser", async function () {
+            await initSuperTokens();
+
+            const app = new Koa();
+            app.use(bodyParser());
+            app.use(KoaFramework.middleware());
+
+            const state = Buffer.from(
+                JSON.stringify({ frontendRedirectURI: "http://supertokens.io/auth/callback/apple" })
+            ).toString("base64");
+            const res = await request(app.callback())
+                .post("/auth/callback/apple")
+                .type("form")
+                .send({ state, code: "testing", id_token: "idtoken" });
+
+            assert.strictEqual(res.status, 303);
+            const location = new URL(res.headers.location);
+            assert.strictEqual(location.origin, "http://supertokens.io");
+            assert.strictEqual(location.searchParams.get("state"), state);
+            assert.strictEqual(location.searchParams.get("code"), "testing");
+            assert.strictEqual(location.searchParams.get("id_token"), "idtoken");
+        });
+
+        it("parses the body itself if the body parser did not read the request", async function () {
+            await initSuperTokens();
+
+            const app = new Koa();
+            app.use(bodyParser());
+            app.use(KoaFramework.middleware());
+
+            // The body parser skips this content type, so it leaves the request stream unread
+            const res = await request(app.callback())
+                .post("/auth/signup")
+                .set("Content-Type", "text/plain")
+                .send(
+                    JSON.stringify({
+                        formFields: [
+                            { id: "email", value: "test@example.com" },
+                            { id: "password", value: "validpass123" },
+                        ],
+                    })
+                );
+
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.user.emails[0], "test@example.com");
+        });
+    });
 });
 
 describe(`KoaRequest`, function () {
