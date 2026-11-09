@@ -184,6 +184,36 @@ describe(`getAuthenticatingUserAndAddToCurrentTenantIfRequired: ${printPath(
         assert.strictEqual(res.body.createdNewRecipeUser, false);
         assert.strictEqual(res.body.user.id, t2SignUp.user.id);
     });
+
+    it("passwordless createCode on a tenant ignores a linked passwordless login method from another tenant", async function () {
+        const app = await setup();
+        await createPrimaryUserOnT1SharedWithT2(async () => {
+            const resp = await Passwordless.signInUp({ tenantId: "t1", email });
+            assert.strictEqual(resp.status, "OK");
+            return resp.recipeUserId;
+        });
+
+        const t2SignUp = await Passwordless.signInUp({ tenantId: "t2", email });
+        assert.strictEqual(t2SignUp.status, "OK");
+
+        // createCode must find only the t2 user, as consumeCode does, instead of failing with
+        // "multiple users exist matching the accountInfo"
+        const codeRes = await request(app).post("/auth/t2/signinup/code").send({ email });
+        assert.strictEqual(codeRes.status, 200);
+        assert.strictEqual(codeRes.body.status, "OK");
+
+        const code = await Passwordless.createCode({ tenantId: "t2", email });
+        assert.strictEqual(code.status, "OK");
+        const res = await request(app).post("/auth/t2/signinup/code/consume").send({
+            preAuthSessionId: code.preAuthSessionId,
+            deviceId: code.deviceId,
+            userInputCode: code.userInputCode,
+        });
+
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.body.status, "OK");
+        assert.strictEqual(res.body.user.id, t2SignUp.user.id);
+    });
     // The core verifies a webauthn credential against the tenant of the sign in, so a credential that only
     // exists on another tenant is rejected before the authenticating user lookup runs, even with a session
     // from the primary user it is linked to.

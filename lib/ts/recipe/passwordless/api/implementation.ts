@@ -693,6 +693,7 @@ async function getPasswordlessUserByAccountInfo(input: {
             loginMethod: user.loginMethods.find(
                 (lm) =>
                     lm.recipeId === "passwordless" &&
+                    lm.tenantIds.includes(input.tenantId) &&
                     (lm.hasSameEmailAs(input.accountInfo.email) ||
                         lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
             )!,
