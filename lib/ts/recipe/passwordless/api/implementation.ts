@@ -708,5 +708,46 @@ async function getPasswordlessUserByAccountInfo(input: {
             "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
         );
     }
+    if (usersWithMatchingLoginMethods.length === 0 && input.session !== undefined) {
+        // consumeCode falls back to a matching login method of the session user on another
+        // tenant (and adds it to this tenant), so createCode has to recognise it as well
+        return getPasswordlessLoginMethodOfSessionUser({ ...input, session: input.session });
+    }
     return usersWithMatchingLoginMethods[0];
+}
+
+async function getPasswordlessLoginMethodOfSessionUser(input: {
+    session: SessionContainerInterface;
+    userContext: UserContext;
+    accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+    stInstance: SuperTokens;
+}): Promise<{ user: User; loginMethod: LoginMethod } | undefined> {
+    const sessionUser = await input.stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
+        userId: input.session.getUserId(input.userContext),
+        userContext: input.userContext,
+    });
+    if (sessionUser === undefined) {
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Session user not found",
+        });
+    }
+    if (!sessionUser.isPrimaryUser) {
+        return undefined;
+    }
+
+    const loginMethod = sessionUser.loginMethods.find(
+        (lm) =>
+            lm.recipeId === "passwordless" &&
+            // a login method on no tenant cannot be added to this one
+            lm.tenantIds.length > 0 &&
+            (lm.hasSameEmailAs(input.accountInfo.email) || lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
+    );
+    if (loginMethod === undefined) {
+        return undefined;
+    }
+    logDebugMessage(
+        `getPasswordlessUserByAccountInfo using a matching login method of the session user from another tenant`
+    );
+    return { user: sessionUser, loginMethod };
 }

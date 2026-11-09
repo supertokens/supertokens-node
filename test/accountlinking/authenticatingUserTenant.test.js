@@ -214,6 +214,29 @@ describe(`getAuthenticatingUserAndAddToCurrentTenantIfRequired: ${printPath(
         assert.strictEqual(res.body.status, "OK");
         assert.strictEqual(res.body.user.id, t2SignUp.user.id);
     });
+
+    it("passwordless createCode with a session recognises the session user's login method from another tenant", async function () {
+        // createCode on t2 must treat the session user's passwordless login method on t1 as theirs, as
+        // consumeCode does, instead of trying to link a new user (automatic account linking is off).
+        const app = await setup();
+        const primaryUser = await createPrimaryUserOnT1SharedWithT2(async () => {
+            const resp = await Passwordless.signInUp({ tenantId: "t1", email });
+            assert.strictEqual(resp.status, "OK");
+            return resp.recipeUserId;
+        });
+        const tpLoginMethod = (await STExpress.getUser(primaryUser.id)).loginMethods.find(
+            (lm) => lm.recipeId === "thirdparty"
+        );
+        const session = await Session.createNewSessionWithoutRequestResponse("t2", tpLoginMethod.recipeUserId);
+
+        const res = await request(app)
+            .post("/auth/t2/signinup/code")
+            .set("Authorization", `Bearer ${session.getAccessToken()}`)
+            .send({ email, shouldTryLinkingWithSessionUser: true });
+
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.body.status, "OK");
+    });
     // The core verifies a webauthn credential against the tenant of the sign in, so a credential that only
     // exists on another tenant is rejected before the authenticating user lookup runs, even with a session
     // from the primary user it is linked to.
