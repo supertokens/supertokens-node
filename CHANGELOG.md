@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
--   koa: the SDK now uses the request body parsed by a body parser middleware (like `koa-bodyparser`, `@koa/bodyparser` or `koa-body`) that runs before the SuperTokens middleware. Previously, it tried to read the already consumed request stream again, so the SuperTokens APIs got an empty body and failed with missing input errors. If the body parser doesn't read the request (e.g. because of its content type), the SDK still parses the body itself.
-
 ## [24.1.0] - 2026-10-29
 
 ### Added
