@@ -237,6 +237,60 @@ describe(`getAuthenticatingUserAndAddToCurrentTenantIfRequired: ${printPath(
         assert.strictEqual(res.status, 200);
         assert.strictEqual(res.body.status, "OK");
     });
+    it("passwordless createCode with a session uses the session user's next login method if the first one's phone number is taken", async function () {
+        // The session user has a passwordless login method with email x and phone p on t1, and another one
+        // with email x on t3. t2 has its own user with phone p, so the t1 login method cannot be added to t2.
+        // consumeCode then adds the t3 login method to t2, so createCode must also treat this as a sign in.
+        const app = await setup();
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["otp-email"] });
+        const phoneNumber = "+14155552671";
+        const primaryUser = await createPrimaryUserOnT1SharedWithT2(async () => {
+            const resp = await Passwordless.signInUp({ tenantId: "t1", email });
+            assert.strictEqual(resp.status, "OK");
+            const updateResp = await Passwordless.updateUser({ recipeUserId: resp.recipeUserId, phoneNumber });
+            assert.strictEqual(updateResp.status, "OK");
+            return resp.recipeUserId;
+        });
+        const t3SignUp = await Passwordless.signInUp({ tenantId: "t3", email });
+        assert.strictEqual(t3SignUp.status, "OK");
+        const linkResp = await AccountLinking.linkAccounts(t3SignUp.recipeUserId, primaryUser.id);
+        assert.strictEqual(linkResp.status, "OK");
+        const t2PhoneUser = await Passwordless.signInUp({ tenantId: "t2", phoneNumber });
+        assert.strictEqual(t2PhoneUser.status, "OK");
+
+        const tpLoginMethod = (await STExpress.getUser(primaryUser.id)).loginMethods.find(
+            (lm) => lm.recipeId === "thirdparty"
+        );
+        const session = await Session.createNewSessionWithoutRequestResponse("t2", tpLoginMethod.recipeUserId);
+
+        const codeRes = await request(app)
+            .post("/auth/t2/signinup/code")
+            .set("Authorization", `Bearer ${session.getAccessToken()}`)
+            .send({ email, shouldTryLinkingWithSessionUser: true });
+        assert.strictEqual(codeRes.status, 200);
+        assert.strictEqual(codeRes.body.status, "OK");
+
+        const code = await Passwordless.createCode({ tenantId: "t2", email });
+        assert.strictEqual(code.status, "OK");
+        const res = await request(app)
+            .post("/auth/t2/signinup/code/consume")
+            .set("Authorization", `Bearer ${session.getAccessToken()}`)
+            .send({
+                preAuthSessionId: code.preAuthSessionId,
+                deviceId: code.deviceId,
+                userInputCode: code.userInputCode,
+                shouldTryLinkingWithSessionUser: true,
+            });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.body.status, "OK");
+        assert.strictEqual(res.body.user.id, primaryUser.id);
+
+        const t3LoginMethod = (await STExpress.getUser(primaryUser.id)).loginMethods.find(
+            (lm) => lm.recipeUserId.getAsString() === t3SignUp.recipeUserId.getAsString()
+        );
+        assert.deepStrictEqual(t3LoginMethod.tenantIds.sort(), ["t2", "t3"]);
+    });
+
     // The core verifies a webauthn credential against the tenant of the sign in, so a credential that only
     // exists on another tenant is rejected before the authenticating user lookup runs, even with a session
     // from the primary user it is linked to.

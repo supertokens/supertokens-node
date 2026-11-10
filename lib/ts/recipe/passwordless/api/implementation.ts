@@ -737,52 +737,65 @@ async function getPasswordlessLoginMethodOfSessionUser(input: {
         return undefined;
     }
 
-    const loginMethod = sessionUser.loginMethods.find(
+    const matchingLoginMethods = sessionUser.loginMethods.filter(
         (lm) =>
             lm.recipeId === "passwordless" &&
             // a login method on no tenant cannot be added to this one
             lm.tenantIds.length > 0 &&
             (lm.hasSameEmailAs(input.accountInfo.email) || lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
     );
-    if (loginMethod === undefined) {
-        return undefined;
+    // consumeCode skips a login method it cannot add to this tenant (because another passwordless
+    // user of the tenant already has its other contact info) and tries the next one. If none of them
+    // can be added, it handles the attempt as a sign up, so createCode has to do the same.
+    for (const loginMethod of matchingLoginMethods) {
+        if (await otherAccountInfoIsTakenOnTenant({ ...input, loginMethod })) {
+            logDebugMessage(
+                `getPasswordlessUserByAccountInfo skipping a login method of the session user, its account info is taken on the current tenant`
+            );
+            continue;
+        }
+        logDebugMessage(
+            `getPasswordlessUserByAccountInfo using a matching login method of the session user from another tenant`
+        );
+        return { user: sessionUser, loginMethod };
     }
-    // consumeCode cannot add the login method to this tenant if another passwordless user of the tenant
-    // already has its other contact info (e.g.: the phone number when signing in with the email).
-    // It then handles the attempt as a sign up, so createCode has to do the same.
+    return undefined;
+}
+
+async function otherAccountInfoIsTakenOnTenant(input: {
+    tenantId: string;
+    loginMethod: LoginMethod;
+    userContext: UserContext;
+    accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+    stInstance: SuperTokens;
+}): Promise<boolean> {
+    const { loginMethod } = input;
+    // The contact info of the login method that is not part of accountInfo
+    // (e.g.: the phone number when signing in with the email)
     const otherAccountInfo =
         input.accountInfo.email === undefined && loginMethod.email !== undefined
             ? { email: loginMethod.email }
             : input.accountInfo.phoneNumber === undefined && loginMethod.phoneNumber !== undefined
             ? { phoneNumber: loginMethod.phoneNumber }
             : undefined;
-    if (otherAccountInfo !== undefined) {
-        const usersWithOtherAccountInfo = await input.stInstance
-            .getRecipeInstanceOrThrow("accountlinking")
-            .recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: otherAccountInfo,
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
-        const otherAccountInfoIsTaken = usersWithOtherAccountInfo.some((user) =>
-            user.loginMethods.some(
-                (lm) =>
-                    lm.recipeId === "passwordless" &&
-                    lm.tenantIds.includes(input.tenantId) &&
-                    lm.recipeUserId.getAsString() !== loginMethod.recipeUserId.getAsString() &&
-                    (lm.hasSameEmailAs(otherAccountInfo.email) || lm.hasSamePhoneNumberAs(otherAccountInfo.phoneNumber))
-            )
-        );
-        if (otherAccountInfoIsTaken) {
-            logDebugMessage(
-                `getPasswordlessUserByAccountInfo not using the login method of the session user, its account info is taken on the current tenant`
-            );
-            return undefined;
-        }
+    if (otherAccountInfo === undefined) {
+        return false;
     }
-    logDebugMessage(
-        `getPasswordlessUserByAccountInfo using a matching login method of the session user from another tenant`
+    const usersWithOtherAccountInfo = await input.stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId: input.tenantId,
+            accountInfo: otherAccountInfo,
+            doUnionOfAccountInfo: false,
+            userContext: input.userContext,
+        });
+    return usersWithOtherAccountInfo.some((user) =>
+        user.loginMethods.some(
+            (lm) =>
+                lm.recipeId === "passwordless" &&
+                lm.tenantIds.includes(input.tenantId) &&
+                lm.recipeUserId.getAsString() !== loginMethod.recipeUserId.getAsString() &&
+                (lm.hasSameEmailAs(otherAccountInfo.email) || lm.hasSamePhoneNumberAs(otherAccountInfo.phoneNumber))
+        )
     );
-    return { user: sessionUser, loginMethod };
 }
