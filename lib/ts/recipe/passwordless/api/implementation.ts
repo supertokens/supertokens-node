@@ -717,6 +717,7 @@ async function getPasswordlessUserByAccountInfo(input: {
 }
 
 async function getPasswordlessLoginMethodOfSessionUser(input: {
+    tenantId: string;
     session: SessionContainerInterface;
     userContext: UserContext;
     accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
@@ -745,6 +746,40 @@ async function getPasswordlessLoginMethodOfSessionUser(input: {
     );
     if (loginMethod === undefined) {
         return undefined;
+    }
+    // consumeCode cannot add the login method to this tenant if another passwordless user of the tenant
+    // already has its other contact info (e.g.: the phone number when signing in with the email).
+    // It then handles the attempt as a sign up, so createCode has to do the same.
+    const otherAccountInfo =
+        input.accountInfo.email === undefined && loginMethod.email !== undefined
+            ? { email: loginMethod.email }
+            : input.accountInfo.phoneNumber === undefined && loginMethod.phoneNumber !== undefined
+            ? { phoneNumber: loginMethod.phoneNumber }
+            : undefined;
+    if (otherAccountInfo !== undefined) {
+        const usersWithOtherAccountInfo = await input.stInstance
+            .getRecipeInstanceOrThrow("accountlinking")
+            .recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: input.tenantId,
+                accountInfo: otherAccountInfo,
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
+        const otherAccountInfoIsTaken = usersWithOtherAccountInfo.some((user) =>
+            user.loginMethods.some(
+                (lm) =>
+                    lm.recipeId === "passwordless" &&
+                    lm.tenantIds.includes(input.tenantId) &&
+                    lm.recipeUserId.getAsString() !== loginMethod.recipeUserId.getAsString() &&
+                    (lm.hasSameEmailAs(otherAccountInfo.email) || lm.hasSamePhoneNumberAs(otherAccountInfo.phoneNumber))
+            )
+        );
+        if (otherAccountInfoIsTaken) {
+            logDebugMessage(
+                `getPasswordlessUserByAccountInfo not using the login method of the session user, its account info is taken on the current tenant`
+            );
+            return undefined;
+        }
     }
     logDebugMessage(
         `getPasswordlessUserByAccountInfo using a matching login method of the session user from another tenant`

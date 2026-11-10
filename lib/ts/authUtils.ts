@@ -14,6 +14,22 @@ import SuperTokensError from "./error";
 import { recipeInitDefinedShouldDoAutomaticAccountLinking } from "./recipe/accountlinking/utils";
 import type SuperTokens from "./supertokens";
 
+function isConflictOnQueriedAccountInfo(
+    status:
+        | "EMAIL_ALREADY_EXISTS_ERROR"
+        | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+        | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR",
+    accountInfo: { email?: string; phoneNumber?: string; thirdParty?: { id: string; userId: string } }
+): boolean {
+    if (status === "EMAIL_ALREADY_EXISTS_ERROR") {
+        return accountInfo.email !== undefined;
+    }
+    if (status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR") {
+        return accountInfo.phoneNumber !== undefined;
+    }
+    return accountInfo.thirdParty !== undefined;
+}
+
 export const AuthUtils = {
     /**
      * This helper function can be used to map error statuses (w/ an optional reason) to error responses with human readable reasons.
@@ -367,6 +383,11 @@ export const AuthUtils = {
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
         userContext: UserContext;
     }): Promise<{ user: User; loginMethod: LoginMethod } | undefined> => {
+        // Login methods of the session user that cannot be associated with the current tenant,
+        // because another user of the tenant already holds some of their account info
+        const unshareableRecipeUserIds = new Set<string>();
+        // Association conflicts that already caused a retry
+        const retriedConflicts = new Set<string>();
         let i = 0;
         while (i++ < 300) {
             logDebugMessage(
@@ -455,6 +476,9 @@ export const AuthUtils = {
                 }
                 let goToRetry = false;
                 for (const lm of matchingLoginMethodsFromSessionUser) {
+                    if (unshareableRecipeUserIds.has(lm.recipeUserId.getAsString())) {
+                        continue;
+                    }
                     logDebugMessage(
                         `getAuthenticatingUserAndAddToCurrentTenantIfRequired session checking credentials on ${lm.tenantIds[0]}`
                     );
@@ -477,17 +501,36 @@ export const AuthUtils = {
                             lm.tenantIds.push(tenantId);
                             return { user: sessionUser, loginMethod: lm };
                         }
+                        if (associateRes.status === "UNKNOWN_USER_ID_ERROR") {
+                            // This means that the recipe user was deleted, so the session user we loaded is outdated
+                            goToRetry = true;
+                            break;
+                        }
                         if (
-                            associateRes.status === "UNKNOWN_USER_ID_ERROR" || // This means that the recipe user was deleted
-                            // All below conditions mean that both the account list and the session user we loaded is outdated
                             associateRes.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
                             associateRes.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR" ||
                             associateRes.status === "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
                         ) {
-                            // In these cases we retry, because we know some info we are using is outdated
-                            // while some of these cases we could handle locally, it's cleaner to restart the process.
-                            goToRetry = true;
-                            break;
+                            const conflictKey = `${lm.recipeUserId.getAsString()}:${associateRes.status}`;
+                            if (
+                                isConflictOnQueriedAccountInfo(associateRes.status, accountInfo) &&
+                                !retriedConflicts.has(conflictKey)
+                            ) {
+                                // Another user of the tenant holds the account info we listed users by,
+                                // so the account list is outdated. Listing again will find that user.
+                                retriedConflicts.add(conflictKey);
+                                goToRetry = true;
+                                break;
+                            }
+                            // The conflicting user holds account info we did not list users by (e.g.: the
+                            // phone number of a passwordless login method found by email), or listing again
+                            // did not find it. Retrying would hit the same conflict, so this login method
+                            // cannot be shared with the tenant and we check the next one instead.
+                            logDebugMessage(
+                                `getAuthenticatingUserAndAddToCurrentTenantIfRequired skipping login method that cannot be associated with the current tenant`
+                            );
+                            unshareableRecipeUserIds.add(lm.recipeUserId.getAsString());
+                            continue;
                         }
                         if (associateRes.status === "ASSOCIATION_NOT_ALLOWED_ERROR") {
                             // Since we were trying to share the recipe user linked to a primary user already associated with the tenant,

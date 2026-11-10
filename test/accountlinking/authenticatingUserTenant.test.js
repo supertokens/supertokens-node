@@ -288,3 +288,102 @@ describe(`getAuthenticatingUserAndAddToCurrentTenantIfRequired: ${printPath(
         assert.deepStrictEqual(webauthnLoginMethod.tenantIds, ["t1"]);
     });
 });
+
+describe(`getAuthenticatingUserAndAddToCurrentTenantIfRequired association conflicts: ${printPath(
+    "[test/accountlinking/authenticatingUserTenant.test.js]"
+)}`, function () {
+    const { AuthUtils } = require("../../lib/build/authUtils");
+    const { User } = require("../../lib/build/user");
+
+    // Primary user P: its passwordless login method L (email x and phone p) is only on t1, and its
+    // third-party login method (email x) is shared with t2, so the core lists P for (t2, email x).
+    function makePrimaryUser() {
+        return new User({
+            id: "P",
+            isPrimaryUser: true,
+            tenantIds: ["t1", "t2"],
+            emails: [email],
+            phoneNumbers: ["+14155552671"],
+            thirdParty: [{ id: "google", userId: "g1" }],
+            webauthn: { credentialIds: [] },
+            timeJoined: 1,
+            loginMethods: [
+                {
+                    recipeId: "passwordless",
+                    recipeUserId: "L",
+                    tenantIds: ["t1"],
+                    email,
+                    phoneNumber: "+14155552671",
+                    verified: true,
+                    timeJoined: 1,
+                },
+                {
+                    recipeId: "thirdparty",
+                    recipeUserId: "TP",
+                    tenantIds: ["t1", "t2"],
+                    email,
+                    thirdParty: { id: "google", userId: "g1" },
+                    verified: true,
+                    timeJoined: 1,
+                },
+            ],
+        });
+    }
+
+    function makeStInstance(associateStatus, counters) {
+        return {
+            getRecipeInstanceOrThrow(name) {
+                if (name === "accountlinking") {
+                    return {
+                        recipeInterfaceImpl: {
+                            listUsersByAccountInfo: async () => {
+                                counters.list++;
+                                return [makePrimaryUser()];
+                            },
+                            getUser: async () => makePrimaryUser(),
+                        },
+                    };
+                }
+                if (name === "multitenancy") {
+                    return {
+                        recipeInterfaceImpl: {
+                            associateUserToTenant: async () => {
+                                counters.associate++;
+                                return { status: associateStatus };
+                            },
+                        },
+                    };
+                }
+                throw new Error("unexpected recipe " + name);
+            },
+        };
+    }
+
+    async function run(associateStatus) {
+        const counters = { list: 0, associate: 0 };
+        const result = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+            stInstance: makeStInstance(associateStatus, counters),
+            recipeId: "passwordless",
+            accountInfo: { email },
+            tenantId: "t2",
+            session: { getUserId: () => "P" },
+            checkCredentialsOnTenant: async () => true,
+            userContext: {},
+        });
+        return { result, counters };
+    }
+
+    it("handles the attempt as a sign up when the tenant has another user with the login method's phone number", async function () {
+        const { result, counters } = await run("PHONE_NUMBER_ALREADY_EXISTS_ERROR");
+        assert.strictEqual(result, undefined);
+        assert.strictEqual(counters.list, 1);
+        assert.strictEqual(counters.associate, 1);
+    });
+
+    it("retries once and then stops when listing again does not resolve an email conflict", async function () {
+        const { result, counters } = await run("EMAIL_ALREADY_EXISTS_ERROR");
+        assert.strictEqual(result, undefined);
+        assert.strictEqual(counters.list, 2);
+        assert.strictEqual(counters.associate, 2);
+    });
+});
