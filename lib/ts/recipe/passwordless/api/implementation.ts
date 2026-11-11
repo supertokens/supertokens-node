@@ -693,6 +693,7 @@ async function getPasswordlessUserByAccountInfo(input: {
             loginMethod: user.loginMethods.find(
                 (lm) =>
                     lm.recipeId === "passwordless" &&
+                    lm.tenantIds.includes(input.tenantId) &&
                     (lm.hasSameEmailAs(input.accountInfo.email) ||
                         lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
             )!,
@@ -707,5 +708,94 @@ async function getPasswordlessUserByAccountInfo(input: {
             "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
         );
     }
+    if (usersWithMatchingLoginMethods.length === 0 && input.session !== undefined) {
+        // consumeCode falls back to a matching login method of the session user on another
+        // tenant (and adds it to this tenant), so createCode has to recognise it as well
+        return getPasswordlessLoginMethodOfSessionUser({ ...input, session: input.session });
+    }
     return usersWithMatchingLoginMethods[0];
+}
+
+async function getPasswordlessLoginMethodOfSessionUser(input: {
+    tenantId: string;
+    session: SessionContainerInterface;
+    userContext: UserContext;
+    accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+    stInstance: SuperTokens;
+}): Promise<{ user: User; loginMethod: LoginMethod } | undefined> {
+    const sessionUser = await input.stInstance.getRecipeInstanceOrThrow("accountlinking").recipeInterfaceImpl.getUser({
+        userId: input.session.getUserId(input.userContext),
+        userContext: input.userContext,
+    });
+    if (sessionUser === undefined) {
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Session user not found",
+        });
+    }
+    if (!sessionUser.isPrimaryUser) {
+        return undefined;
+    }
+
+    const matchingLoginMethods = sessionUser.loginMethods.filter(
+        (lm) =>
+            lm.recipeId === "passwordless" &&
+            // Skip methods with no tenant, matching consumeCode's credential-verification requirement.
+            lm.tenantIds.length > 0 &&
+            (lm.hasSameEmailAs(input.accountInfo.email) || lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
+    );
+    // consumeCode skips a login method it cannot add to this tenant (because another passwordless
+    // user of the tenant already has its other contact info) and tries the next one. If none of them
+    // can be added, it handles the attempt as a sign up, so createCode has to do the same.
+    for (const loginMethod of matchingLoginMethods) {
+        if (await otherAccountInfoIsTakenOnTenant({ ...input, loginMethod })) {
+            logDebugMessage(
+                `getPasswordlessUserByAccountInfo skipping a login method of the session user, its account info is taken on the current tenant`
+            );
+            continue;
+        }
+        logDebugMessage(
+            `getPasswordlessUserByAccountInfo using a matching login method of the session user from another tenant`
+        );
+        return { user: sessionUser, loginMethod };
+    }
+    return undefined;
+}
+
+async function otherAccountInfoIsTakenOnTenant(input: {
+    tenantId: string;
+    loginMethod: LoginMethod;
+    userContext: UserContext;
+    accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+    stInstance: SuperTokens;
+}): Promise<boolean> {
+    const { loginMethod } = input;
+    // The contact info of the login method that is not part of accountInfo
+    // (e.g.: the phone number when signing in with the email)
+    const otherAccountInfo =
+        input.accountInfo.email === undefined && loginMethod.email !== undefined
+            ? { email: loginMethod.email }
+            : input.accountInfo.phoneNumber === undefined && loginMethod.phoneNumber !== undefined
+            ? { phoneNumber: loginMethod.phoneNumber }
+            : undefined;
+    if (otherAccountInfo === undefined) {
+        return false;
+    }
+    const usersWithOtherAccountInfo = await input.stInstance
+        .getRecipeInstanceOrThrow("accountlinking")
+        .recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId: input.tenantId,
+            accountInfo: otherAccountInfo,
+            doUnionOfAccountInfo: false,
+            userContext: input.userContext,
+        });
+    return usersWithOtherAccountInfo.some((user) =>
+        user.loginMethods.some(
+            (lm) =>
+                lm.recipeId === "passwordless" &&
+                lm.tenantIds.includes(input.tenantId) &&
+                lm.recipeUserId.getAsString() !== loginMethod.recipeUserId.getAsString() &&
+                (lm.hasSameEmailAs(otherAccountInfo.email) || lm.hasSamePhoneNumberAs(otherAccountInfo.phoneNumber))
+        )
+    );
 }
