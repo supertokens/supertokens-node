@@ -740,7 +740,7 @@ async function getPasswordlessLoginMethodOfSessionUser(input: {
     const matchingLoginMethods = sessionUser.loginMethods.filter(
         (lm) =>
             lm.recipeId === "passwordless" &&
-            // a login method on no tenant cannot be added to this one
+            // Skip methods with no tenant, matching consumeCode's credential-verification requirement.
             lm.tenantIds.length > 0 &&
             (lm.hasSameEmailAs(input.accountInfo.email) || lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
     );
